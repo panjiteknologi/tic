@@ -14,12 +14,25 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Separator } from "@radix-ui/react-separator";
+import { AppSidebarTypes } from "@/types/sidebar-types";
 
-const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+const DashboardLayout = ({
+  children,
+  menuSidebar,
+  titleHeader,
+  subTitleHeader,
+  href,
+}: {
+  children: React.ReactNode;
+  menuSidebar: AppSidebarTypes;
+  titleHeader: string;
+  subTitleHeader: string;
+  href?: string;
+}) => {
   return (
     <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
+      <AppSidebar data={menuSidebar} />
+      <SidebarInset className="overflow-hidden">
         <header className="flex h-16 shrink-0 items-center gap-2">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
@@ -30,19 +43,23 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    Building Your Application
-                  </BreadcrumbLink>
+                  <BreadcrumbLink href="/apps">Apps</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbLink href={href}>{titleHeader}</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                  <BreadcrumbPage>{subTitleHeader}</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
           </div>
         </header>
-        <div className="p-4 pt-0">{children}</div>
+        <div className="flex-1 flex flex-col mx-auto px-4 w-full">
+          {children}
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );

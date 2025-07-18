@@ -1,20 +1,6 @@
 "use client";
-
 import * as React from "react";
-import {
-  BookOpen,
-  Bot,
-  Frame,
-  LifeBuoy,
-  Map,
-  PieChart,
-  Send,
-  Settings2,
-  SquareTerminal,
-} from "lucide-react";
-
-import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
+import { usePathname } from "next/navigation";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -27,166 +13,114 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import Image from "next/image";
+import Link from "next/link";
+import { AppSidebarTypes } from "@/types/sidebar-types";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "",
-  },
-  navMain: [
-    {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Support",
-      url: "#",
-      icon: LifeBuoy,
-    },
-    {
-      title: "Feedback",
-      url: "#",
-      icon: Send,
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
-};
+export function AppSidebar({ data, ...props }: { data: AppSidebarTypes }) {
+  const pathname = usePathname();
+  const [expandedMenus, setExpandedMenus] = React.useState<string[]>([]);
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const toggleMenu = (url: string) => {
+    setExpandedMenus((prev) =>
+      prev.includes(url) ? prev.filter((u) => u !== url) : [...prev, url]
+    );
+  };
+
+  const isMenuExpanded = (url: string) => expandedMenus.includes(url);
+
+  const updatedNavMain = data.navMain.map((item) => ({
+    ...item,
+    isActive: pathname.startsWith(item.url),
+  }));
+
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <div>
-                <div className="text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center size-8 rounded-lg">
                   <Image
-                    src="/images/dms-logo.png"
-                    width={100}
-                    height={100}
+                    src="/images/tsi-logo.png"
+                    width={32}
+                    height={32}
                     priority
-                    alt="DMS Logo"
+                    alt="TSI Logo"
                   />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
+                <div className="text-left text-sm leading-tight">
                   <span className="truncate font-bold text-blue-950 text-lg">
-                    TIC
+                    Certification
                   </span>
-                  <span className="truncate text-xs">Enterprise</span>
+                  <span className="truncate text-xs">Client</span>
                 </div>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <SidebarMenu>
+          {updatedNavMain.map((menu: any) => (
+            <React.Fragment key={menu.title}>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => toggleMenu(menu.url)}
+                  className={`flex justify-between items-center w-full ${
+                    menu.isActive ? "bg-muted font-semibold" : ""
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {menu.icon && <menu.icon className="h-4 w-4" />}
+                    <span>{menu.title}</span>
+                  </div>
+                  {menu.children?.length > 0 &&
+                    (isMenuExpanded(menu.url) ? (
+                      <ChevronDown className="w-4 h-4" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4" />
+                    ))}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {menu.children && isMenuExpanded(menu.url) && (
+                <div className="ml-6 space-y-1 text-sm">
+                  {menu.children.map(
+                    (child: {
+                      url: string;
+                      icon: string | any;
+                      title: string;
+                    }) => (
+                      <Link
+                        key={child.url}
+                        href={child.url}
+                        className={`block px-2 py-1 rounded hover:bg-muted ${
+                          pathname.startsWith(child.url)
+                            ? "text-primary font-medium bg-muted"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {child.icon && <child.icon className="h-4 w-4" />}
+                          <span>{child.title}</span>
+                        </div>
+                      </Link>
+                    )
+                  )}
+                </div>
+              )}
+            </React.Fragment>
+          ))}
+        </SidebarMenu>
+
+        <NavSecondary items={data?.navSecondary} className="mt-auto" />
       </SidebarContent>
+
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={data?.user} />
       </SidebarFooter>
     </Sidebar>
   );

@@ -52,13 +52,13 @@ const appCategories: AppCategory[] = [
     id: "main",
     title: "Main Applications",
     apps: [
-      {
-        id: "dashboard",
-        title: "Dashboard",
-        description: "Overview of your activities and metrics",
-        icon: LayoutDashboard,
-        url: "/apps/dashboard",
-      },
+      // {
+      //   id: "dashboard",
+      //   title: "Dashboard",
+      //   description: "Overview of your activities and metrics",
+      //   icon: LayoutDashboard,
+      //   url: "/apps/dashboard",
+      // },
       {
         id: "price-simulation",
         title: "Price Simulation",
