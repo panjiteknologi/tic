@@ -12,10 +12,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 
 // Create a schema for form validation
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  username: z.string().min(1, "Username is required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -26,7 +27,10 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const router = useRouter();
+
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
 
   const {
@@ -36,7 +40,7 @@ export function LoginForm({
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
     },
   });
@@ -47,18 +51,21 @@ export function LoginForm({
 
     try {
       const result = await signIn("credentials", {
-        email: data.email,
+        username: data.username,
         password: data.password,
         redirect: false,
       });
-
+      console.log("result", result);
       if (result?.error) {
-        setError(result.error);
+        const errorMessage =
+          result?.error === "CredentialsSignin"
+            ? "Authentication Failed"
+            : "Something wrong happen";
+        setError(errorMessage);
       } else if (result?.ok) {
         router.refresh();
       }
     } catch (error) {
-      console.log("error auth : ", error);
       setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
@@ -72,7 +79,9 @@ export function LoginForm({
           <form className="p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
               <div className="flex flex-col items-center text-center">
-                <h1 className="text-2xl font-bold">Welcome back</h1>
+                <h1 className="text-2xl font-bold">
+                  Testing Inspection & Certification
+                </h1>
                 <p className="text-muted-foreground text-balance">
                   Login to your TIC account
                 </p>
@@ -85,17 +94,17 @@ export function LoginForm({
               )}
 
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="username">Username</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  {...register("email")}
-                  aria-invalid={!!errors.email}
+                  id="username"
+                  type="username"
+                  placeholder="Input your username"
+                  {...register("username")}
+                  aria-invalid={!!errors.username}
                 />
-                {errors.email && (
+                {errors.username && (
                   <p className="text-destructive text-sm">
-                    {errors.email.message}
+                    {errors.username.message}
                   </p>
                 )}
               </div>
@@ -110,12 +119,27 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  {...register("password")}
-                  aria-invalid={!!errors.password}
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    {...register("password")}
+                    aria-invalid={!!errors.password}
+                    placeholder="Input your password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-3 flex items-center text-sm text-muted-foreground"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
                 {errors.password && (
                   <p className="text-destructive text-sm">
                     {errors.password.message}
@@ -123,7 +147,11 @@ export function LoginForm({
                 )}
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-red-800 to-blue-800 font-bold text-md"
+                disabled={isLoading}
+              >
                 {isLoading ? "Signing in..." : "Login"}
               </Button>
 
@@ -179,7 +207,7 @@ export function LoginForm({
             <img
               src="/images/dms-logo.png"
               alt="Image"
-              className="h-32 w-32 dark:brightness-[0.2] dark:grayscale"
+              className="h-32 w-50 dark:brightness-[0.2] dark:grayscale"
             />
           </Link>
         </CardContent>
