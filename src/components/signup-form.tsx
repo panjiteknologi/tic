@@ -69,7 +69,7 @@ export function SignupForm({
         setError(error.message || "Registration failed. Please try again.");
       } else if (result) {
         router.refresh();
-        router.push("/apps");
+        router.push("/onboarding");
       }
     } catch (error) {
       setError("An unexpected error occurred. Please try again.");
