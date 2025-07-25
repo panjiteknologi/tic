@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { signIn } from "next-auth/react";
+import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -50,20 +50,16 @@ export function LoginForm({
     setError(null);
 
     try {
-      const result = await signIn("credentials", {
-        username: data.username,
+      const { data: result, error } = await authClient.signIn.email({
+        email: data.username,
         password: data.password,
-        redirect: false,
       });
-      console.log("result", result);
-      if (result?.error) {
-        const errorMessage =
-          result?.error === "CredentialsSignin"
-            ? "Authentication Failed"
-            : "Something wrong happen";
-        setError(errorMessage);
-      } else if (result?.ok) {
+      
+      if (error) {
+        setError("Authentication Failed");
+      } else if (result) {
         router.refresh();
+        router.push("/apps");
       }
     } catch (error) {
       setError("An unexpected error occurred. Please try again.");
