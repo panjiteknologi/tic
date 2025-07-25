@@ -8,7 +8,7 @@ import {
   Calendar,
   FilePlus,
   FileText,
-  LayoutDashboard,
+  Droplets,
   LineChart,
   Link2,
   ListChecks,
@@ -72,6 +72,13 @@ const appCategories: AppCategory[] = [
         description: "Calculate project timelines and resource allocations",
         icon: Calendar,
         url: "/apps/mandays",
+      },
+      {
+        id: "carbon-gas",
+        title: "Perhitungan Gas Karbon",
+        description: "Calculate carbon gas emissions for your projects",
+        icon: Droplets,
+        url: "/apps/carbon-gas",
       },
     ],
   },
@@ -184,12 +191,12 @@ const appCategories: AppCategory[] = [
     title: "Integration & Tools",
     apps: [
       {
-        id: "integration",
+        id: "panggil-aku",
         title: "Integrasi dengan Panggil Aku",
         description:
           "Integration with Panggil Aku (on discuss), Db Odoo, Linkin",
         icon: Link2,
-        url: "/apps/integration",
+        url: "/apps/panggil-aku",
       },
     ],
   },
