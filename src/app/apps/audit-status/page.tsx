@@ -1,5 +1,5 @@
 "use client";
-import { useSession } from "next-auth/react";
+import { authClient } from "@/lib/auth-client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/layout/dashboard-layout";
@@ -9,16 +9,13 @@ import { AuditStatusMenu } from "@/constant/menu-sidebar";
 
 export default function Page() {
   const router = useRouter();
-  const { data: session, status } = useSession();
-  const { data: dateCustomer = [], isLoading } = useDateCustomerQuery({
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: session, isPending } = authClient.useSession();
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (!isPending && !session) {
       router.push("/login");
     }
-  }, [status, router]);
+  }, [session, isPending, router]);
 
   return (
     <DashboardLayout

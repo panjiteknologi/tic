@@ -1,6 +1,5 @@
 "use client";
 
-import { signOut } from "next-auth/react";
 import { LogOut } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,11 +12,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { useSession } from "next-auth/react";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export function NavbarApps() {
-  const { data: session } = useSession();
+  const router = useRouter();
+  const { data: session, isPending } = authClient.useSession();
   const sessionUser = session?.user;
   const [scrolled, setScrolled] = useState(false);
 
@@ -42,17 +43,13 @@ export function NavbarApps() {
     };
   }, [scrolled]);
 
-  const handleLogout = () => {
-    signOut();
+  const handleLogout = async () => {
+    await authClient.signOut();
+    router.push("/login");
   };
 
-  const displayName =
-    sessionUser?.name ||
-    sessionUser?.partner_name ||
-    sessionUser?.username ||
-    "User";
-  const email =
-    sessionUser?.email || sessionUser?.username || "user@example.com";
+  const displayName = sessionUser?.name || "User";
+  const email = sessionUser?.email || "user@example.com";
   const initials = displayName.substring(0, 2).toUpperCase();
 
   return (
