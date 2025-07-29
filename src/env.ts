@@ -10,12 +10,14 @@ export const env = createEnv({
 
   client: {
     NEXT_PUBLIC_BETTER_AUTH_URL: z.string().url(),
+    NEXT_PUBLIC_URL: z.string().url(),
     // Client-side environment variables (if any) go here
   },
 
   // Include all environment variables here
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
+    NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     NEXT_PUBLIC_BETTER_AUTH_URL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
     DATABASE_URL: process.env.DATABASE_URL,
