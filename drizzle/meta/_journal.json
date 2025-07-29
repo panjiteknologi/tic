@@ -15,6 +15,13 @@
       "when": 1753450869546,
       "tag": "0001_cold_nighthawk",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1753776237017,
+      "tag": "0002_busy_the_hood",
+      "breakpoints": true
     }
   ]
 }
