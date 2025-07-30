@@ -3,6 +3,7 @@ import { baseProcedure, createTRPCRouter } from "../init";
 import { testRouter } from "./test";
 import { tenantRouter } from "./tenant";
 import { invitationRouter } from "./invitation";
+import { productsRouter } from "./products";
 
 export const appRouter = createTRPCRouter({
   hello: baseProcedure
@@ -19,6 +20,7 @@ export const appRouter = createTRPCRouter({
   test: testRouter,
   tenant: tenantRouter,
   invitation: invitationRouter,
+  products: productsRouter,
 });
 
 // export type definition of API
