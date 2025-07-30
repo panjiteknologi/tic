@@ -7,12 +7,27 @@ import {
 } from "drizzle-orm/pg-core";
 import { tenant } from "./tenant-schema";
 
+// Carbon Project
+export const carbonProject = pgTable("carbon_project", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+});
+
 // Products
 export const products = pgTable("products", {
   id: uuid("id").primaryKey().defaultRandom(),
   tenantId: uuid("tenant_id")
     .notNull()
     .references(() => tenant.id, { onDelete: "cascade" }),
+  carbonProjectId: uuid("carbon_project_id")
+    .notNull()
+    .references(() => carbonProject.id, { onDelete: "cascade" }),
   cornWet: decimal("corn_wet", { precision: 10, scale: 2 }),
   moistureContent: decimal("moisture_content", { precision: 10, scale: 2 }),
   cornDry: decimal("corn_dry", { precision: 10, scale: 2 }),
@@ -31,6 +46,9 @@ export const raws = pgTable("raws", {
   tenantId: uuid("tenant_id")
     .notNull()
     .references(() => tenant.id, { onDelete: "cascade" }),
+  carbonProjectId: uuid("carbon_project_id")
+    .notNull()
+    .references(() => carbonProject.id, { onDelete: "cascade" }),
   cornSeedsAmount: decimal("corn_seeds_amount", { precision: 10, scale: 2 }),
   emissionFactorCornSeeds: decimal("emission_factor_corn_seeds", { precision: 10, scale: 2 }),
   co2eqEmissionsRawMaterialInputHaYr: decimal("co2eq_emissions_raw_material_input_ha_yr", { precision: 10, scale: 2 }),
@@ -49,6 +67,9 @@ export const fertilizerNitrogen = pgTable("fertilizer_nitrogen", {
   tenantId: uuid("tenant_id")
     .notNull()
     .references(() => tenant.id, { onDelete: "cascade" }),
+  carbonProjectId: uuid("carbon_project_id")
+    .notNull()
+    .references(() => carbonProject.id, { onDelete: "cascade" }),
   ammoniumNitrate: decimal("ammonium_nitrate", { precision: 10, scale: 2 }),
   urea: decimal("urea", { precision: 10, scale: 2 }),
   appliedManure: decimal("applied_manure", { precision: 10, scale: 2 }),
@@ -82,6 +103,9 @@ export const herbicides = pgTable("herbicides", {
   tenantId: uuid("tenant_id")
     .notNull()
     .references(() => tenant.id, { onDelete: "cascade" }),
+  carbonProjectId: uuid("carbon_project_id")
+    .notNull()
+    .references(() => carbonProject.id, { onDelete: "cascade" }),
   acetochlor: decimal("acetochlor", { precision: 10, scale: 2 }),
   emissionFactorPesticides: decimal("emission_factor_pesticides", { precision: 10, scale: 2 }),
   co2eqEmissionsHerbicidesPesticidesHaYr: decimal("co2eq_emissions_herbicides_pesticides_ha_yr", { precision: 10, scale: 2 }),
@@ -100,6 +124,9 @@ export const energyElectricity = pgTable("energy_electricity", {
   tenantId: uuid("tenant_id")
     .notNull()
     .references(() => tenant.id, { onDelete: "cascade" }),
+  carbonProjectId: uuid("carbon_project_id")
+    .notNull()
+    .references(() => carbonProject.id, { onDelete: "cascade" }),
   electricityConsumptionSoilPrep: decimal("electricity_consumption_soil_prep", { precision: 10, scale: 2 }),
   emissionFactorElectricity: decimal("emission_factor_electricity", { precision: 10, scale: 2 }),
   co2eEmissionsElectricityYr: decimal("co2e_emissions_electricity_yr", { precision: 10, scale: 2 }),
@@ -118,6 +145,9 @@ export const energyDiesel = pgTable("energy_diesel", {
   tenantId: uuid("tenant_id")
     .notNull()
     .references(() => tenant.id, { onDelete: "cascade" }),
+  carbonProjectId: uuid("carbon_project_id")
+    .notNull()
+    .references(() => carbonProject.id, { onDelete: "cascade" }),
   dieselConsumed: decimal("diesel_consumed", { precision: 10, scale: 2 }),
   emissionFactorDiesel: decimal("emission_factor_diesel", { precision: 10, scale: 2 }),
   co2eEmissionsDieselYr: decimal("co2e_emissions_diesel_yr", { precision: 10, scale: 2 }),
@@ -136,6 +166,9 @@ export const cultivation = pgTable("cultivation", {
   tenantId: uuid("tenant_id")
     .notNull()
     .references(() => tenant.id, { onDelete: "cascade" }),
+  carbonProjectId: uuid("carbon_project_id")
+    .notNull()
+    .references(() => carbonProject.id, { onDelete: "cascade" }),
   ghgEmissionsRawMaterialInput: decimal("ghg_emissions_raw_material_input", { precision: 10, scale: 2 }),
   ghgEmissionsFertilizers: decimal("ghg_emissions_fertilizers", { precision: 10, scale: 2 }),
   ghgEmissionsHerbicidesPesticides: decimal("ghg_emissions_herbicides_pesticides", { precision: 10, scale: 2 }),
@@ -155,6 +188,9 @@ export const actualCarbon = pgTable("actual_carbon", {
   tenantId: uuid("tenant_id")
     .notNull()
     .references(() => tenant.id, { onDelete: "cascade" }),
+  carbonProjectId: uuid("carbon_project_id")
+    .notNull()
+    .references(() => carbonProject.id, { onDelete: "cascade" }),
   actualLandUse: text("actual_land_use"),
   climateRegionActual: text("climate_region_actual"),
   soilTypeActual: text("soil_type_actual"),
@@ -179,6 +215,9 @@ export const referenceCarbon = pgTable("reference_carbon", {
   tenantId: uuid("tenant_id")
     .notNull()
     .references(() => tenant.id, { onDelete: "cascade" }),
+  carbonProjectId: uuid("carbon_project_id")
+    .notNull()
+    .references(() => carbonProject.id, { onDelete: "cascade" }),
   referenceLandUse: text("reference_land_use"),
   climateRegionReference: text("climate_region_reference"),
   soilTypeReference: text("soil_type_reference"),
