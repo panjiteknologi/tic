@@ -585,15 +585,257 @@ export default function TenantManagement() {
 
 Berdasarkan konfigurasi aplikasi, router yang tersedia:
 
+### Core System Routers
 - `trpc.hello` - Test endpoint
 - `trpc.test` - Test CRUD operations
 - `trpc.tenant` - Tenant management
 - `trpc.invitation` - Invitation system
-- `trpc.products` - Product management
-- `trpc.raws` - Raw materials
-- `trpc.carbonProject` - Carbon project management
 
-Setiap router memiliki prosedur yang dapat berupa:
+### Carbon Calculation Routers
+- `trpc.carbonProject` - Carbon project management
+- `trpc.products` - Product data (corn production)
+- `trpc.raws` - Raw materials (seeds & emission factors)
+- `trpc.fertilizerNitrogen` - Nitrogen fertilizer calculations
+- `trpc.herbicides` - Herbicides & pesticides data
+- `trpc.energyDiesel` - Diesel energy consumption
+- `trpc.cultivation` - Cultivation emission summaries
+- `trpc.actualCarbon` - Actual carbon conditions (current land use)
+- `trpc.referenceCarbon` - Reference carbon & LUC calculations
+
+### Common Operations
+Setiap router carbon calculation memiliki operasi standar:
+- **`add`** - Create new record (useMutation)
+- **`update`** - Update existing record (useMutation) 
+- **`delete`** - Delete record (useMutation)
+- **`getById`** - Get single record by ID (useQuery)
+- **`getByCarbonProjectId`** - Get records by carbon project (useQuery)
+- **`getByTenantId`** - Get records by tenant (useQuery)
+
+### Procedure Types
 - **Query**: untuk operasi READ (useQuery)
 - **Mutation**: untuk operasi CREATE/UPDATE/DELETE (useMutation)
 - **Subscription**: untuk real-time updates (useSubscription) - jika tersedia
+
+## Carbon Calculation Router Examples
+
+### 1. Products Router (Corn Production Data)
+```tsx
+// Create product data
+const createProduct = trpc.products.add.useMutation({
+  onSuccess: () => {
+    utils.products.getByCarbonProjectId.invalidate();
+  },
+});
+
+const handleCreateProduct = () => {
+  createProduct.mutate({
+    tenantId: "tenant-uuid",
+    carbonProjectId: "project-uuid",
+    cornWet: "1000.50",
+    moistureContent: "25.5",
+    cornDry: "745.0",
+    cultivationArea: "10.25",
+  });
+};
+
+// Get products by carbon project
+const { data: products } = trpc.products.getByCarbonProjectId.useQuery({
+  carbonProjectId: "project-uuid"
+});
+```
+
+### 2. Fertilizer Nitrogen Router (Complex Calculations)
+```tsx
+// Create fertilizer nitrogen data
+const createFertilizer = trpc.fertilizerNitrogen.add.useMutation();
+
+const handleCreateFertilizer = () => {
+  createFertilizer.mutate({
+    tenantId: "tenant-uuid",
+    carbonProjectId: "project-uuid",
+    ammoniumNitrate: "150.0",
+    urea: "200.0",
+    appliedManure: "500.0",
+    totalNSyntheticFertilizer: "350.0",
+    emissionFactorAmmoniumNitrate: "5.5",
+    emissionFactorUrea: "4.8",
+    directN2OEmissions: "125.5",
+    co2eqEmissionsNitrogenFertilizersHaYr: "485.75",
+  });
+};
+
+// Update specific fields
+const updateFertilizer = trpc.fertilizerNitrogen.update.useMutation();
+updateFertilizer.mutate({
+  id: "fertilizer-uuid",
+  ammoniumNitrate: "175.0",
+  directN2OEmissions: "135.2",
+});
+```
+
+### 3. Energy & Herbicides Routers
+```tsx
+// Energy Diesel
+const { data: energyData } = trpc.energyDiesel.getByCarbonProjectId.useQuery({
+  carbonProjectId: "project-uuid"
+});
+
+const createEnergyData = trpc.energyDiesel.add.useMutation();
+createEnergyData.mutate({
+  tenantId: "tenant-uuid",
+  carbonProjectId: "project-uuid", 
+  dieselConsumed: "500.75",
+  emissionFactorDiesel: "2.68",
+  co2eEmissionsDieselYr: "1342.01",
+});
+
+// Herbicides
+const createHerbicides = trpc.herbicides.add.useMutation();
+createHerbicides.mutate({
+  tenantId: "tenant-uuid",
+  carbonProjectId: "project-uuid",
+  acetochlor: "5.25",
+  emissionFactorPesticides: "0.85",
+  co2eqEmissionsHerbicidesPesticidesHaYr: "12.50",
+});
+```
+
+### 4. Carbon Condition Routers (LUC Calculations)
+```tsx
+// Actual Carbon (Current Conditions)
+const createActualCarbon = trpc.actualCarbon.add.useMutation();
+createActualCarbon.mutate({
+  tenantId: "tenant-uuid",
+  carbonProjectId: "project-uuid",
+  actualLandUse: "Cropland",
+  climateRegionActual: "Tropical",
+  soilTypeActual: "Clay",
+  currentSoilManagementActual: "Full tillage",
+  socstActual: "45.50",
+  fluActual: "1.00",
+  fmgActual: "1.20",
+  cvegActual: "2.50",
+});
+
+// Reference Carbon (Baseline + LUC Results)
+const createReferenceCarbon = trpc.referenceCarbon.add.useMutation();
+createReferenceCarbon.mutate({
+  tenantId: "tenant-uuid", 
+  carbonProjectId: "project-uuid",
+  referenceLandUse: "Forest",
+  climateRegionReference: "Tropical",
+  socstReference: "55.80",
+  fluReference: "0.80",
+  fmgReference: "1.35",
+  soilOrganicCarbonActual: "48.75",
+  soilOrganicCarbonReference: "52.20",
+  accumulatedSoilCarbon: "-3.45",
+  lucCarbonEmissionsPerKgCorn: "0.185",
+  totalLUCCO2EmissionsHaYr: "425.80",
+  totalLUCCO2EmissionsTDryCorn: "15.65",
+});
+```
+
+### 5. Cultivation Summary Router
+```tsx
+// Cultivation aggregates all emission sources
+const createCultivation = trpc.cultivation.add.useMutation();
+createCultivation.mutate({
+  tenantId: "tenant-uuid",
+  carbonProjectId: "project-uuid",
+  ghgEmissionsRawMaterialInput: "125.50",
+  ghgEmissionsFertilizers: "485.75", 
+  ghgEmissionsHerbicidesPesticides: "45.25",
+  ghgEmissionsEnergy: "235.80",
+  totalEmissionsCorn: "892.30", // Sum of all sources
+});
+```
+
+### 6. Complete Carbon Project Workflow
+```tsx
+const CarbonProjectForm = () => {
+  const [projectId, setProjectId] = useState("");
+  const utils = trpc.useUtils();
+
+  // Create carbon project workflow
+  const handleCompleteProject = async () => {
+    try {
+      // 1. Create project
+      const project = await trpc.carbonProject.create.mutate({
+        tenantId: "tenant-uuid",
+        name: "Corn Farm 2024",
+      });
+      
+      setProjectId(project.carbonProject.id);
+
+      // 2. Add product data
+      await trpc.products.add.mutate({
+        tenantId: "tenant-uuid",
+        carbonProjectId: project.carbonProject.id,
+        cornWet: "1000.0",
+        cornDry: "850.0",
+        cultivationArea: "10.5",
+      });
+
+      // 3. Add emission sources
+      await Promise.all([
+        trpc.raws.add.mutate({
+          tenantId: "tenant-uuid",
+          carbonProjectId: project.carbonProject.id,
+          cornSeedsAmount: "25.0",
+          emissionFactorCornSeeds: "1.2",
+        }),
+        
+        trpc.fertilizerNitrogen.add.mutate({
+          tenantId: "tenant-uuid", 
+          carbonProjectId: project.carbonProject.id,
+          ammoniumNitrate: "150.0",
+          urea: "200.0",
+        }),
+        
+        trpc.energyDiesel.add.mutate({
+          tenantId: "tenant-uuid",
+          carbonProjectId: project.carbonProject.id,
+          dieselConsumed: "500.0",
+        }),
+      ]);
+
+      // 4. Add LUC data
+      await Promise.all([
+        trpc.actualCarbon.add.mutate({
+          tenantId: "tenant-uuid",
+          carbonProjectId: project.carbonProject.id,
+          actualLandUse: "Cropland",
+          socstActual: "45.5",
+        }),
+        
+        trpc.referenceCarbon.add.mutate({
+          tenantId: "tenant-uuid",
+          carbonProjectId: project.carbonProject.id,
+          referenceLandUse: "Forest",
+          socstReference: "55.8",
+          totalLUCCO2EmissionsHaYr: "425.80",
+        }),
+      ]);
+
+      // 5. Create cultivation summary
+      await trpc.cultivation.add.mutate({
+        tenantId: "tenant-uuid",
+        carbonProjectId: project.carbonProject.id,
+        totalEmissionsCorn: "892.30",
+      });
+
+      // Invalidate all project queries
+      utils.carbonProject.invalidate();
+      
+    } catch (error) {
+      console.error("Failed to create carbon project:", error);
+    }
+  };
+
+  return (
+    <Button onClick={handleCompleteProject}>
+      Create Complete Carbon Project
+    </Button>
+  );
+};
