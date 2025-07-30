@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Upload, Building2, X } from "lucide-react";
 import { trpc } from "@/trpc/react";
+import { toast } from "sonner";
 
 const tenantSchema = z.object({
   name: z.string().min(2, "Tenant name must be at least 2 characters"),
@@ -23,7 +24,6 @@ type TenantFormValues = z.infer<typeof tenantSchema>;
 const OnboardingView = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -80,13 +80,13 @@ const OnboardingView = () => {
         "image/svg+xml",
       ];
       if (!allowedTypes.includes(file.type)) {
-        setError("Only image files (JPEG, PNG, GIF, WebP, SVG) are allowed");
+        toast.error("Only image files (JPEG, PNG, GIF, WebP, SVG) are allowed");
         return;
       }
 
       // Validate file size (5MB max)
       if (file.size > 5 * 1024 * 1024) {
-        setError("File size must be less than 5MB");
+        toast.error("File size must be less than 5MB");
         return;
       }
 
@@ -96,7 +96,6 @@ const OnboardingView = () => {
         setLogoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
-      setError(null);
     }
   };
 
@@ -163,7 +162,6 @@ const OnboardingView = () => {
 
   const onSubmit = async (data: TenantFormValues) => {
     setIsLoading(true);
-    setError(null);
 
     try {
       // Create tenant first
@@ -186,10 +184,11 @@ const OnboardingView = () => {
         }
       }
 
-      // After successful tenant creation, redirect to apps
+      // Show success message and redirect
+      toast.success("Organization created successfully!");
       router.push("/apps");
     } catch (error: any) {
-      setError(error.message || "Failed to create tenant. Please try again.");
+      toast.error(error.message || "Failed to create tenant. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -216,11 +215,6 @@ const OnboardingView = () => {
                 </p>
               </div>
 
-              {error && (
-                <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-md">
-                  {error}
-                </div>
-              )}
 
               <div className="space-y-4">
                 <div className="space-y-2">
