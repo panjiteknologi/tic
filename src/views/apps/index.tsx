@@ -74,18 +74,11 @@ const appCategories: AppCategory[] = [
         url: "/apps/mandays",
       },
       {
-        id: "carbon-gas",
-        title: "Perhitungan Gas Karbon",
-        description: "Calculate carbon gas emissions for your projects",
-        icon: Droplets,
-        url: "/apps/carbon-gas",
-      },
-      {
         id: "carbon-calculation",
         title: "Carbon Emission Calculator",
         description:
           "Estimate carbon emissions from your operational activities",
-        icon: LineChart,
+        icon: Droplets,
         url: "/apps/carbon-calculation/dashboard",
         isNew: true,
       },
