@@ -7,6 +7,7 @@ import { user } from "@/db/schema/auth-schema";
 import { TRPCError } from "@trpc/server";
 import {
   generatePresignedUploadUrl,
+  generatePresignedDownloadUrl,
   deleteS3Object,
   generateTenantLogoKey,
   validateLogoFileType,
@@ -540,6 +541,89 @@ export const tenantRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to remove tenant logo",
+        });
+      }
+    }),
+
+  // Generate presigned URL for logo download
+  generateLogoDownloadUrl: protectedProcedure
+    .input(
+      z.object({
+        tenantId: z.string().uuid(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check if user is member of this tenant
+      const userTenant = await db
+        .select()
+        .from(tenantUser)
+        .where(
+          and(
+            eq(tenantUser.tenantId, input.tenantId),
+            eq(tenantUser.userId, ctx.user.id),
+            eq(tenantUser.isActive, true)
+          )
+        )
+        .limit(1);
+
+      if (userTenant.length === 0) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Access denied to this tenant",
+        });
+      }
+
+      // Get tenant data
+      const tenantData = await db
+        .select()
+        .from(tenant)
+        .where(eq(tenant.id, input.tenantId))
+        .limit(1);
+
+      if (tenantData.length === 0) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Tenant not found",
+        });
+      }
+
+      const tenantInfo = tenantData[0];
+      
+      if (!tenantInfo.logo) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Tenant logo not found",
+        });
+      }
+
+      try {
+        // Extract S3 key from logo URL
+        let s3Key: string;
+        
+        if (tenantInfo.logo.includes('tenant-logos/')) {
+          // Extract key from URL - format: https://domain/bucket/tenant-logos/...
+          const urlParts = tenantInfo.logo.split('/');
+          const keyIndex = urlParts.findIndex(part => part === 'tenant-logos');
+          if (keyIndex !== -1) {
+            s3Key = urlParts.slice(keyIndex).join('/');
+          } else {
+            throw new Error("Invalid logo URL format");
+          }
+        } else {
+          throw new Error("Logo URL does not contain tenant-logos path");
+        }
+
+        const presignedUrl = await generatePresignedDownloadUrl(s3Key, 3600); // 1 hour expiry
+
+        return {
+          success: true,
+          presignedUrl,
+          key: s3Key,
+        };
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to generate download URL",
         });
       }
     }),

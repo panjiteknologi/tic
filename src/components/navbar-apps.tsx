@@ -15,12 +15,23 @@ import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { trpc } from "@/trpc/react";
+import { TenantLogo } from "@/components/tenant-logo";
 
 export function NavbarApps() {
   const router = useRouter();
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session } = authClient.useSession();
   const sessionUser = session?.user;
   const [scrolled, setScrolled] = useState(false);
+
+  // Get user's tenants to find the current tenant
+  const { data: tenantsData } = trpc.tenant.getUserTenants.useQuery(undefined, {
+    enabled: !!sessionUser,
+  });
+
+  // For now, use the first tenant as the current tenant
+  // You might want to add logic to select the current tenant based on context
+  const currentTenant = tenantsData?.tenants?.[0]?.tenant;
 
   // Add scroll event listener to detect when page is scrolled
   useEffect(() => {
@@ -49,7 +60,7 @@ export function NavbarApps() {
   };
 
   const displayName = sessionUser?.name || "User";
-  const email = sessionUser?.email || "user@example.com";
+  const userRole = tenantsData?.tenants?.[0]?.role || "member";
   const initials = displayName.substring(0, 2).toUpperCase();
 
   return (
@@ -58,8 +69,14 @@ export function NavbarApps() {
     >
       <div className="container mx-auto py-3 flex justify-between items-center">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <img src="/images/dms-logo.png" className="h-8 w-8" alt="DMS Logo" />
-          <span className="font-bold text-blue-700">TIC</span>
+          <TenantLogo
+            tenantId={currentTenant?.id}
+            size="small"
+            alt={`${currentTenant?.name || "DMS"} Logo`}
+          />
+          <span className="font-black text-lg text-gray-700">
+            {currentTenant?.name || "TIC"}
+          </span>
         </Link>
 
         <div className="flex items-center gap-4">
@@ -87,8 +104,8 @@ export function NavbarApps() {
                   <p className="text-sm font-medium leading-none">
                     {displayName}
                   </p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {email}
+                  <p className="text-xs leading-none text-muted-foreground capitalize">
+                    {userRole}
                   </p>
                 </div>
               </DropdownMenuLabel>
