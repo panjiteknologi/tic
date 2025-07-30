@@ -8,7 +8,6 @@ import {
   Calendar,
   FilePlus,
   FileText,
-  LayoutDashboard,
   LineChart,
   Link2,
   ListChecks,
@@ -68,10 +67,19 @@ const appCategories: AppCategory[] = [
       },
       {
         id: "mandays",
-        title: "Perhitungan Mandays",
+        title: "Mandays Calculation",
         description: "Calculate project timelines and resource allocations",
         icon: Calendar,
         url: "/apps/mandays",
+      },
+      {
+        id: "carbon-calculation",
+        title: "Carbon Emission Calculator",
+        description:
+          "Estimate carbon emissions from your operational activities",
+        icon: LineChart,
+        url: "/apps/carbon-calculation/dashboard",
+        isNew: true,
       },
     ],
   },
@@ -157,7 +165,7 @@ const appCategories: AppCategory[] = [
     apps: [
       {
         id: "invoice",
-        title: "Invoice Pembayaran dan Laporan PnL",
+        title: "Payment Invoices and PnL Reports",
         description: "Manage invoices and PnL reports",
         icon: FileText,
         url: "/apps/invoice",
@@ -185,9 +193,9 @@ const appCategories: AppCategory[] = [
     apps: [
       {
         id: "integration",
-        title: "Integrasi dengan Panggil Aku",
+        title: "Integration with Panggil Aku",
         description:
-          "Integration with Panggil Aku (on discuss), Db Odoo, Linkin",
+          "Integration with Panggil Aku (in discussion), Odoo DB, Linkin",
         icon: Link2,
         url: "/apps/integration",
       },
