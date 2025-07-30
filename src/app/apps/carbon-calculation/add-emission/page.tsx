@@ -73,7 +73,7 @@ export default function ProductRawInputForm() {
     ghgEmissionsEnergy: "", //103
     totalEmissionsCorn: "", //105
 
-    //Land Use Change - a
+    //Actual Carbon
     actualLandUse: "", //111
 
     climateRegionActual: "", //113
@@ -87,7 +87,7 @@ export default function ProductRawInputForm() {
     fiActual: "", //122
     cvegActual: "", //123
 
-    //Land Use Change - b
+    //Reference Carbon
     referenceLandUse: "", //128
 
     climateRegionReference: "", //130
