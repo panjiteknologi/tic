@@ -68,7 +68,7 @@ const appCategories: AppCategory[] = [
       },
       {
         id: "mandays",
-        title: "Perhitungan Mandays",
+        title: "Mandays Calculation",
         description: "Calculate project timelines and resource allocations",
         icon: Calendar,
         url: "/apps/mandays",
@@ -79,6 +79,15 @@ const appCategories: AppCategory[] = [
         description: "Calculate carbon gas emissions for your projects",
         icon: Droplets,
         url: "/apps/carbon-gas",
+      },
+      {
+        id: "carbon-calculation",
+        title: "Carbon Emission Calculator",
+        description:
+          "Estimate carbon emissions from your operational activities",
+        icon: LineChart,
+        url: "/apps/carbon-calculation/dashboard",
+        isNew: true,
       },
     ],
   },
@@ -164,7 +173,7 @@ const appCategories: AppCategory[] = [
     apps: [
       {
         id: "invoice",
-        title: "Invoice Pembayaran dan Laporan PnL",
+        title: "Payment Invoices and PnL Reports",
         description: "Manage invoices and PnL reports",
         icon: FileText,
         url: "/apps/invoice",
@@ -191,10 +200,10 @@ const appCategories: AppCategory[] = [
     title: "Integration & Tools",
     apps: [
       {
-        id: "panggil-aku",
-        title: "Integrasi dengan Panggil Aku",
+        id: "integration",
+        title: "Integration with Panggil Aku",
         description:
-          "Integration with Panggil Aku (on discuss), Db Odoo, Linkin",
+          "Integration with Panggil Aku (in discussion), Odoo DB, Linkin",
         icon: Link2,
         url: "/apps/panggil-aku",
       },

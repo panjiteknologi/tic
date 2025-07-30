@@ -13,9 +13,8 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import Image from "next/image";
-import Link from "next/link";
 import { AppSidebarTypes } from "@/types/sidebar-types";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import NavMain from "./nav-main";
 
 export function AppSidebar({ data, ...props }: { data: AppSidebarTypes }) {
   const pathname = usePathname();
@@ -29,7 +28,7 @@ export function AppSidebar({ data, ...props }: { data: AppSidebarTypes }) {
 
   const isMenuExpanded = (url: string) => expandedMenus.includes(url);
 
-  const updatedNavMain = data.navMain.map((item) => ({
+  const dataNavMain = data.navMain.map((item) => ({
     ...item,
     isActive: pathname.startsWith(item.url),
   }));
@@ -63,59 +62,11 @@ export function AppSidebar({ data, ...props }: { data: AppSidebarTypes }) {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarMenu>
-          {updatedNavMain.map((menu: any) => (
-            <React.Fragment key={menu.title}>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={() => toggleMenu(menu.url)}
-                  className={`flex justify-between items-center w-full ${
-                    menu.isActive ? "bg-muted font-semibold" : ""
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    {menu.icon && <menu.icon className="h-4 w-4" />}
-                    <span>{menu.title}</span>
-                  </div>
-                  {menu.children?.length > 0 &&
-                    (isMenuExpanded(menu.url) ? (
-                      <ChevronDown className="w-4 h-4" />
-                    ) : (
-                      <ChevronRight className="w-4 h-4" />
-                    ))}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              {menu.children && isMenuExpanded(menu.url) && (
-                <div className="ml-6 space-y-1 text-sm">
-                  {menu.children.map(
-                    (child: {
-                      url: string;
-                      icon: string | any;
-                      title: string;
-                    }) => (
-                      <Link
-                        key={child.url}
-                        href={child.url}
-                        className={`block px-2 py-1 rounded hover:bg-muted ${
-                          pathname.startsWith(child.url)
-                            ? "text-primary font-medium bg-muted"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          {child.icon && <child.icon className="h-4 w-4" />}
-                          <span>{child.title}</span>
-                        </div>
-                      </Link>
-                    )
-                  )}
-                </div>
-              )}
-            </React.Fragment>
-          ))}
-        </SidebarMenu>
-
+        <NavMain
+          items={dataNavMain}
+          toggleMenu={toggleMenu}
+          isMenuExpanded={isMenuExpanded}
+        />
         <NavSecondary items={data?.navSecondary} className="mt-auto" />
       </SidebarContent>
 
