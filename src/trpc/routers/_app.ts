@@ -6,6 +6,7 @@ import { invitationRouter } from "./invitation";
 import { productsRouter } from "./products";
 import { rawsRouter } from "./raws";
 import { carbonProjectRouter } from "./carbon-project";
+import { fertilizerNitrogenRouter } from "./fertilizer-nitrogen";
 
 export const appRouter = createTRPCRouter({
   hello: baseProcedure
@@ -25,6 +26,7 @@ export const appRouter = createTRPCRouter({
   products: productsRouter,
   raws: rawsRouter,
   carbonProject: carbonProjectRouter,
+  fertilizerNitrogen: fertilizerNitrogenRouter,
 });
 
 // export type definition of API
