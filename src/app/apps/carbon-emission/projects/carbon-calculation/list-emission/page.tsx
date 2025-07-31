@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   Emission,
   EmissionTableListView,
-} from "@/views/apps/carbon-calculation/emission-table-list-view";
+} from "@/views/apps/carbon-emission/projects/carbon-calculation/emission-table-list-view";
 import DashboardLayout from "@/layout/dashboard-layout";
 import { CarbonCalculationMenu } from "@/constant/menu-sidebar";
 import { AppSidebarTypes } from "@/types/sidebar-types";

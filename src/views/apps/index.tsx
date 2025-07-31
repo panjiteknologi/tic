@@ -79,7 +79,7 @@ const appCategories: AppCategory[] = [
         description:
           "Estimate carbon emissions from your operational activities",
         icon: Droplets,
-        url: "/apps/carbon-calculation/dashboard",
+        url: "/apps/carbon-emission/dashboard",
         isNew: true,
       },
     ],
