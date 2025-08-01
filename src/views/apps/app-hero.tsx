@@ -4,9 +4,11 @@ import { SquareStack, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { trpc } from "@/trpc/react";
+import { useRouter } from "next/navigation";
 
 export function AppsHero() {
   const { data: session } = authClient.useSession();
+  const router = useRouter();
   const sessionUser = session?.user;
 
   // Get user's tenants to check role
@@ -20,7 +22,7 @@ export function AppsHero() {
 
   const handleInviteMember = () => {
     // TODO: Open invite member modal/dialog
-    console.log("Invite member clicked");
+    router.push("/apps/settings/members");
   };
 
   return (
