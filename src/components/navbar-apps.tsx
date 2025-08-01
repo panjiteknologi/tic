@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import { LogOut, Settings, Users, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -10,6 +10,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
@@ -110,6 +113,34 @@ export function NavbarApps() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              
+              {/* Settings submenu - only show for superadmin/admin */}
+              {["superadmin", "admin"].includes(userRole) && (
+                <>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      <DropdownMenuItem asChild>
+                        <Link href="/apps/settings/members">
+                          <Users className="mr-2 h-4 w-4" />
+                          <span>Manage Members</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/apps/settings/members/invite">
+                          <UserPlus className="mr-2 h-4 w-4" />
+                          <span>Invite Member</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
