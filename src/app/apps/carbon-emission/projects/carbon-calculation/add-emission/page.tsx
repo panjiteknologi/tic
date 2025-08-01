@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import DashboardLayout from "@/layout/dashboard-layout";
 import { CarbonCalculationMenu } from "@/constant/menu-sidebar";
 import { AppSidebarTypes } from "@/types/sidebar-types";
-import AddEmissionViews from "@/views/apps/carbon-calculation/add-emission-views";
+import AddEmissionViews from "@/views/apps/carbon-emission/projects/carbon-calculation/add-emission-views";
 
 export default function ProductRawInputForm() {
   const router = useRouter();
@@ -245,6 +245,36 @@ export default function ProductRawInputForm() {
       ghgEmissionsHerbicidesPesticides +
       ghgEmissionsEnergy;
 
+    //Land Use Change
+    const socstActual = parse(form.socstActual);
+    const fluActual = parse(form.fluActual);
+    const fmgActual = parse(form.fmgActual);
+    const fiActual = parse(form.fiActual);
+    const cvegActual = parse(form.cvegActual);
+    const soilOrganicCarbonActual =
+      (socstActual * fluActual * fmgActual * fiActual + cvegActual) * 1;
+
+    const socstReference = parse(form.socstReference);
+    const fluReference = parse(form.fluReference);
+    const fmgReference = parse(form.fmgReference);
+    const fiReference = parse(form.fiReference);
+    const soilOrganicCarbonReference =
+      socstReference * fluReference * fmgReference * fiReference * 1;
+
+    const accumulatedSoilCarbon =
+      ((soilOrganicCarbonActual - soilOrganicCarbonReference) /
+        (cornWet * 20)) *
+      3.664;
+
+    const lucCarbonEmissionsPerKgCorn =
+      (accumulatedSoilCarbon * 1000) / (cornWet * 1000);
+
+    const totalLUCCO2EmissionsHaYr =
+      lucCarbonEmissionsPerKgCorn * cornWet * 1000;
+
+    const totalLUCCO2EmissionsTDryCorn =
+      totalLUCCO2EmissionsHaYr / cornWet / 1 - moistureContent / 100;
+
     setForm((prev) => ({
       ...prev,
       cornDry: cornDry.toFixed(1),
@@ -274,6 +304,12 @@ export default function ProductRawInputForm() {
       co2eEmissionsDieselTFFB: co2eEmissionsDieselTFFB.toFixed(1),
       ghgEmissionsEnergy: ghgEmissionsEnergy.toFixed(1),
       totalEmissionsCorn: totalEmissionsCorn.toFixed(1),
+      soilOrganicCarbonActual: soilOrganicCarbonActual.toFixed(1),
+      soilOrganicCarbonReference: soilOrganicCarbonReference.toFixed(1),
+      accumulatedSoilCarbon: accumulatedSoilCarbon.toFixed(1),
+      lucCarbonEmissionsPerKgCorn: lucCarbonEmissionsPerKgCorn.toFixed(1),
+      totalLUCCO2EmissionsHaYr: totalLUCCO2EmissionsHaYr.toFixed(1),
+      totalLUCCO2EmissionsTDryCorn: totalLUCCO2EmissionsTDryCorn.toFixed(1),
     }));
   }, [
     form.cornWet,
@@ -300,6 +336,15 @@ export default function ProductRawInputForm() {
     form.ghgEmissionsRawMaterialInput,
     form.ghgEmissionsFertilizers,
     form.ghgEmissionsHerbicidesPesticides,
+    form.socstActual,
+    form.fluActual,
+    form.fmgActual,
+    form.fiActual,
+    form.cvegActual,
+    form.socstReference,
+    form.fluReference,
+    form.fmgReference,
+    form.fiReference,
   ]);
 
   return (

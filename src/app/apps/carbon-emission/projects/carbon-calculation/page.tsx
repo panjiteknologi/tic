@@ -5,10 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/layout/dashboard-layout";
 import { AppSidebarTypes } from "@/types/sidebar-types";
-import {
-  AuditStatusMenu,
-  CarbonCalculationMenu,
-} from "@/constant/menu-sidebar";
+import { CarbonCalculationMenu } from "@/constant/menu-sidebar";
 import { useForm } from "react-hook-form";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 
