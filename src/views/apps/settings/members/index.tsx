@@ -16,6 +16,8 @@ import {
   Users,
   Shield,
   Crown,
+  X,
+  AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -112,12 +114,33 @@ const MembersView = () => {
         <Card>
           <CardContent className="py-8">
             <div className="text-center">
-              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">
                 No Tenant Available
               </h3>
               <p className="text-muted-foreground mb-4">
                 You need to be part of a tenant to manage members.
+              </p>
+              <Button asChild>
+                <Link href="/apps">Go to Apps</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!userProfile.role || !["superadmin", "admin"].includes(userProfile.role)) {
+    return (
+      <div className="container mx-auto py-8">
+        <Card>
+          <CardContent className="py-8">
+            <div className="text-center">
+              <X className="h-12 w-12 text-destructive mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
+              <p className="text-muted-foreground mb-4">
+                Only superadmin or admin can manage members.
               </p>
               <Button asChild>
                 <Link href="/apps">Go to Apps</Link>
