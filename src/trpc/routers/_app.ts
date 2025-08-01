@@ -12,6 +12,7 @@ import { energyDieselRouter } from "./energy-diesel";
 import { cultivationRouter } from "./cultivation";
 import { actualCarbonRouter } from "./actual-carbon";
 import { referenceCarbonRouter } from "./reference-carbon";
+import { userRouter } from "./user";
 
 export const appRouter = createTRPCRouter({
   hello: baseProcedure
@@ -37,6 +38,7 @@ export const appRouter = createTRPCRouter({
   cultivation: cultivationRouter,
   actualCarbon: actualCarbonRouter,
   referenceCarbon: referenceCarbonRouter,
+  user: userRouter,
 });
 
 // export type definition of API

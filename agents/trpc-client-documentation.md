@@ -581,6 +581,195 @@ export default function TenantManagement() {
 }
 ```
 
+## User Profile Router
+
+### Get User Profile with Tenant Details
+```tsx
+import { trpc } from "@/trpc/react";
+
+// Get current user profile with tenant information
+const UserProfile = () => {
+  const { data: userProfile, isLoading, error } = trpc.user.getUserProfile.useQuery();
+
+  if (isLoading) return <div>Loading user profile...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  if (!userProfile) return <div>No user data</div>;
+
+  return (
+    <div className="space-y-4">
+      {/* User Details */}
+      <div className="border p-4 rounded">
+        <h2>User Information</h2>
+        <p><strong>Name:</strong> {userProfile.name}</p>
+        <p><strong>Email:</strong> {userProfile.email}</p>
+        <p><strong>User ID:</strong> {userProfile.userId}</p>
+        <p><strong>Email Verified:</strong> {userProfile.emailVerified ? 'Yes' : 'No'}</p>
+        {userProfile.image && (
+          <img src={userProfile.image} alt="Profile" className="w-12 h-12 rounded-full" />
+        )}
+      </div>
+
+      {/* Tenant Details (if user belongs to a tenant) */}
+      {userProfile.tenantId && (
+        <div className="border p-4 rounded">
+          <h2>Tenant Information</h2>
+          <p><strong>Tenant Name:</strong> {userProfile.tenantName}</p>
+          <p><strong>Tenant ID:</strong> {userProfile.tenantId}</p>
+          <p><strong>Role:</strong> {userProfile.role}</p>
+          <p><strong>Slug:</strong> {userProfile.tenantSlug}</p>
+          {userProfile.tenantDomain && (
+            <p><strong>Domain:</strong> {userProfile.tenantDomain}</p>
+          )}
+          {userProfile.tenantLogo && (
+            <img src={userProfile.tenantLogo} alt="Tenant Logo" className="w-16 h-16" />
+          )}
+          <p><strong>Joined At:</strong> {new Date(userProfile.joinedAt!).toLocaleDateString()}</p>
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+### Custom Hook for User Profile
+```tsx
+// hooks/useUserProfile.ts
+import { trpc } from "@/trpc/react";
+
+export const useUserProfile = () => {
+  return trpc.user.getUserProfile.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
+};
+
+// Usage in component
+const MyComponent = () => {
+  const { data: user, isLoading } = useUserProfile();
+  
+  if (isLoading) return <div>Loading...</div>;
+  
+  return (
+    <div>
+      <h1>Welcome, {user?.name}!</h1>
+      {user?.tenantName && (
+        <p>Organization: {user.tenantName} ({user.role})</p>
+      )}
+    </div>
+  );
+};
+```
+
+### Conditional Rendering Based on User Role
+```tsx
+const AdminPanel = () => {
+  const { data: user } = useUserProfile();
+  
+  // Only show admin features if user is superadmin or admin
+  if (!user || !['superadmin', 'admin'].includes(user.role || '')) {
+    return <div>Access denied</div>;
+  }
+  
+  return (
+    <div>
+      <h1>Admin Panel</h1>
+      <p>Welcome {user.name} ({user.role})</p>
+      {/* Admin features */}
+    </div>
+  );
+};
+```
+
+### Type-Safe User Profile Usage
+```tsx
+import type { AppRouter } from "@/trpc/routers/_app";
+import type { inferRouterOutputs } from "@trpc/server";
+
+type RouterOutput = inferRouterOutputs<AppRouter>;
+type UserProfile = RouterOutput["user"]["getUserProfile"];
+
+const ProfileCard = ({ user }: { user: UserProfile }) => {
+  return (
+    <div className="profile-card">
+      <h3>{user.name}</h3>
+      <p>{user.email}</p>
+      {user.tenantName && (
+        <div className="tenant-info">
+          <span>{user.tenantName}</span>
+          <span className="role-badge">{user.role}</span>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Usage
+const UserDashboard = () => {
+  const { data: user } = trpc.user.getUserProfile.useQuery();
+  
+  if (!user) return null;
+  
+  return <ProfileCard user={user} />;
+};
+```
+
+### Available User Profile Fields
+```tsx
+// Complete user profile structure returned by trpc.user.getUserProfile.useQuery()
+interface UserProfile {
+  // User Details
+  userId: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  
+  // Tenant Details (null if user has no active tenant)
+  tenantId: string | null;
+  tenantName: string | null;
+  tenantSlug: string | null;
+  tenantDomain: string | null;
+  tenantLogo: string | null;
+  role: "superadmin" | "admin" | "member" | null;
+  joinedAt: Date | null;
+}
+```
+
+### Integration with Authentication
+```tsx
+import { useRouter } from "next/navigation";
+
+const useAuthenticatedUser = () => {
+  const router = useRouter();
+  const { data: user, isLoading, error } = trpc.user.getUserProfile.useQuery(undefined, {
+    onError: (error) => {
+      if (error.data?.code === 'UNAUTHORIZED') {
+        router.push('/login');
+      }
+    },
+  });
+  
+  return { user, isLoading, error };
+};
+
+// Usage in protected components
+const ProtectedComponent = () => {
+  const { user, isLoading } = useAuthenticatedUser();
+  
+  if (isLoading) return <div>Loading...</div>;
+  if (!user) return null; // Will redirect to login via onError
+  
+  return (
+    <div>
+      <h1>Protected Content</h1>
+      <p>Hello {user.name}!</p>
+    </div>
+  );
+};
+```
+
 ## Router yang Tersedia
 
 Berdasarkan konfigurasi aplikasi, router yang tersedia:
@@ -590,6 +779,7 @@ Berdasarkan konfigurasi aplikasi, router yang tersedia:
 - `trpc.test` - Test CRUD operations
 - `trpc.tenant` - Tenant management
 - `trpc.invitation` - Invitation system
+- `trpc.user` - User profile & details
 
 ### Carbon Calculation Routers
 - `trpc.carbonProject` - Carbon project management
