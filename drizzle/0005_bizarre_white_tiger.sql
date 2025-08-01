@@ -1,0 +1,2 @@
+ALTER TABLE "carbon_project" ADD COLUMN "tenant_id" uuid NOT NULL;--> statement-breakpoint
+ALTER TABLE "carbon_project" ADD CONSTRAINT "carbon_project_tenant_id_tenant_id_fk" FOREIGN KEY ("tenant_id") REFERENCES "public"."tenant"("id") ON DELETE cascade ON UPDATE no action;

@@ -10,6 +10,9 @@ import { tenant } from "./tenant-schema";
 // Carbon Project
 export const carbonProject = pgTable("carbon_project", {
   id: uuid("id").primaryKey().defaultRandom(),
+  tenantId: uuid("tenant_id")
+    .notNull()
+    .references(() => tenant.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   createdAt: timestamp("created_at")
     .$defaultFn(() => new Date())

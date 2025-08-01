@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, and } from "drizzle-orm";
+import { eq, and, or } from "drizzle-orm";
 import { protectedProcedure, createTRPCRouter } from "../init";
 import { db } from "@/db";
 import {
@@ -50,6 +50,7 @@ export const carbonProjectRouter = createTRPCRouter({
         const [newCarbonProject] = await db
           .insert(carbonProject)
           .values({
+            tenantId: input.tenantId,
             name: input.name,
           })
           .returning();
@@ -262,18 +263,16 @@ export const carbonProjectRouter = createTRPCRouter({
         });
       }
 
-      // Get all carbon projects that have records related to this tenant
+      // Get all carbon projects that belong to this tenant
       const tenantProjects = await db
-        .selectDistinct({
+        .select({
           id: carbonProject.id,
           name: carbonProject.name,
           createdAt: carbonProject.createdAt,
           updatedAt: carbonProject.updatedAt,
         })
         .from(carbonProject)
-        .leftJoin(products, eq(products.carbonProjectId, carbonProject.id))
-        .leftJoin(raws, eq(raws.carbonProjectId, carbonProject.id))
-        .where(and(eq(products.tenantId, input.tenantId)));
+        .where(eq(carbonProject.tenantId, input.tenantId));
 
       return { carbonProjects: tenantProjects };
     }),
