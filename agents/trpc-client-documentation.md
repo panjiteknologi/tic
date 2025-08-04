@@ -1,7 +1,7 @@
 # tRPC Client Documentation - React/Next.js Usage
 
 ## Overview
-Dokumentasi ini menjelaskan cara menggunakan tRPC router di sisi client (React/Next.js) untuk operasi CRUD (Create, Read, Update, Delete).
+Dokumentasi ini menjelaskan cara menggunakan tRPC router di sisi client (React/Next.js) untuk operasi CRUD (Create, Read, Update, Delete) termasuk router GHG (Greenhouse Gas) terbaru.
 
 ## Setup tRPC Client
 
@@ -792,14 +792,22 @@ Berdasarkan konfigurasi aplikasi, router yang tersedia:
 - `trpc.actualCarbon` - Actual carbon conditions (current land use)
 - `trpc.referenceCarbon` - Reference carbon & LUC calculations
 
+### GHG (Greenhouse Gas) Calculation Routers
+- `trpc.ghgVerification` - Step 1: GHG verification data management
+- `trpc.ghgCalculation` - Step 2: GHG calculation data management
+- `trpc.ghgProcess` - Step 3: GHG calculation process data management
+- `trpc.ghgAdditional` - Step 3: Additional GHG data management
+- `trpc.ghgOtherCase` - Step 3: Other case GHG data management
+- `trpc.ghgAudit` - Step 4: GHG audit data management
+
 ### Common Operations
-Setiap router carbon calculation memiliki operasi standar:
+Setiap router carbon calculation dan GHG memiliki operasi standar:
 - **`add`** - Create new record (useMutation)
 - **`update`** - Update existing record (useMutation) 
 - **`delete`** - Delete record (useMutation)
 - **`getById`** - Get single record by ID (useQuery)
 - **`getByCarbonProjectId`** - Get records by carbon project (useQuery)
-- **`getByTenantId`** - Get records by tenant (useQuery)
+- **`getByTenantId`** - Get records by tenant (useQuery) *only for some routers
 
 ### Procedure Types
 - **Query**: untuk operasi READ (useQuery)
@@ -1029,3 +1037,556 @@ const CarbonProjectForm = () => {
     </Button>
   );
 };
+
+## GHG (Greenhouse Gas) Router Examples
+
+### 1. GHG Verification Router (Step 1)
+```tsx
+// Create GHG verification data
+const createGhgVerification = trpc.ghgVerification.add.useMutation({
+  onSuccess: () => {
+    utils.ghgVerification.getByCarbonProjectId.invalidate();
+  },
+});
+
+const handleCreateGhgVerification = () => {
+  createGhgVerification.mutate({
+    carbonProjectId: "project-uuid",
+    keterangan: "Initial verification assessment",
+    nilaiInt: 100,
+    nilaiString: "High priority verification",
+    satuan: "kg CO2e",
+    source: "Field measurement",
+  });
+};
+
+// Get all verification data for a project
+const { data: verifications } = trpc.ghgVerification.getByCarbonProjectId.useQuery({
+  carbonProjectId: "project-uuid"
+});
+
+// Update specific verification
+const updateVerification = trpc.ghgVerification.update.useMutation();
+updateVerification.mutate({
+  id: 1,
+  keterangan: "Updated verification data",
+  nilaiInt: 150,
+});
+
+// Delete verification
+const deleteVerification = trpc.ghgVerification.delete.useMutation();
+deleteVerification.mutate({ id: 1 });
+
+// Get single verification by ID
+const { data: verification } = trpc.ghgVerification.getById.useQuery({
+  id: 1
+});
+```
+
+### 2. GHG Calculation Router (Step 2)
+```tsx
+// Create GHG calculation data
+const createGhgCalculation = trpc.ghgCalculation.add.useMutation({
+  onSuccess: () => {
+    utils.ghgCalculation.getByCarbonProjectId.invalidate();
+    toast.success("GHG calculation created successfully");
+  },
+  onError: (error) => {
+    toast.error(`Failed to create calculation: ${error.message}`);
+  },
+});
+
+const handleCreateCalculation = () => {
+  createGhgCalculation.mutate({
+    carbonProjectId: "project-uuid",
+    keterangan: "Baseline emission calculations",
+    nilaiInt: 250,
+    nilaiString: "Medium impact calculation",
+    satuan: "tCO2e/ha",
+    source: "IPCC guidelines",
+  });
+};
+
+// Get calculations with loading state
+const { 
+  data: calculations, 
+  isLoading, 
+  error 
+} = trpc.ghgCalculation.getByCarbonProjectId.useQuery({
+  carbonProjectId: "project-uuid"
+});
+
+if (isLoading) return <div>Loading calculations...</div>;
+if (error) return <div>Error: {error.message}</div>;
+
+return (
+  <div>
+    {calculations?.stepDuaGhgCalculations.map((calc) => (
+      <div key={calc.id}>
+        <h3>{calc.keterangan}</h3>
+        <p>Value: {calc.nilaiInt || calc.nilaiString}</p>
+        <p>Unit: {calc.satuan}</p>
+        <p>Source: {calc.source}</p>
+      </div>
+    ))}
+  </div>
+);
+```
+
+### 3. GHG Process Router (Step 3 - Process)
+```tsx
+// Create GHG calculation process data
+const createGhgProcess = trpc.ghgProcess.add.useMutation({
+  onMutate: async (newProcess) => {
+    // Optimistic update
+    await utils.ghgProcess.getByCarbonProjectId.cancel();
+    const previousData = utils.ghgProcess.getByCarbonProjectId.getData({
+      carbonProjectId: newProcess.carbonProjectId
+    });
+    
+    utils.ghgProcess.getByCarbonProjectId.setData({
+      carbonProjectId: newProcess.carbonProjectId
+    }, (old) => {
+      if (!old) return old;
+      return {
+        stepTigaGhgCalculationProcesses: [
+          ...old.stepTigaGhgCalculationProcesses,
+          { ...newProcess, id: Date.now() } // Temporary ID
+        ]
+      };
+    });
+    
+    return { previousData };
+  },
+  onError: (err, newProcess, context) => {
+    // Rollback optimistic update
+    utils.ghgProcess.getByCarbonProjectId.setData({
+      carbonProjectId: newProcess.carbonProjectId
+    }, context?.previousData);
+  },
+  onSettled: (data, error, variables) => {
+    utils.ghgProcess.getByCarbonProjectId.invalidate({
+      carbonProjectId: variables.carbonProjectId
+    });
+  },
+});
+
+const handleCreateProcess = () => {
+  createGhgProcess.mutate({
+    carbonProjectId: "project-uuid",
+    keterangan: "Land use change process evaluation",
+    nilaiInt: 75,
+    satuan: "kg CO2e/m²",
+    source: "Satellite imagery analysis",
+  });
+};
+```
+
+### 4. GHG Additional Router (Step 3 - Additional)
+```tsx
+// Create additional GHG data
+const createGhgAdditional = trpc.ghgAdditional.add.useMutation();
+
+// Form integration with validation
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+const additionalGhgSchema = z.object({
+  carbonProjectId: z.string().uuid(),
+  keterangan: z.string().min(1, "Description is required"),
+  nilaiInt: z.number().optional(),
+  nilaiString: z.string().optional(),
+  satuan: z.string().optional(),
+  source: z.string().optional(),
+});
+
+const GhgAdditionalForm = () => {
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(additionalGhgSchema),
+  });
+
+  const createAdditional = trpc.ghgAdditional.add.useMutation({
+    onSuccess: () => {
+      toast.success("Additional data created");
+      reset();
+    },
+  });
+
+  const onSubmit = (data) => {
+    createAdditional.mutate(data);
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input 
+        {...register("keterangan")} 
+        placeholder="Description" 
+      />
+      {errors.keterangan && <span>{errors.keterangan.message}</span>}
+      
+      <input 
+        {...register("nilaiInt", { valueAsNumber: true })} 
+        type="number"
+        placeholder="Numeric value" 
+      />
+      
+      <input 
+        {...register("satuan")} 
+        placeholder="Unit" 
+      />
+      
+      <button type="submit" disabled={createAdditional.isPending}>
+        {createAdditional.isPending ? "Creating..." : "Create"}
+      </button>
+    </form>
+  );
+};
+```
+
+### 5. GHG Other Case Router (Step 3 - Other Case)
+```tsx
+// Create other case GHG data with conditional queries
+const [projectId, setProjectId] = useState("");
+
+const createGhgOtherCase = trpc.ghgOtherCase.add.useMutation();
+
+// Only fetch when project is selected
+const { data: otherCases } = trpc.ghgOtherCase.getByCarbonProjectId.useQuery(
+  { carbonProjectId: projectId },
+  { 
+    enabled: !!projectId,
+    refetchOnWindowFocus: false,
+    staleTime: 30 * 1000, // 30 seconds
+  }
+);
+
+const handleCreateOtherCase = () => {
+  createGhgOtherCase.mutate({
+    carbonProjectId: projectId,
+    keterangan: "Special case emission factors",
+    nilaiString: "Custom calculation method",
+    satuan: "kg CO2e/unit",
+    source: "Expert judgment",
+  });
+};
+
+// Bulk operations
+const handleBulkDelete = async (ids: number[]) => {
+  const deletePromises = ids.map(id => 
+    trpc.ghgOtherCase.delete.mutate({ id })
+  );
+  
+  try {
+    await Promise.all(deletePromises);
+    utils.ghgOtherCase.getByCarbonProjectId.invalidate({ 
+      carbonProjectId: projectId 
+    });
+    toast.success(`Deleted ${ids.length} records`);
+  } catch (error) {
+    toast.error("Failed to delete some records");
+  }
+};
+```
+
+### 6. GHG Audit Router (Step 4)
+```tsx
+// Create GHG audit data
+const createGhgAudit = trpc.ghgAudit.add.useMutation({
+  onSuccess: (data) => {
+    console.log("Audit created:", data.stepEmpatGhgAudit);
+    utils.ghgAudit.getByCarbonProjectId.invalidate();
+  },
+});
+
+// Custom hook for audit management
+const useGhgAudit = (carbonProjectId: string) => {
+  const utils = trpc.useUtils();
+
+  const audits = trpc.ghgAudit.getByCarbonProjectId.useQuery(
+    { carbonProjectId },
+    { enabled: !!carbonProjectId }
+  );
+
+  const createAudit = trpc.ghgAudit.add.useMutation({
+    onSuccess: () => {
+      audits.refetch();
+    },
+  });
+
+  const updateAudit = trpc.ghgAudit.update.useMutation({
+    onSuccess: () => {
+      audits.refetch();
+    },
+  });
+
+  const deleteAudit = trpc.ghgAudit.delete.useMutation({
+    onSuccess: () => {
+      audits.refetch();
+    },
+  });
+
+  return {
+    audits: audits.data?.stepEmpatGhgAudits || [],
+    isLoading: audits.isLoading,
+    createAudit: createAudit.mutate,
+    updateAudit: updateAudit.mutate,
+    deleteAudit: deleteAudit.mutate,
+    isCreating: createAudit.isPending,
+    isUpdating: updateAudit.isPending,
+    isDeleting: deleteAudit.isPending,
+  };
+};
+
+// Usage in component
+const GhgAuditManager = ({ projectId }: { projectId: string }) => {
+  const {
+    audits,
+    isLoading,
+    createAudit,
+    updateAudit,
+    deleteAudit,
+    isCreating,
+  } = useGhgAudit(projectId);
+
+  const handleCreateAudit = () => {
+    createAudit({
+      carbonProjectId: projectId,
+      keterangan: "Third-party verification audit",
+      nilaiInt: 95,
+      nilaiString: "Compliance verified",
+      satuan: "% accuracy",
+      source: "External auditor report",
+    });
+  };
+
+  if (isLoading) return <div>Loading audits...</div>;
+
+  return (
+    <div>
+      <button onClick={handleCreateAudit} disabled={isCreating}>
+        {isCreating ? "Creating..." : "Create Audit"}
+      </button>
+      
+      {audits.map((audit) => (
+        <div key={audit.id} className="audit-item">
+          <h4>{audit.keterangan}</h4>
+          <p>Value: {audit.nilaiInt || audit.nilaiString}</p>
+          <button onClick={() => updateAudit({
+            id: audit.id,
+            keterangan: "Updated audit data",
+          })}>
+            Update
+          </button>
+          <button onClick={() => deleteAudit({ id: audit.id })}>
+            Delete
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+};
+```
+
+### 7. Complete GHG Workflow Integration
+```tsx
+const CompleteGhgWorkflow = ({ carbonProjectId }: { carbonProjectId: string }) => {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [workflowData, setWorkflowData] = useState({});
+
+  const steps = [
+    "GHG Verification",
+    "GHG Calculation", 
+    "GHG Process Analysis",
+    "GHG Audit"
+  ];
+
+  // Step 1: Verification
+  const createVerification = trpc.ghgVerification.add.useMutation({
+    onSuccess: () => setCurrentStep(2),
+  });
+
+  // Step 2: Calculation
+  const createCalculation = trpc.ghgCalculation.add.useMutation({
+    onSuccess: () => setCurrentStep(3),
+  });
+
+  // Step 3: Process (with additional and other case)
+  const createProcess = trpc.ghgProcess.add.useMutation();
+  const createAdditional = trpc.ghgAdditional.add.useMutation();
+  const createOtherCase = trpc.ghgOtherCase.add.useMutation();
+
+  const handleStep3Complete = async () => {
+    try {
+      await Promise.all([
+        createProcess.mutateAsync({...}),
+        createAdditional.mutateAsync({...}),
+        createOtherCase.mutateAsync({...}),
+      ]);
+      setCurrentStep(4);
+    } catch (error) {
+      console.error("Step 3 failed:", error);
+    }
+  };
+
+  // Step 4: Audit
+  const createAudit = trpc.ghgAudit.add.useMutation({
+    onSuccess: () => {
+      toast.success("GHG workflow completed!");
+      setCurrentStep(5);
+    },
+  });
+
+  return (
+    <div className="ghg-workflow">
+      <div className="step-indicator">
+        {steps.map((step, index) => (
+          <div 
+            key={index}
+            className={`step ${currentStep > index + 1 ? 'completed' : ''} ${currentStep === index + 1 ? 'active' : ''}`}
+          >
+            {step}
+          </div>
+        ))}
+      </div>
+
+      {currentStep === 1 && (
+        <VerificationStep 
+          onComplete={(data) => {
+            createVerification.mutate({
+              carbonProjectId,
+              ...data
+            });
+          }}
+        />
+      )}
+
+      {currentStep === 2 && (
+        <CalculationStep 
+          onComplete={(data) => {
+            createCalculation.mutate({
+              carbonProjectId,
+              ...data
+            });
+          }}
+        />
+      )}
+
+      {currentStep === 3 && (
+        <ProcessStep 
+          onComplete={handleStep3Complete}
+          carbonProjectId={carbonProjectId}
+        />
+      )}
+
+      {currentStep === 4 && (
+        <AuditStep 
+          onComplete={(data) => {
+            createAudit.mutate({
+              carbonProjectId,
+              ...data
+            });
+          }}
+        />
+      )}
+
+      {currentStep === 5 && (
+        <div className="workflow-complete">
+          <h2>✅ GHG Workflow Completed!</h2>
+          <p>All GHG calculation steps have been successfully completed.</p>
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+### 8. GHG Data Validation & Error Handling
+```tsx
+// Custom validation schemas for GHG data
+const ghgValidationSchemas = {
+  verification: z.object({
+    keterangan: z.string().min(5, "Description must be at least 5 characters"),
+    nilaiInt: z.number().min(0, "Value must be positive").optional(),
+    satuan: z.string().min(1, "Unit is required").optional(),
+  }),
+  
+  calculation: z.object({
+    keterangan: z.string().min(10, "Detailed description required"),
+    nilaiInt: z.number().min(0).max(10000, "Value out of range").optional(),
+    source: z.string().min(1, "Source must be specified").optional(),
+  }),
+};
+
+// Error handling with specific GHG error types
+const GhgErrorHandler = ({ error }: { error: any }) => {
+  if (error?.data?.code === 'NOT_FOUND') {
+    return <div className="error">Carbon project not found</div>;
+  }
+  
+  if (error?.data?.code === 'FORBIDDEN') {
+    return <div className="error">Access denied to this tenant</div>;
+  }
+  
+  if (error?.data?.zodError) {
+    return (
+      <div className="validation-errors">
+        {Object.entries(error.data.zodError.fieldErrors).map(([field, messages]) => (
+          <div key={field} className="field-error">
+            <strong>{field}:</strong> {messages?.join(', ')}
+          </div>
+        ))}
+      </div>
+    );
+  }
+  
+  return <div className="error">An unexpected error occurred</div>;
+};
+
+// Usage with comprehensive error handling
+const GhgDataForm = () => {
+  const createMutation = trpc.ghgVerification.add.useMutation({
+    onError: (error) => {
+      console.error("GHG creation failed:", error);
+    },
+  });
+
+  if (createMutation.error) {
+    return <GhgErrorHandler error={createMutation.error} />;
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* Form fields */}
+      <button type="submit" disabled={createMutation.isPending}>
+        {createMutation.isPending ? "Processing..." : "Create GHG Data"}
+      </button>
+    </form>
+  );
+};
+```
+
+## GHG Router Field Specifications
+
+### Common Fields Across All GHG Routers
+All GHG routers (`ghgVerification`, `ghgCalculation`, `ghgProcess`, `ghgAdditional`, `ghgOtherCase`, `ghgAudit`) share the same field structure:
+
+```tsx
+interface GhgDataStructure {
+  id: number;                    // Auto-generated identity
+  carbonProjectId: string;       // UUID reference to carbon project
+  keterangan: string;           // Required description/explanation
+  nilaiInt?: number;            // Optional integer value
+  nilaiString?: string;         // Optional string value  
+  satuan?: string;              // Optional unit of measurement
+  source?: string;              // Optional data source reference
+}
+```
+
+### Field Usage Guidelines
+- **`keterangan`**: Always required, minimum 1 character
+- **`nilaiInt`** vs **`nilaiString`**: Use based on data type - numeric calculations use `nilaiInt`, text-based values use `nilaiString`
+- **`satuan`**: Recommended for numeric values (e.g., "kg CO2e", "tCO2e/ha", "%")
+- **`source`**: Important for audit trails (e.g., "IPCC guidelines", "Field measurement", "Expert judgment")
+
+All GHG routers follow the same CRUD pattern with tenant-based security validation.
