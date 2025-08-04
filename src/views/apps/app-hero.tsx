@@ -26,7 +26,7 @@ export function AppsHero() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-between gap-6 mt-8 py-6">
+    <div className="flex flex-col items-center justify-between gap-6 mt-8 py-6 relative z-10">
       <div className="flex flex-col items-center gap-6">
         <div className="bg-primary/10 p-6 rounded-full">
           <SquareStack className="h-12 w-12 text-primary" />
@@ -43,6 +43,7 @@ export function AppsHero() {
           <Button
             onClick={handleInviteMember}
             className="flex items-center gap-2"
+            variant={"origin"}
           >
             <UserPlus className="h-4 w-4" />
             Invite Member

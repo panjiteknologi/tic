@@ -68,7 +68,7 @@ export function NavbarApps() {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full border-b bg-background transition-shadow duration-200`}
+      className={`z-50 w-full bg-transparent transition-shadow duration-200`}
     >
       <div className="container mx-auto py-3 flex justify-between items-center">
         <Link href="/dashboard" className="flex items-center gap-2">
@@ -89,7 +89,7 @@ export function NavbarApps() {
               <span>Apps</span>
             </Link>
           </Button>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -120,7 +120,7 @@ export function NavbarApps() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              
+
               {/* Settings submenu - only show for superadmin/admin */}
               {["superadmin", "admin"].includes(userRole) && (
                 <>
@@ -153,7 +153,7 @@ export function NavbarApps() {
                   <DropdownMenuSeparator />
                 </>
               )}
-              
+
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>

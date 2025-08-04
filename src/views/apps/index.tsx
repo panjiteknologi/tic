@@ -225,72 +225,85 @@ const AppsView = () => {
     .filter((category) => category.apps.length > 0);
 
   return (
-    <div className="space-y-8">
-      <AppsHero />
-      <AppsSearchAndView
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        viewMode={viewMode}
-        setViewMode={setViewMode}
+    <>
+      <div
+        className="fixed inset-0 -z-10"
+        style={{
+          backgroundImage: `
+        radial-gradient(ellipse at 20% 30%, rgba(56, 189, 248, 0.4) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 70%, rgba(139, 92, 246, 0.3) 0%, transparent 70%),
+        radial-gradient(ellipse at 60% 20%, rgba(236, 72, 153, 0.25) 0%, transparent 50%),
+        radial-gradient(ellipse at 40% 80%, rgba(34, 197, 94, 0.2) 0%, transparent 65%)
+      `,
+        }}
       />
+      <AppsHero />
+      <div className="space-y-8">
+        <AppsSearchAndView
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+        />
 
-      {filteredCategories.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">
-            No applications found matching your search.
-          </p>
-        </div>
-      ) : viewMode === "list" ? (
-        <AppListView categories={filteredCategories} />
-      ) : (
-        filteredCategories.map((category) => (
-          <section key={category.id} className="space-y-4 mb-16">
-            <div className="space-y-2">
-              <h2 className="text-xl font-semibold">{category.title}</h2>
-              <Separator className="bg-border" />
-            </div>
+        {filteredCategories.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">
+              No applications found matching your search.
+            </p>
+          </div>
+        ) : viewMode === "list" ? (
+          <AppListView categories={filteredCategories} />
+        ) : (
+          filteredCategories.map((category) => (
+            <section key={category.id} className="space-y-4 mb-16">
+              <div className="space-y-2">
+                <h2 className="text-xl font-semibold">{category.title}</h2>
+                <Separator className="bg-border" />
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {category.apps.map((app) => (
-                <Link
-                  key={app.id}
-                  href={app.url}
-                  className="block transition hover:scale-[1.01] duration-200"
-                >
-                  <Card className="h-full hover:shadow-md transition-shadow duration-200">
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between items-start">
-                        <div className="bg-primary/10 p-2 rounded">
-                          <app.icon className="h-5 w-5 text-primary" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {category.apps.map((app) => (
+                  <Link
+                    key={app.id}
+                    href={app.url}
+                    className="block transition hover:scale-[1.01] duration-200"
+                  >
+                    <Card className="h-full hover:shadow-md transition-shadow duration-200">
+                      <CardHeader className="pb-2">
+                        <div className="flex justify-between items-start">
+                          <div className="bg-primary/10 p-2 rounded">
+                            <app.icon className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="flex space-x-2">
+                            {app.isNew && (
+                              <Badge variant="default" className="bg-primary">
+                                New
+                              </Badge>
+                            )}
+                            {app.badge && (
+                              <Badge variant="outline">{app.badge}</Badge>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex space-x-2">
-                          {app.isNew && (
-                            <Badge variant="default" className="bg-primary">
-                              New
-                            </Badge>
-                          )}
-                          {app.badge && (
-                            <Badge variant="outline">{app.badge}</Badge>
-                          )}
-                        </div>
-                      </div>
-                      <CardTitle className="text-lg mt-2">
-                        {app.title}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <CardDescription className="text-sm text-muted-foreground">
-                        {app.description}
-                      </CardDescription>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          </section>
-        ))
-      )}
-    </div>
+                        <CardTitle className="text-lg mt-2">
+                          {app.title}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <CardDescription className="text-sm text-muted-foreground">
+                          {app.description}
+                        </CardDescription>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ))
+        )}
+      </div>
+    </>
   );
 };
 
