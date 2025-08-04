@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { trpc } from "@/trpc/react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -61,9 +62,11 @@ const InviteView = () => {
   const sendInviteMutation = trpc.invitation.send.useMutation({
     onSuccess: (data) => {
       setSingleInvite({ email: "", role: "member" });
+      toast.success(`Invitation sent successfully to ${data.invitation.email}!`);
     },
     onError: (error) => {
       console.error("Failed to send invitation:", error.message);
+      toast.error(`Failed to send invitation: ${error.message}`);
     },
   });
 
@@ -73,10 +76,16 @@ const InviteView = () => {
       setBulkResults(data);
       if (data.errors.length === 0) {
         setBulkInvites([{ email: "", role: "member" }]);
+        toast.success(`All ${data.summary.successful} invitations sent successfully!`);
+      } else if (data.summary.successful > 0) {
+        toast.success(`${data.summary.successful} invitations sent successfully, ${data.summary.failed} failed.`);
+      } else {
+        toast.error(`All ${data.summary.failed} invitations failed to send.`);
       }
     },
     onError: (error) => {
       console.error("Failed to send bulk invitations:", error.message);
+      toast.error(`Failed to send bulk invitations: ${error.message}`);
     },
   });
 

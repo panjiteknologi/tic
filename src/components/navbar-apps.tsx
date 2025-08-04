@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, Settings, Users, UserPlus } from "lucide-react";
+import { LogOut, Settings, Users, UserPlus, Mail, Home } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -83,6 +83,13 @@ export function NavbarApps() {
         </Link>
 
         <div className="flex items-center gap-4">
+          <Button variant="ghost" asChild>
+            <Link href="/apps">
+              <Home className="mr-2 h-4 w-4" />
+              <span>Apps</span>
+            </Link>
+          </Button>
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -133,6 +140,12 @@ export function NavbarApps() {
                         <Link href="/apps/settings/members/invite">
                           <UserPlus className="mr-2 h-4 w-4" />
                           <span>Invite Member</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/apps/settings/invitations">
+                          <Mail className="mr-2 h-4 w-4" />
+                          <span>View Invitations</span>
                         </Link>
                       </DropdownMenuItem>
                     </DropdownMenuSubContent>

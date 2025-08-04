@@ -10,6 +10,7 @@ import {
 import { user } from "@/db/schema/auth-schema";
 import { TRPCError } from "@trpc/server";
 import { randomBytes } from "crypto";
+import { env } from "@/env";
 
 export const invitationRouter = createTRPCRouter({
   // Send invitation (only superadmin/admin)
@@ -120,7 +121,7 @@ export const invitationRouter = createTRPCRouter({
         success: true,
         invitation,
         tenant: tenantInfo[0],
-        invitationUrl: `${process.env.NEXTAUTH_URL}/invite/${token}`,
+        invitationUrl: `${env.NEXT_PUBLIC_URL}/invite/${token}`,
       };
     }),
 
@@ -160,6 +161,7 @@ export const invitationRouter = createTRPCRouter({
           id: tenantInvitation.id,
           email: tenantInvitation.email,
           role: tenantInvitation.role,
+          token: tenantInvitation.token,
           invitedBy: {
             id: user.id,
             name: user.name,
@@ -325,12 +327,15 @@ export const invitationRouter = createTRPCRouter({
     .input(
       z.object({
         tenantId: z.string().uuid(),
-        invitations: z.array(
-          z.object({
-            email: z.string().email(),
-            role: z.enum(["admin", "member"]).default("member"),
-          })
-        ).min(1, "At least one invitation is required").max(10, "Maximum 10 invitations at once"),
+        invitations: z
+          .array(
+            z.object({
+              email: z.string().email(),
+              role: z.enum(["admin", "member"]).default("member"),
+            })
+          )
+          .min(1, "At least one invitation is required")
+          .max(10, "Maximum 10 invitations at once"),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -602,7 +607,9 @@ export const invitationRouter = createTRPCRouter({
       return {
         invitation: inv,
         isExpired: inv.expiresAt < new Date(),
-        daysUntilExpiry: Math.ceil((inv.expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+        daysUntilExpiry: Math.ceil(
+          (inv.expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+        ),
       };
     }),
 
@@ -649,18 +656,23 @@ export const invitationRouter = createTRPCRouter({
         .where(eq(tenantInvitation.tenantId, input.tenantId));
 
       const now = new Date();
-      const pending = allInvitations.filter(inv => !inv.acceptedAt && inv.expiresAt > now);
-      const accepted = allInvitations.filter(inv => inv.acceptedAt);
-      const expired = allInvitations.filter(inv => !inv.acceptedAt && inv.expiresAt <= now);
+      const pending = allInvitations.filter(
+        (inv) => !inv.acceptedAt && inv.expiresAt > now
+      );
+      const accepted = allInvitations.filter((inv) => inv.acceptedAt);
+      const expired = allInvitations.filter(
+        (inv) => !inv.acceptedAt && inv.expiresAt <= now
+      );
 
       return {
         total: allInvitations.length,
         pending: pending.length,
         accepted: accepted.length,
         expired: expired.length,
-        acceptanceRate: allInvitations.length > 0 
-          ? Math.round((accepted.length / allInvitations.length) * 100) 
-          : 0,
+        acceptanceRate:
+          allInvitations.length > 0
+            ? Math.round((accepted.length / allInvitations.length) * 100)
+            : 0,
         recentInvitations: allInvitations
           .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
           .slice(0, 5),
