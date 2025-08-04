@@ -5,6 +5,12 @@ import { tenantRouter } from "./tenant";
 import { invitationRouter } from "./invitation";
 import { carbonProjectRouter } from "./carbon-project";
 import { userRouter } from "./user";
+import { ghgVerificationRouter } from "./ghg-verification";
+import { ghgCalculationRouter } from "./ghg-calculation";
+import { ghgProcessRouter } from "./ghg-process";
+import { ghgAdditionalRouter } from "./ghg-additional";
+import { ghgOtherCaseRouter } from "./ghg-other-case";
+import { ghgAuditRouter } from "./ghg-audit";
 
 export const appRouter = createTRPCRouter({
   hello: baseProcedure
@@ -22,6 +28,12 @@ export const appRouter = createTRPCRouter({
   tenant: tenantRouter,
   invitation: invitationRouter,
   carbonProject: carbonProjectRouter,
+  stepOneGhgVerification: ghgVerificationRouter,
+  stepTwoGhgCalculation: ghgCalculationRouter,
+  stepThreeGhgProcess: ghgProcessRouter,
+  stepThreeGhgAdditional: ghgAdditionalRouter,
+  stepThreeGhgOtherCase: ghgOtherCaseRouter,
+  stepFourGhgAudit: ghgAuditRouter,
   user: userRouter,
 });
 
