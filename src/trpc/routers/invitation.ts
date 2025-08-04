@@ -11,6 +11,8 @@ import { user } from "@/db/schema/auth-schema";
 import { TRPCError } from "@trpc/server";
 import { randomBytes } from "crypto";
 import { env } from "@/env";
+import { generatePresignedDownloadUrl } from "@/lib/s3";
+import { auth } from "@/lib/auth";
 
 export const invitationRouter = createTRPCRouter({
   // Send invitation (only superadmin/admin)
@@ -552,14 +554,14 @@ export const invitationRouter = createTRPCRouter({
       };
     }),
 
-  // Get invitation info (public endpoint for preview)
-  getInvitationInfo: baseProcedure
+  // Get invitation info (protected endpoint - requires auth to view details)
+  getInvitationInfo: protectedProcedure
     .input(
       z.object({
         token: z.string().min(1),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ ctx, input }) => {
       const invitation = await db
         .select({
           email: tenantInvitation.email,
@@ -604,12 +606,242 @@ export const invitationRouter = createTRPCRouter({
         });
       }
 
+      // Additional security: Only allow the invited user to view details
+      if (ctx.user.email !== inv.email) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "This invitation is not for your account",
+        });
+      }
+
+      // Generate presigned URL for logo if exists
+      let logoUrl = null;
+      if (inv.tenant.logo) {
+        try {
+          logoUrl = await generatePresignedDownloadUrl(inv.tenant.logo);
+        } catch (error) {
+          console.error("Failed to generate presigned URL for logo:", error);
+          logoUrl = inv.tenant.logo.startsWith("http") ? inv.tenant.logo : null;
+        }
+      }
+
+      // Update tenant logo with presigned URL
+      const updatedInvitation = {
+        ...inv,
+        tenant: {
+          ...inv.tenant,
+          logo: logoUrl,
+        },
+      };
+
       return {
-        invitation: inv,
+        invitation: updatedInvitation,
         isExpired: inv.expiresAt < new Date(),
         daysUntilExpiry: Math.ceil(
           (inv.expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
         ),
+      };
+    }),
+
+  // Get basic invitation info for preview (public endpoint with minimal data)
+  getInvitationPreview: baseProcedure
+    .input(
+      z.object({
+        token: z.string().min(1),
+      })
+    )
+    .query(async ({ input }) => {
+      const invitation = await db
+        .select({
+          email: tenantInvitation.email,
+          expiresAt: tenantInvitation.expiresAt,
+          tenant: {
+            id: tenant.id,
+            name: tenant.name,
+            logo: tenant.logo,
+          },
+        })
+        .from(tenantInvitation)
+        .innerJoin(tenant, eq(tenantInvitation.tenantId, tenant.id))
+        .where(
+          and(
+            eq(tenantInvitation.token, input.token),
+            isNull(tenantInvitation.acceptedAt)
+          )
+        )
+        .limit(1);
+
+      if (invitation.length === 0) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Invalid or expired invitation",
+        });
+      }
+
+      const inv = invitation[0];
+
+      // Check if expired
+      if (inv.expiresAt < new Date()) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invitation has expired",
+        });
+      }
+
+      // Generate presigned URL for logo if exists
+      let logoUrl = null;
+      if (inv.tenant.logo) {
+        try {
+          // For public access, we generate presigned URL without checking permissions
+          logoUrl = await generatePresignedDownloadUrl(inv.tenant.logo);
+        } catch (error) {
+          console.error("Failed to generate presigned URL for logo:", error);
+          // Use direct URL as fallback if it's already a full URL
+          logoUrl = inv.tenant.logo.startsWith("http") ? inv.tenant.logo : null;
+        }
+      }
+
+      return {
+        email: inv.email,
+        tenantId: inv.tenant.id,
+        tenantName: inv.tenant.name,
+        tenantLogo: logoUrl,
+        isExpired: inv.expiresAt < new Date(),
+        isValid: true,
+      };
+    }),
+
+  // Accept invitation with signup (public endpoint for creating account)
+  acceptWithSignup: baseProcedure
+    .input(
+      z.object({
+        token: z.string().min(1),
+        name: z.string().min(1, "Name is required"),
+        email: z.string().email(),
+        password: z.string().min(8, "Password must be at least 8 characters"),
+      })
+    )
+    .mutation(async ({ input }) => {
+      // Find invitation
+      const invitation = await db
+        .select()
+        .from(tenantInvitation)
+        .where(
+          and(
+            eq(tenantInvitation.token, input.token),
+            isNull(tenantInvitation.acceptedAt)
+          )
+        )
+        .limit(1);
+
+      if (invitation.length === 0) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Invalid or expired invitation",
+        });
+      }
+
+      const inv = invitation[0];
+
+      // Check if expired
+      if (inv.expiresAt < new Date()) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invitation has expired",
+        });
+      }
+
+      // Verify email matches invitation
+      if (input.email !== inv.email) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Email must match the invited email address",
+        });
+      }
+
+      // Check if user already exists
+      const existingUser = await db
+        .select()
+        .from(user)
+        .where(eq(user.email, input.email))
+        .limit(1);
+
+      let userId: string;
+
+      if (existingUser.length > 0) {
+        // User exists, just use their ID
+        userId = existingUser[0].id;
+        
+        // Check if user is already a member
+        const existingMember = await db
+          .select()
+          .from(tenantUser)
+          .where(
+            and(
+              eq(tenantUser.tenantId, inv.tenantId),
+              eq(tenantUser.userId, userId)
+            )
+          )
+          .limit(1);
+
+        if (existingMember.length > 0) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "User is already a member of this tenant",
+          });
+        }
+      } else {
+        // Create new user account using auth system
+        try {
+          const authResult = await auth.api.signUpEmail({
+            body: {
+              name: input.name,
+              email: input.email,
+              password: input.password,
+            },
+          });
+
+          if (!authResult.user) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Failed to create user account",
+            });
+          }
+
+          userId = authResult.user.id;
+        } catch (error: any) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: error.message || "Failed to create account",
+          });
+        }
+      }
+
+      // Add user to tenant
+      await db.insert(tenantUser).values({
+        tenantId: inv.tenantId,
+        userId: userId,
+        role: inv.role,
+      });
+
+      // Mark invitation as accepted
+      await db
+        .update(tenantInvitation)
+        .set({ acceptedAt: new Date() })
+        .where(eq(tenantInvitation.id, inv.id));
+
+      // Get tenant info
+      const tenantInfo = await db
+        .select()
+        .from(tenant)
+        .where(eq(tenant.id, inv.tenantId))
+        .limit(1);
+
+      return {
+        success: true,
+        tenant: tenantInfo[0],
+        role: inv.role,
+        userId: userId,
       };
     }),
 

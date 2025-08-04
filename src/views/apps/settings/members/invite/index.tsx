@@ -62,7 +62,9 @@ const InviteView = () => {
   const sendInviteMutation = trpc.invitation.send.useMutation({
     onSuccess: (data) => {
       setSingleInvite({ email: "", role: "member" });
-      toast.success(`Invitation sent successfully to ${data.invitation.email}!`);
+      toast.success(
+        `Invitation sent successfully to ${data.invitation.email}!`
+      );
     },
     onError: (error) => {
       console.error("Failed to send invitation:", error.message);
@@ -76,9 +78,13 @@ const InviteView = () => {
       setBulkResults(data);
       if (data.errors.length === 0) {
         setBulkInvites([{ email: "", role: "member" }]);
-        toast.success(`All ${data.summary.successful} invitations sent successfully!`);
+        toast.success(
+          `All ${data.summary.successful} invitations sent successfully!`
+        );
       } else if (data.summary.successful > 0) {
-        toast.success(`${data.summary.successful} invitations sent successfully, ${data.summary.failed} failed.`);
+        toast.success(
+          `${data.summary.successful} invitations sent successfully, ${data.summary.failed} failed.`
+        );
       } else {
         toast.error(`All ${data.summary.failed} invitations failed to send.`);
       }
@@ -348,6 +354,7 @@ const InviteView = () => {
               <div className="flex gap-2">
                 <Button
                   type="submit"
+                  variant={"origin"}
                   disabled={sendInviteMutation.isPending || !singleInvite.email}
                 >
                   {sendInviteMutation.isPending ? (

@@ -145,7 +145,8 @@ export function LoginForm({
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-red-800 to-blue-800 font-bold text-md"
+                variant={"origin"}
+                className="w-full text-md"
                 disabled={isLoading}
               >
                 {isLoading ? "Signing in..." : "Login"}

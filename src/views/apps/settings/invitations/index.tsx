@@ -114,9 +114,9 @@ const InvitationsView = () => {
   const copyToClipboard = async (url: string, email: string) => {
     try {
       await navigator.clipboard.writeText(url);
+      toast.success("Invitation URL copied to clipboard!");
       setCopiedUrl(email);
       setTimeout(() => setCopiedUrl(null), 2000);
-      toast.success("Invitation URL copied to clipboard!");
     } catch (err) {
       toast.error("Failed to copy URL");
     }
@@ -145,13 +145,18 @@ const InvitationsView = () => {
   };
 
   // Filter invitations
-  const filteredInvitations = invitationsData?.invitations.filter((invitation) => {
-    const inviteStatus = getInvitationStatus(invitation);
-    const matchesStatus = filter.status === "all" || inviteStatus.status === filter.status;
-    const matchesSearch = invitation.email.toLowerCase().includes(filter.search.toLowerCase()) ||
-                         invitation.invitedBy.name?.toLowerCase().includes(filter.search.toLowerCase());
-    return matchesStatus && matchesSearch;
-  }) || [];
+  const filteredInvitations =
+    invitationsData?.invitations.filter((invitation) => {
+      const inviteStatus = getInvitationStatus(invitation);
+      const matchesStatus =
+        filter.status === "all" || inviteStatus.status === filter.status;
+      const matchesSearch =
+        invitation.email.toLowerCase().includes(filter.search.toLowerCase()) ||
+        invitation.invitedBy.name
+          ?.toLowerCase()
+          .includes(filter.search.toLowerCase());
+      return matchesStatus && matchesSearch;
+    }) || [];
 
   if (!userProfile?.tenantId) {
     return (
@@ -160,7 +165,9 @@ const InvitationsView = () => {
           <CardContent className="py-8">
             <div className="text-center">
               <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No Tenant Available</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                No Tenant Available
+              </h3>
               <p className="text-muted-foreground mb-4">
                 You need to be part of a tenant to view invitations.
               </p>
@@ -174,7 +181,10 @@ const InvitationsView = () => {
     );
   }
 
-  if (!userProfile.role || !["superadmin", "admin"].includes(userProfile.role)) {
+  if (
+    !userProfile.role ||
+    !["superadmin", "admin"].includes(userProfile.role)
+  ) {
     return (
       <div className="container mx-auto py-8">
         <Card>
@@ -212,7 +222,7 @@ const InvitationsView = () => {
             </p>
           </div>
         </div>
-        <Button asChild>
+        <Button asChild variant={"origin"}>
           <Link href="/apps/settings/members/invite">
             <UserPlus className="h-4 w-4 mr-2" />
             Send Invitation
@@ -283,7 +293,9 @@ const InvitationsView = () => {
                 <Input
                   placeholder="Search by email or inviter name..."
                   value={filter.search}
-                  onChange={(e) => setFilter({ ...filter, search: e.target.value })}
+                  onChange={(e) =>
+                    setFilter({ ...filter, search: e.target.value })
+                  }
                   className="pl-10"
                 />
               </div>
@@ -293,20 +305,31 @@ const InvitationsView = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline">
                     <Filter className="h-4 w-4 mr-2" />
-                    {filter.status === "all" ? "All Status" : filter.status.charAt(0).toUpperCase() + filter.status.slice(1)}
+                    {filter.status === "all"
+                      ? "All Status"
+                      : filter.status.charAt(0).toUpperCase() +
+                        filter.status.slice(1)}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => setFilter({ ...filter, status: "all" })}>
+                  <DropdownMenuItem
+                    onClick={() => setFilter({ ...filter, status: "all" })}
+                  >
                     All Status
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setFilter({ ...filter, status: "pending" })}>
+                  <DropdownMenuItem
+                    onClick={() => setFilter({ ...filter, status: "pending" })}
+                  >
                     Pending
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setFilter({ ...filter, status: "accepted" })}>
+                  <DropdownMenuItem
+                    onClick={() => setFilter({ ...filter, status: "accepted" })}
+                  >
                     Accepted
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setFilter({ ...filter, status: "expired" })}>
+                  <DropdownMenuItem
+                    onClick={() => setFilter({ ...filter, status: "expired" })}
+                  >
                     Expired
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -336,20 +359,23 @@ const InvitationsView = () => {
           ) : filteredInvitations.length === 0 ? (
             <div className="text-center py-8">
               <Mail className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No Invitations Found</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                No Invitations Found
+              </h3>
               <p className="text-muted-foreground mb-4">
                 {filter.status !== "all" || filter.search
                   ? "No invitations match your current filters."
                   : "You haven't sent any invitations yet."}
               </p>
-              {(!filter.status || filter.status === "all") && !filter.search && (
-                <Button asChild>
-                  <Link href="/apps/settings/members/invite">
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Send First Invitation
-                  </Link>
-                </Button>
-              )}
+              {(!filter.status || filter.status === "all") &&
+                !filter.search && (
+                  <Button asChild>
+                    <Link href="/apps/settings/members/invite">
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Send First Invitation
+                    </Link>
+                  </Button>
+                )}
             </div>
           ) : (
             <Table>
@@ -367,8 +393,8 @@ const InvitationsView = () => {
               <TableBody>
                 {filteredInvitations.map((invitation) => {
                   const status = getInvitationStatus(invitation);
-                  const invitationUrl = `${window.location.origin}/invite/${invitation.token}`;
-                  
+                  const invitationUrl = `${window.location.origin}/invite?token=${invitation.token}`;
+
                   return (
                     <TableRow key={invitation.id}>
                       <TableCell className="font-medium">
@@ -392,7 +418,9 @@ const InvitationsView = () => {
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{invitation.invitedBy.name}</div>
+                          <div className="font-medium">
+                            {invitation.invitedBy.name}
+                          </div>
                           <div className="text-sm text-muted-foreground">
                             {invitation.invitedBy.email}
                           </div>
@@ -408,15 +436,21 @@ const InvitationsView = () => {
                           <span className="text-red-600 text-sm">Expired</span>
                         ) : invitation.acceptedAt ? (
                           <span className="text-green-600 text-sm">
-                            {formatDistanceToNow(new Date(invitation.acceptedAt), {
-                              addSuffix: true,
-                            })}
+                            {formatDistanceToNow(
+                              new Date(invitation.acceptedAt),
+                              {
+                                addSuffix: true,
+                              }
+                            )}
                           </span>
                         ) : (
                           <span className="text-muted-foreground text-sm">
-                            {formatDistanceToNow(new Date(invitation.expiresAt), {
-                              addSuffix: true,
-                            })}
+                            {formatDistanceToNow(
+                              new Date(invitation.expiresAt),
+                              {
+                                addSuffix: true,
+                              }
+                            )}
                           </span>
                         )}
                       </TableCell>
@@ -431,7 +465,12 @@ const InvitationsView = () => {
                             {status.status === "pending" && (
                               <>
                                 <DropdownMenuItem
-                                  onClick={() => copyToClipboard(invitationUrl, invitation.email)}
+                                  onClick={() =>
+                                    copyToClipboard(
+                                      invitationUrl,
+                                      invitation.email
+                                    )
+                                  }
                                 >
                                   {copiedUrl === invitation.email ? (
                                     <Check className="h-4 w-4 mr-2" />
@@ -441,7 +480,9 @@ const InvitationsView = () => {
                                   Copy Link
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={() => handleResendInvitation(invitation.id)}
+                                  onClick={() =>
+                                    handleResendInvitation(invitation.id)
+                                  }
                                   disabled={resendInviteMutation.isPending}
                                 >
                                   <Send className="h-4 w-4 mr-2" />
@@ -451,7 +492,9 @@ const InvitationsView = () => {
                             )}
                             {!invitation.acceptedAt && (
                               <DropdownMenuItem
-                                onClick={() => handleCancelInvitation(invitation.id)}
+                                onClick={() =>
+                                  handleCancelInvitation(invitation.id)
+                                }
                                 disabled={cancelInviteMutation.isPending}
                                 className="text-red-600"
                               >

@@ -62,6 +62,11 @@ const MembersView = () => {
         member.role.toLowerCase().includes(searchQuery.toLowerCase())
     ) || [];
 
+  // Filter pending invitations (only those not accepted)
+  const pendingInvitations = invitationsData?.invitations.filter(
+    (invitation) => !invitation.acceptedAt
+  ) || [];
+
   // Check if current user can invite members
   const canInviteMembers =
     userProfile?.role && ["superadmin", "admin"].includes(userProfile.role);
@@ -131,7 +136,10 @@ const MembersView = () => {
     );
   }
 
-  if (!userProfile.role || !["superadmin", "admin"].includes(userProfile.role)) {
+  if (
+    !userProfile.role ||
+    !["superadmin", "admin"].includes(userProfile.role)
+  ) {
     return (
       <div className="container mx-auto py-8">
         <Card>
@@ -163,7 +171,7 @@ const MembersView = () => {
         </div>
 
         {canInviteMembers && (
-          <Button asChild>
+          <Button asChild variant={"origin"}>
             <Link href="/apps/settings/members/invite">
               <UserPlus className="h-4 w-4" />
               Invite Member
@@ -224,7 +232,7 @@ const MembersView = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Pending Invites</p>
                 <p className="text-2xl font-bold">
-                  {invitationsData?.invitations.length || 0}
+                  {pendingInvitations.length}
                 </p>
               </div>
               <Mail className="h-8 w-8 text-orange-500" />
@@ -265,7 +273,7 @@ const MembersView = () => {
             {canInviteMembers && (
               <Button variant="outline" asChild>
                 <Link href="/apps/settings/invitations">
-                  View Invitations ({invitationsData?.invitations.length || 0})
+                  View Invitations ({pendingInvitations.length})
                 </Link>
               </Button>
             )}
