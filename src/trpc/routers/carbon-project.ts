@@ -1,12 +1,8 @@
 import { z } from "zod";
-import { eq, and, or } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { protectedProcedure, createTRPCRouter } from "../init";
 import { db } from "@/db";
-import {
-  carbonProject,
-  products,
-  raws,
-} from "@/db/schema/carbon-calculation-schema";
+import { carbonProject } from "@/db/schema/carbon-calculation-schema";
 import { tenantUser } from "@/db/schema/tenant-schema";
 import { TRPCError } from "@trpc/server";
 
@@ -75,67 +71,38 @@ export const carbonProjectRouter = createTRPCRouter({
     .input(updateCarbonProjectSchema)
     .mutation(async ({ ctx, input }) => {
       try {
-        // First get any related record to check tenant ownership
-        const relatedProduct = await db
+        // Get the carbon project to check tenant ownership
+        const project = await db
           .select()
-          .from(products)
-          .where(eq(products.carbonProjectId, input.id))
+          .from(carbonProject)
+          .where(eq(carbonProject.id, input.id))
           .limit(1);
 
-        if (relatedProduct.length === 0) {
-          // If no products, check raws
-          const relatedRaw = await db
-            .select()
-            .from(raws)
-            .where(eq(raws.carbonProjectId, input.id))
-            .limit(1);
+        if (project.length === 0) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Carbon project not found",
+          });
+        }
 
-          if (relatedRaw.length === 0) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: "Carbon project not found or no access",
-            });
-          }
-
-          // Check tenant access via raw
-          const userTenant = await db
-            .select()
-            .from(tenantUser)
-            .where(
-              and(
-                eq(tenantUser.tenantId, relatedRaw[0].tenantId),
-                eq(tenantUser.userId, ctx.user.id),
-                eq(tenantUser.isActive, true)
-              )
+        // Check if user is member of this tenant
+        const userTenant = await db
+          .select()
+          .from(tenantUser)
+          .where(
+            and(
+              eq(tenantUser.tenantId, project[0].tenantId),
+              eq(tenantUser.userId, ctx.user.id),
+              eq(tenantUser.isActive, true)
             )
-            .limit(1);
+          )
+          .limit(1);
 
-          if (userTenant.length === 0) {
-            throw new TRPCError({
-              code: "FORBIDDEN",
-              message: "Access denied to this tenant",
-            });
-          }
-        } else {
-          // Check tenant access via product
-          const userTenant = await db
-            .select()
-            .from(tenantUser)
-            .where(
-              and(
-                eq(tenantUser.tenantId, relatedProduct[0].tenantId),
-                eq(tenantUser.userId, ctx.user.id),
-                eq(tenantUser.isActive, true)
-              )
-            )
-            .limit(1);
-
-          if (userTenant.length === 0) {
-            throw new TRPCError({
-              code: "FORBIDDEN",
-              message: "Access denied to this tenant",
-            });
-          }
+        if (userTenant.length === 0) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Access denied to this tenant",
+          });
         }
 
         // Update carbon project
@@ -184,41 +151,13 @@ export const carbonProjectRouter = createTRPCRouter({
         });
       }
 
-      // Check tenant access via any related record
-      const relatedProduct = await db
-        .select()
-        .from(products)
-        .where(eq(products.carbonProjectId, input.id))
-        .limit(1);
-
-      let tenantId: string;
-
-      if (relatedProduct.length > 0) {
-        tenantId = relatedProduct[0].tenantId;
-      } else {
-        // Check raws if no products
-        const relatedRaw = await db
-          .select()
-          .from(raws)
-          .where(eq(raws.carbonProjectId, input.id))
-          .limit(1);
-
-        if (relatedRaw.length === 0) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Carbon project not found or no access",
-          });
-        }
-        tenantId = relatedRaw[0].tenantId;
-      }
-
       // Check if user is member of this tenant
       const userTenant = await db
         .select()
         .from(tenantUser)
         .where(
           and(
-            eq(tenantUser.tenantId, tenantId),
+            eq(tenantUser.tenantId, project[0].tenantId),
             eq(tenantUser.userId, ctx.user.id),
             eq(tenantUser.isActive, true)
           )
@@ -286,32 +225,18 @@ export const carbonProjectRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        // First get any related record to check tenant ownership
-        const relatedProduct = await db
+        // Get the carbon project to check tenant ownership
+        const project = await db
           .select()
-          .from(products)
-          .where(eq(products.carbonProjectId, input.id))
+          .from(carbonProject)
+          .where(eq(carbonProject.id, input.id))
           .limit(1);
 
-        let tenantId: string;
-
-        if (relatedProduct.length > 0) {
-          tenantId = relatedProduct[0].tenantId;
-        } else {
-          // Check raws if no products
-          const relatedRaw = await db
-            .select()
-            .from(raws)
-            .where(eq(raws.carbonProjectId, input.id))
-            .limit(1);
-
-          if (relatedRaw.length === 0) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: "Carbon project not found or no access",
-            });
-          }
-          tenantId = relatedRaw[0].tenantId;
+        if (project.length === 0) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Carbon project not found",
+          });
         }
 
         // Check if user is member of this tenant
@@ -320,7 +245,7 @@ export const carbonProjectRouter = createTRPCRouter({
           .from(tenantUser)
           .where(
             and(
-              eq(tenantUser.tenantId, tenantId),
+              eq(tenantUser.tenantId, project[0].tenantId),
               eq(tenantUser.userId, ctx.user.id),
               eq(tenantUser.isActive, true)
             )
