@@ -1,11 +1,13 @@
 # tRPC Client Documentation - React/Next.js Usage
 
 ## Overview
+
 Dokumentasi ini menjelaskan cara menggunakan tRPC router di sisi client (React/Next.js) untuk operasi CRUD (Create, Read, Update, Delete) termasuk router GHG (Greenhouse Gas) terbaru.
 
 ## Setup tRPC Client
 
 ### 1. Provider Setup
+
 Pastikan aplikasi Anda dibungkus dengan `TRPCProvider`:
 
 ```tsx
@@ -13,15 +15,12 @@ Pastikan aplikasi Anda dibungkus dengan `TRPCProvider`:
 import { TRPCProvider } from "@/trpc/react";
 
 export default function App({ children }: { children: React.ReactNode }) {
-  return (
-    <TRPCProvider>
-      {children}
-    </TRPCProvider>
-  );
+  return <TRPCProvider>{children}</TRPCProvider>;
 }
 ```
 
 ### 2. Import tRPC Client
+
 ```tsx
 import { trpc } from "@/trpc/react";
 ```
@@ -31,6 +30,7 @@ import { trpc } from "@/trpc/react";
 ### 1. CREATE (Mutation)
 
 #### Basic Create
+
 ```tsx
 const createUserMutation = trpc.test.createUser.useMutation({
   onSuccess: (data) => {
@@ -52,6 +52,7 @@ const handleCreate = () => {
 ```
 
 #### Create dengan Optimistic Updates
+
 ```tsx
 const utils = trpc.useUtils();
 
@@ -59,23 +60,26 @@ const createTenantMutation = trpc.tenant.create.useMutation({
   onMutate: async (newTenant) => {
     // Cancel outgoing refetches
     await utils.tenant.getUserTenants.cancel();
-    
+
     // Snapshot previous value
     const previousTenants = utils.tenant.getUserTenants.getData();
-    
+
     // Optimistically update
     utils.tenant.getUserTenants.setData(undefined, (old) => {
       if (!old) return old;
       return {
-        tenants: [...old.tenants, {
-          tenant: newTenant,
-          role: 'superadmin',
-          joinedAt: new Date(),
-          isActive: true,
-        }],
+        tenants: [
+          ...old.tenants,
+          {
+            tenant: newTenant,
+            role: "superadmin",
+            joinedAt: new Date(),
+            isActive: true,
+          },
+        ],
       };
     });
-    
+
     return { previousTenants };
   },
   onError: (err, newTenant, context) => {
@@ -92,8 +96,10 @@ const createTenantMutation = trpc.tenant.create.useMutation({
 ### 2. READ (Query)
 
 #### Basic Query
+
 ```tsx
-const { data, isLoading, error, refetch } = trpc.tenant.getUserTenants.useQuery();
+const { data, isLoading, error, refetch } =
+  trpc.tenant.getUserTenants.useQuery();
 
 if (isLoading) return <div>Loading...</div>;
 if (error) return <div>Error: {error.message}</div>;
@@ -110,12 +116,13 @@ return (
 ```
 
 #### Query dengan Parameters
+
 ```tsx
 const [tenantId, setTenantId] = useState("");
 
 const { data: tenantData, isLoading } = trpc.tenant.getById.useQuery(
   { tenantId },
-  { 
+  {
     enabled: !!tenantId, // Only run query when tenantId exists
     refetchOnWindowFocus: false, // Disable refetch on window focus
     staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
@@ -124,12 +131,13 @@ const { data: tenantData, isLoading } = trpc.tenant.getById.useQuery(
 ```
 
 #### Conditional Queries
+
 ```tsx
 const [userId, setUserId] = useState("");
 
 const { data: userData } = trpc.test.getUserById.useQuery(
   { id: parseInt(userId) },
-  { 
+  {
     enabled: !!userId && !isNaN(parseInt(userId)), // Only run when valid userId
     retry: 1, // Only retry once on failure
   }
@@ -137,23 +145,21 @@ const { data: userData } = trpc.test.getUserById.useQuery(
 ```
 
 #### Infinite Queries (untuk pagination)
+
 ```tsx
-const {
-  data,
-  fetchNextPage,
-  hasNextPage,
-  isFetchingNextPage,
-} = trpc.tenant.getInfinite.useInfiniteQuery(
-  { limit: 10 },
-  {
-    getNextPageParam: (lastPage) => lastPage.nextCursor,
-  }
-);
+const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+  trpc.tenant.getInfinite.useInfiniteQuery(
+    { limit: 10 },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    }
+  );
 ```
 
 ### 3. UPDATE (Mutation)
 
 #### Basic Update
+
 ```tsx
 const updateUserMutation = trpc.test.updateUser.useMutation({
   onSuccess: () => {
@@ -172,13 +178,14 @@ const handleUpdate = (userId: string, updates: any) => {
 ```
 
 #### Update dengan Optimistic Updates
+
 ```tsx
 const updateTenantLogoMutation = trpc.tenant.updateLogo.useMutation({
   onMutate: async ({ tenantId, logoUrl }) => {
     await utils.tenant.getById.cancel({ tenantId });
-    
+
     const previousTenant = utils.tenant.getById.getData({ tenantId });
-    
+
     utils.tenant.getById.setData({ tenantId }, (old) => {
       if (!old) return old;
       return {
@@ -186,7 +193,7 @@ const updateTenantLogoMutation = trpc.tenant.updateLogo.useMutation({
         tenant: { ...old.tenant, logo: logoUrl },
       };
     });
-    
+
     return { previousTenant };
   },
   onError: (err, { tenantId }, context) => {
@@ -201,6 +208,7 @@ const updateTenantLogoMutation = trpc.tenant.updateLogo.useMutation({
 ### 4. DELETE (Mutation)
 
 #### Basic Delete
+
 ```tsx
 const deleteUserMutation = trpc.test.deleteUser.useMutation({
   onSuccess: () => {
@@ -216,20 +224,21 @@ const handleDelete = (userId: string) => {
 ```
 
 #### Delete dengan Optimistic Updates
+
 ```tsx
 const removeMemberMutation = trpc.tenant.removeMember.useMutation({
   onMutate: async ({ memberId, tenantId }) => {
     await utils.tenant.getMembers.cancel({ tenantId });
-    
+
     const previousMembers = utils.tenant.getMembers.getData({ tenantId });
-    
+
     utils.tenant.getMembers.setData({ tenantId }, (old) => {
       if (!old) return old;
       return {
-        members: old.members.filter(member => member.id !== memberId),
+        members: old.members.filter((member) => member.id !== memberId),
       };
     });
-    
+
     return { previousMembers };
   },
   onError: (err, { tenantId }, context) => {
@@ -244,6 +253,7 @@ const removeMemberMutation = trpc.tenant.removeMember.useMutation({
 ## Advanced Usage
 
 ### 1. Manual Query Invalidation
+
 ```tsx
 const utils = trpc.useUtils();
 
@@ -258,6 +268,7 @@ utils.tenant.getById.invalidate({ tenantId: "123" });
 ```
 
 ### 2. Manual Data Setting
+
 ```tsx
 const utils = trpc.useUtils();
 
@@ -267,13 +278,17 @@ utils.tenant.getUserTenants.setData(undefined, {
 });
 
 // Set data with specific input
-utils.tenant.getById.setData({ tenantId: "123" }, {
-  tenant: updatedTenant,
-  userRole: "admin",
-});
+utils.tenant.getById.setData(
+  { tenantId: "123" },
+  {
+    tenant: updatedTenant,
+    userRole: "admin",
+  }
+);
 ```
 
 ### 3. Prefetching Data
+
 ```tsx
 const utils = trpc.useUtils();
 
@@ -289,6 +304,7 @@ const prefetchTenant = (tenantId: string) => {
 ```
 
 ### 4. Subscription (jika menggunakan WebSocket)
+
 ```tsx
 const { data } = trpc.notifications.onUpdate.useSubscription(
   { userId: user.id },
@@ -303,6 +319,7 @@ const { data } = trpc.notifications.onUpdate.useSubscription(
 ## Error Handling
 
 ### 1. Global Error Handling
+
 ```tsx
 // src/trpc/react.tsx
 export function TRPCProvider(props: PropsWithChildren) {
@@ -322,15 +339,14 @@ export function TRPCProvider(props: PropsWithChildren) {
           ...shape,
           data: {
             ...shape.data,
-            zodError: error.code === 'BAD_REQUEST' 
-              ? error.cause?.zodError 
-              : null,
+            zodError:
+              error.code === "BAD_REQUEST" ? error.cause?.zodError : null,
           },
         };
       },
     })
   );
-  
+
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
@@ -342,15 +358,16 @@ export function TRPCProvider(props: PropsWithChildren) {
 ```
 
 ### 2. Component Level Error Handling
+
 ```tsx
 const { data, error, isLoading } = trpc.tenant.getById.useQuery(
   { tenantId },
   {
     onError: (error) => {
-      if (error.data?.code === 'FORBIDDEN') {
-        router.push('/unauthorized');
-      } else if (error.data?.code === 'NOT_FOUND') {
-        router.push('/not-found');
+      if (error.data?.code === "FORBIDDEN") {
+        router.push("/unauthorized");
+      } else if (error.data?.code === "NOT_FOUND") {
+        router.push("/not-found");
       }
     },
   }
@@ -374,6 +391,7 @@ const createMutation = trpc.tenant.create.useMutation({
 ## Best Practices
 
 ### 1. Loading States
+
 ```tsx
 const { data, isLoading, isFetching } = trpc.tenant.getUserTenants.useQuery();
 
@@ -386,7 +404,7 @@ return (
     ) : (
       <div>
         {isFetching && <div>Refreshing...</div>}
-        {data?.tenants.map(tenant => (
+        {data?.tenants.map((tenant) => (
           <div key={tenant.tenant.id}>{tenant.tenant.name}</div>
         ))}
       </div>
@@ -396,6 +414,7 @@ return (
 ```
 
 ### 2. Form Integration
+
 ```tsx
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -436,10 +455,10 @@ const CreateTenantForm = () => {
     <form onSubmit={handleSubmit(onSubmit)}>
       <input {...register("name")} placeholder="Tenant Name" />
       {errors.name && <span>{errors.name.message}</span>}
-      
+
       <input {...register("slug")} placeholder="Tenant Slug" />
       {errors.slug && <span>{errors.slug.message}</span>}
-      
+
       <button type="submit" disabled={createMutation.isPending}>
         {createMutation.isPending ? "Creating..." : "Create Tenant"}
       </button>
@@ -449,6 +468,7 @@ const CreateTenantForm = () => {
 ```
 
 ### 3. Custom Hooks
+
 ```tsx
 // hooks/useTenants.ts
 export const useTenants = () => {
@@ -460,7 +480,7 @@ export const useTenants = () => {
 
 export const useCreateTenant = () => {
   const utils = trpc.useUtils();
-  
+
   return trpc.tenant.create.useMutation({
     onSuccess: () => {
       utils.tenant.getUserTenants.invalidate();
@@ -476,7 +496,7 @@ export const useCreateTenant = () => {
 const MyComponent = () => {
   const { data: tenants, isLoading } = useTenants();
   const createTenant = useCreateTenant();
-  
+
   // ...
 };
 ```
@@ -500,7 +520,7 @@ export default function TenantManagement() {
 
   // Queries
   const { data: tenants, isLoading } = trpc.tenant.getUserTenants.useQuery();
-  
+
   const { data: selectedTenant } = trpc.tenant.getById.useQuery(
     { tenantId: selectedTenantId },
     { enabled: !!selectedTenantId }
@@ -544,10 +564,7 @@ export default function TenantManagement() {
           value={slug}
           onChange={(e) => setSlug(e.target.value)}
         />
-        <Button
-          onClick={handleCreate}
-          disabled={createMutation.isPending}
-        >
+        <Button onClick={handleCreate} disabled={createMutation.isPending}>
           {createMutation.isPending ? "Creating..." : "Create"}
         </Button>
       </div>
@@ -584,12 +601,17 @@ export default function TenantManagement() {
 ## User Profile Router
 
 ### Get User Profile with Tenant Details
+
 ```tsx
 import { trpc } from "@/trpc/react";
 
 // Get current user profile with tenant information
 const UserProfile = () => {
-  const { data: userProfile, isLoading, error } = trpc.user.getUserProfile.useQuery();
+  const {
+    data: userProfile,
+    isLoading,
+    error,
+  } = trpc.user.getUserProfile.useQuery();
 
   if (isLoading) return <div>Loading user profile...</div>;
   if (error) return <div>Error: {error.message}</div>;
@@ -600,12 +622,25 @@ const UserProfile = () => {
       {/* User Details */}
       <div className="border p-4 rounded">
         <h2>User Information</h2>
-        <p><strong>Name:</strong> {userProfile.name}</p>
-        <p><strong>Email:</strong> {userProfile.email}</p>
-        <p><strong>User ID:</strong> {userProfile.userId}</p>
-        <p><strong>Email Verified:</strong> {userProfile.emailVerified ? 'Yes' : 'No'}</p>
+        <p>
+          <strong>Name:</strong> {userProfile.name}
+        </p>
+        <p>
+          <strong>Email:</strong> {userProfile.email}
+        </p>
+        <p>
+          <strong>User ID:</strong> {userProfile.userId}
+        </p>
+        <p>
+          <strong>Email Verified:</strong>{" "}
+          {userProfile.emailVerified ? "Yes" : "No"}
+        </p>
         {userProfile.image && (
-          <img src={userProfile.image} alt="Profile" className="w-12 h-12 rounded-full" />
+          <img
+            src={userProfile.image}
+            alt="Profile"
+            className="w-12 h-12 rounded-full"
+          />
         )}
       </div>
 
@@ -613,17 +648,34 @@ const UserProfile = () => {
       {userProfile.tenantId && (
         <div className="border p-4 rounded">
           <h2>Tenant Information</h2>
-          <p><strong>Tenant Name:</strong> {userProfile.tenantName}</p>
-          <p><strong>Tenant ID:</strong> {userProfile.tenantId}</p>
-          <p><strong>Role:</strong> {userProfile.role}</p>
-          <p><strong>Slug:</strong> {userProfile.tenantSlug}</p>
+          <p>
+            <strong>Tenant Name:</strong> {userProfile.tenantName}
+          </p>
+          <p>
+            <strong>Tenant ID:</strong> {userProfile.tenantId}
+          </p>
+          <p>
+            <strong>Role:</strong> {userProfile.role}
+          </p>
+          <p>
+            <strong>Slug:</strong> {userProfile.tenantSlug}
+          </p>
           {userProfile.tenantDomain && (
-            <p><strong>Domain:</strong> {userProfile.tenantDomain}</p>
+            <p>
+              <strong>Domain:</strong> {userProfile.tenantDomain}
+            </p>
           )}
           {userProfile.tenantLogo && (
-            <img src={userProfile.tenantLogo} alt="Tenant Logo" className="w-16 h-16" />
+            <img
+              src={userProfile.tenantLogo}
+              alt="Tenant Logo"
+              className="w-16 h-16"
+            />
           )}
-          <p><strong>Joined At:</strong> {new Date(userProfile.joinedAt!).toLocaleDateString()}</p>
+          <p>
+            <strong>Joined At:</strong>{" "}
+            {new Date(userProfile.joinedAt!).toLocaleDateString()}
+          </p>
         </div>
       )}
     </div>
@@ -632,6 +684,7 @@ const UserProfile = () => {
 ```
 
 ### Custom Hook for User Profile
+
 ```tsx
 // hooks/useUserProfile.ts
 import { trpc } from "@/trpc/react";
@@ -646,14 +699,16 @@ export const useUserProfile = () => {
 // Usage in component
 const MyComponent = () => {
   const { data: user, isLoading } = useUserProfile();
-  
+
   if (isLoading) return <div>Loading...</div>;
-  
+
   return (
     <div>
       <h1>Welcome, {user?.name}!</h1>
       {user?.tenantName && (
-        <p>Organization: {user.tenantName} ({user.role})</p>
+        <p>
+          Organization: {user.tenantName} ({user.role})
+        </p>
       )}
     </div>
   );
@@ -661,19 +716,22 @@ const MyComponent = () => {
 ```
 
 ### Conditional Rendering Based on User Role
+
 ```tsx
 const AdminPanel = () => {
   const { data: user } = useUserProfile();
-  
+
   // Only show admin features if user is superadmin or admin
-  if (!user || !['superadmin', 'admin'].includes(user.role || '')) {
+  if (!user || !["superadmin", "admin"].includes(user.role || "")) {
     return <div>Access denied</div>;
   }
-  
+
   return (
     <div>
       <h1>Admin Panel</h1>
-      <p>Welcome {user.name} ({user.role})</p>
+      <p>
+        Welcome {user.name} ({user.role})
+      </p>
       {/* Admin features */}
     </div>
   );
@@ -681,6 +739,7 @@ const AdminPanel = () => {
 ```
 
 ### Type-Safe User Profile Usage
+
 ```tsx
 import type { AppRouter } from "@/trpc/routers/_app";
 import type { inferRouterOutputs } from "@trpc/server";
@@ -706,14 +765,15 @@ const ProfileCard = ({ user }: { user: UserProfile }) => {
 // Usage
 const UserDashboard = () => {
   const { data: user } = trpc.user.getUserProfile.useQuery();
-  
+
   if (!user) return null;
-  
+
   return <ProfileCard user={user} />;
 };
 ```
 
 ### Available User Profile Fields
+
 ```tsx
 // Complete user profile structure returned by trpc.user.getUserProfile.useQuery()
 interface UserProfile {
@@ -725,7 +785,7 @@ interface UserProfile {
   image?: string;
   createdAt: Date;
   updatedAt: Date;
-  
+
   // Tenant Details (null if user has no active tenant)
   tenantId: string | null;
   tenantName: string | null;
@@ -738,29 +798,34 @@ interface UserProfile {
 ```
 
 ### Integration with Authentication
+
 ```tsx
 import { useRouter } from "next/navigation";
 
 const useAuthenticatedUser = () => {
   const router = useRouter();
-  const { data: user, isLoading, error } = trpc.user.getUserProfile.useQuery(undefined, {
+  const {
+    data: user,
+    isLoading,
+    error,
+  } = trpc.user.getUserProfile.useQuery(undefined, {
     onError: (error) => {
-      if (error.data?.code === 'UNAUTHORIZED') {
-        router.push('/login');
+      if (error.data?.code === "UNAUTHORIZED") {
+        router.push("/login");
       }
     },
   });
-  
+
   return { user, isLoading, error };
 };
 
 // Usage in protected components
 const ProtectedComponent = () => {
   const { user, isLoading } = useAuthenticatedUser();
-  
+
   if (isLoading) return <div>Loading...</div>;
   if (!user) return null; // Will redirect to login via onError
-  
+
   return (
     <div>
       <h1>Protected Content</h1>
@@ -775,6 +840,7 @@ const ProtectedComponent = () => {
 Berdasarkan konfigurasi aplikasi, router yang tersedia:
 
 ### Core System Routers
+
 - `trpc.hello` - Test endpoint
 - `trpc.test` - Test CRUD operations
 - `trpc.tenant` - Tenant management
@@ -782,9 +848,11 @@ Berdasarkan konfigurasi aplikasi, router yang tersedia:
 - `trpc.user` - User profile & details
 
 ### Carbon Calculation Routers
+
 - `trpc.carbonProject` - Carbon project management
 
 ### GHG (Greenhouse Gas) Calculation Routers
+
 - `trpc.ghgVerification` - Step 1: GHG verification data management
 - `trpc.ghgCalculation` - Step 2: GHG calculation data management
 - `trpc.ghgProcess` - Step 3: GHG calculation process data management
@@ -793,22 +861,26 @@ Berdasarkan konfigurasi aplikasi, router yang tersedia:
 - `trpc.ghgAudit` - Step 4: GHG audit data management
 
 ### Common Operations
+
 Setiap router GHG memiliki operasi standar:
+
+- **`addBulk`** - Create Many record (useMutation)
 - **`add`** - Create new record (useMutation)
-- **`update`** - Update existing record (useMutation) 
+- **`update`** - Update existing record (useMutation)
 - **`delete`** - Delete record (useMutation)
 - **`getById`** - Get single record by ID (useQuery)
 - **`getByCarbonProjectId`** - Get records by carbon project (useQuery)
 
 ### Procedure Types
+
 - **Query**: untuk operasi READ (useQuery)
 - **Mutation**: untuk operasi CREATE/UPDATE/DELETE (useMutation)
 - **Subscription**: untuk real-time updates (useSubscription) - jika tersedia
 
-
 ## GHG (Greenhouse Gas) Router Examples
 
 ### 1. GHG Verification Router (Step 1)
+
 ```tsx
 // Create GHG verification data
 const createGhgVerification = trpc.ghgVerification.add.useMutation({
@@ -829,9 +901,10 @@ const handleCreateGhgVerification = () => {
 };
 
 // Get all verification data for a project
-const { data: verifications } = trpc.ghgVerification.getByCarbonProjectId.useQuery({
-  carbonProjectId: "project-uuid"
-});
+const { data: verifications } =
+  trpc.ghgVerification.getByCarbonProjectId.useQuery({
+    carbonProjectId: "project-uuid",
+  });
 
 // Update specific verification
 const updateVerification = trpc.ghgVerification.update.useMutation();
@@ -847,11 +920,12 @@ deleteVerification.mutate({ id: 1 });
 
 // Get single verification by ID
 const { data: verification } = trpc.ghgVerification.getById.useQuery({
-  id: 1
+  id: 1,
 });
 ```
 
 ### 2. GHG Calculation Router (Step 2)
+
 ```tsx
 // Create GHG calculation data
 const createGhgCalculation = trpc.ghgCalculation.add.useMutation({
@@ -876,12 +950,12 @@ const handleCreateCalculation = () => {
 };
 
 // Get calculations with loading state
-const { 
-  data: calculations, 
-  isLoading, 
-  error 
+const {
+  data: calculations,
+  isLoading,
+  error,
 } = trpc.ghgCalculation.getByCarbonProjectId.useQuery({
-  carbonProjectId: "project-uuid"
+  carbonProjectId: "project-uuid",
 });
 
 if (isLoading) return <div>Loading calculations...</div>;
@@ -902,6 +976,7 @@ return (
 ```
 
 ### 3. GHG Process Router (Step 3 - Process)
+
 ```tsx
 // Create GHG calculation process data
 const createGhgProcess = trpc.ghgProcess.add.useMutation({
@@ -909,32 +984,38 @@ const createGhgProcess = trpc.ghgProcess.add.useMutation({
     // Optimistic update
     await utils.ghgProcess.getByCarbonProjectId.cancel();
     const previousData = utils.ghgProcess.getByCarbonProjectId.getData({
-      carbonProjectId: newProcess.carbonProjectId
+      carbonProjectId: newProcess.carbonProjectId,
     });
-    
-    utils.ghgProcess.getByCarbonProjectId.setData({
-      carbonProjectId: newProcess.carbonProjectId
-    }, (old) => {
-      if (!old) return old;
-      return {
-        stepTigaGhgCalculationProcesses: [
-          ...old.stepTigaGhgCalculationProcesses,
-          { ...newProcess, id: Date.now() } // Temporary ID
-        ]
-      };
-    });
-    
+
+    utils.ghgProcess.getByCarbonProjectId.setData(
+      {
+        carbonProjectId: newProcess.carbonProjectId,
+      },
+      (old) => {
+        if (!old) return old;
+        return {
+          stepTigaGhgCalculationProcesses: [
+            ...old.stepTigaGhgCalculationProcesses,
+            { ...newProcess, id: Date.now() }, // Temporary ID
+          ],
+        };
+      }
+    );
+
     return { previousData };
   },
   onError: (err, newProcess, context) => {
     // Rollback optimistic update
-    utils.ghgProcess.getByCarbonProjectId.setData({
-      carbonProjectId: newProcess.carbonProjectId
-    }, context?.previousData);
+    utils.ghgProcess.getByCarbonProjectId.setData(
+      {
+        carbonProjectId: newProcess.carbonProjectId,
+      },
+      context?.previousData
+    );
   },
   onSettled: (data, error, variables) => {
     utils.ghgProcess.getByCarbonProjectId.invalidate({
-      carbonProjectId: variables.carbonProjectId
+      carbonProjectId: variables.carbonProjectId,
     });
   },
 });
@@ -951,6 +1032,7 @@ const handleCreateProcess = () => {
 ```
 
 ### 4. GHG Additional Router (Step 3 - Additional)
+
 ```tsx
 // Create additional GHG data
 const createGhgAdditional = trpc.ghgAdditional.add.useMutation();
@@ -970,7 +1052,11 @@ const additionalGhgSchema = z.object({
 });
 
 const GhgAdditionalForm = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
     resolver: zodResolver(additionalGhgSchema),
   });
 
@@ -987,23 +1073,17 @@ const GhgAdditionalForm = () => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <input 
-        {...register("keterangan")} 
-        placeholder="Description" 
-      />
+      <input {...register("keterangan")} placeholder="Description" />
       {errors.keterangan && <span>{errors.keterangan.message}</span>}
-      
-      <input 
-        {...register("nilaiInt", { valueAsNumber: true })} 
+
+      <input
+        {...register("nilaiInt", { valueAsNumber: true })}
         type="number"
-        placeholder="Numeric value" 
+        placeholder="Numeric value"
       />
-      
-      <input 
-        {...register("satuan")} 
-        placeholder="Unit" 
-      />
-      
+
+      <input {...register("satuan")} placeholder="Unit" />
+
       <button type="submit" disabled={createAdditional.isPending}>
         {createAdditional.isPending ? "Creating..." : "Create"}
       </button>
@@ -1013,6 +1093,7 @@ const GhgAdditionalForm = () => {
 ```
 
 ### 5. GHG Other Case Router (Step 3 - Other Case)
+
 ```tsx
 // Create other case GHG data with conditional queries
 const [projectId, setProjectId] = useState("");
@@ -1022,7 +1103,7 @@ const createGhgOtherCase = trpc.ghgOtherCase.add.useMutation();
 // Only fetch when project is selected
 const { data: otherCases } = trpc.ghgOtherCase.getByCarbonProjectId.useQuery(
   { carbonProjectId: projectId },
-  { 
+  {
     enabled: !!projectId,
     refetchOnWindowFocus: false,
     staleTime: 30 * 1000, // 30 seconds
@@ -1041,14 +1122,14 @@ const handleCreateOtherCase = () => {
 
 // Bulk operations
 const handleBulkDelete = async (ids: number[]) => {
-  const deletePromises = ids.map(id => 
+  const deletePromises = ids.map((id) =>
     trpc.ghgOtherCase.delete.mutate({ id })
   );
-  
+
   try {
     await Promise.all(deletePromises);
-    utils.ghgOtherCase.getByCarbonProjectId.invalidate({ 
-      carbonProjectId: projectId 
+    utils.ghgOtherCase.getByCarbonProjectId.invalidate({
+      carbonProjectId: projectId,
     });
     toast.success(`Deleted ${ids.length} records`);
   } catch (error) {
@@ -1058,6 +1139,7 @@ const handleBulkDelete = async (ids: number[]) => {
 ```
 
 ### 6. GHG Audit Router (Step 4)
+
 ```tsx
 // Create GHG audit data
 const createGhgAudit = trpc.ghgAudit.add.useMutation({
@@ -1135,20 +1217,22 @@ const GhgAuditManager = ({ projectId }: { projectId: string }) => {
       <button onClick={handleCreateAudit} disabled={isCreating}>
         {isCreating ? "Creating..." : "Create Audit"}
       </button>
-      
+
       {audits.map((audit) => (
         <div key={audit.id} className="audit-item">
           <h4>{audit.keterangan}</h4>
           <p>Value: {audit.nilaiInt || audit.nilaiString}</p>
-          <button onClick={() => updateAudit({
-            id: audit.id,
-            keterangan: "Updated audit data",
-          })}>
+          <button
+            onClick={() =>
+              updateAudit({
+                id: audit.id,
+                keterangan: "Updated audit data",
+              })
+            }
+          >
             Update
           </button>
-          <button onClick={() => deleteAudit({ id: audit.id })}>
-            Delete
-          </button>
+          <button onClick={() => deleteAudit({ id: audit.id })}>Delete</button>
         </div>
       ))}
     </div>
@@ -1157,6 +1241,7 @@ const GhgAuditManager = ({ projectId }: { projectId: string }) => {
 ```
 
 ### 7. Complete GHG Workflow Integration
+
 ```tsx
 const CompleteGhgWorkflow = ({ carbonProjectId }: { carbonProjectId: string }) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -1164,7 +1249,7 @@ const CompleteGhgWorkflow = ({ carbonProjectId }: { carbonProjectId: string }) =
 
   const steps = [
     "GHG Verification",
-    "GHG Calculation", 
+    "GHG Calculation",
     "GHG Process Analysis",
     "GHG Audit"
   ];
@@ -1209,7 +1294,7 @@ const CompleteGhgWorkflow = ({ carbonProjectId }: { carbonProjectId: string }) =
     <div className="ghg-workflow">
       <div className="step-indicator">
         {steps.map((step, index) => (
-          <div 
+          <div
             key={index}
             className={`step ${currentStep > index + 1 ? 'completed' : ''} ${currentStep === index + 1 ? 'active' : ''}`}
           >
@@ -1219,7 +1304,7 @@ const CompleteGhgWorkflow = ({ carbonProjectId }: { carbonProjectId: string }) =
       </div>
 
       {currentStep === 1 && (
-        <VerificationStep 
+        <VerificationStep
           onComplete={(data) => {
             createVerification.mutate({
               carbonProjectId,
@@ -1230,7 +1315,7 @@ const CompleteGhgWorkflow = ({ carbonProjectId }: { carbonProjectId: string }) =
       )}
 
       {currentStep === 2 && (
-        <CalculationStep 
+        <CalculationStep
           onComplete={(data) => {
             createCalculation.mutate({
               carbonProjectId,
@@ -1241,14 +1326,14 @@ const CompleteGhgWorkflow = ({ carbonProjectId }: { carbonProjectId: string }) =
       )}
 
       {currentStep === 3 && (
-        <ProcessStep 
+        <ProcessStep
           onComplete={handleStep3Complete}
           carbonProjectId={carbonProjectId}
         />
       )}
 
       {currentStep === 4 && (
-        <AuditStep 
+        <AuditStep
           onComplete={(data) => {
             createAudit.mutate({
               carbonProjectId,
@@ -1270,6 +1355,7 @@ const CompleteGhgWorkflow = ({ carbonProjectId }: { carbonProjectId: string }) =
 ```
 
 ### 8. GHG Data Validation & Error Handling
+
 ```tsx
 // Custom validation schemas for GHG data
 const ghgValidationSchemas = {
@@ -1278,7 +1364,7 @@ const ghgValidationSchemas = {
     nilaiInt: z.number().min(0, "Value must be positive").optional(),
     satuan: z.string().min(1, "Unit is required").optional(),
   }),
-  
+
   calculation: z.object({
     keterangan: z.string().min(10, "Detailed description required"),
     nilaiInt: z.number().min(0).max(10000, "Value out of range").optional(),
@@ -1288,26 +1374,28 @@ const ghgValidationSchemas = {
 
 // Error handling with specific GHG error types
 const GhgErrorHandler = ({ error }: { error: any }) => {
-  if (error?.data?.code === 'NOT_FOUND') {
+  if (error?.data?.code === "NOT_FOUND") {
     return <div className="error">Carbon project not found</div>;
   }
-  
-  if (error?.data?.code === 'FORBIDDEN') {
+
+  if (error?.data?.code === "FORBIDDEN") {
     return <div className="error">Access denied to this tenant</div>;
   }
-  
+
   if (error?.data?.zodError) {
     return (
       <div className="validation-errors">
-        {Object.entries(error.data.zodError.fieldErrors).map(([field, messages]) => (
-          <div key={field} className="field-error">
-            <strong>{field}:</strong> {messages?.join(', ')}
-          </div>
-        ))}
+        {Object.entries(error.data.zodError.fieldErrors).map(
+          ([field, messages]) => (
+            <div key={field} className="field-error">
+              <strong>{field}:</strong> {messages?.join(", ")}
+            </div>
+          )
+        )}
       </div>
     );
   }
-  
+
   return <div className="error">An unexpected error occurred</div>;
 };
 
@@ -1337,21 +1425,23 @@ const GhgDataForm = () => {
 ## GHG Router Field Specifications
 
 ### Common Fields Across All GHG Routers
+
 All GHG routers (`ghgVerification`, `ghgCalculation`, `ghgProcess`, `ghgAdditional`, `ghgOtherCase`, `ghgAudit`) share the same field structure:
 
 ```tsx
 interface GhgDataStructure {
-  id: number;                    // Auto-generated identity
-  carbonProjectId: string;       // UUID reference to carbon project
-  keterangan: string;           // Required description/explanation
-  nilaiInt?: number;            // Optional integer value
-  nilaiString?: string;         // Optional string value  
-  satuan?: string;              // Optional unit of measurement
-  source?: string;              // Optional data source reference
+  id: number; // Auto-generated identity
+  carbonProjectId: string; // UUID reference to carbon project
+  keterangan: string; // Required description/explanation
+  nilaiInt?: number; // Optional integer value
+  nilaiString?: string; // Optional string value
+  satuan?: string; // Optional unit of measurement
+  source?: string; // Optional data source reference
 }
 ```
 
 ### Field Usage Guidelines
+
 - **`keterangan`**: Always required, minimum 1 character
 - **`nilaiInt`** vs **`nilaiString`**: Use based on data type - numeric calculations use `nilaiInt`, text-based values use `nilaiString`
 - **`satuan`**: Recommended for numeric values (e.g., "kg CO2e", "tCO2e/ha", "%")

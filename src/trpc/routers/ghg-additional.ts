@@ -24,7 +24,89 @@ const updateStepTigaAdditionalSchema = z.object({
   source: z.string().optional(),
 });
 
+const bulkAddStepTigaAdditionalSchema = z.object({
+  carbonProjectId: z.string().uuid(),
+  items: z.array(z.object({
+    keterangan: z.string().min(1, "Keterangan is required"),
+    nilaiInt: z.number().optional(),
+    nilaiString: z.string().optional(),
+    satuan: z.string().optional(),
+    source: z.string().optional(),
+  })).min(1, "At least one item is required"),
+});
+
 export const ghgAdditionalRouter = createTRPCRouter({
+  // Bulk add step tiga additionals
+  bulkAdd: protectedProcedure
+    .input(bulkAddStepTigaAdditionalSchema)
+    .mutation(async ({ ctx, input }) => {
+      try {
+        // Get the carbon project to check tenant ownership
+        const project = await db
+          .select()
+          .from(carbonProject)
+          .where(eq(carbonProject.id, input.carbonProjectId))
+          .limit(1);
+
+        if (project.length === 0) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Carbon project not found",
+          });
+        }
+
+        // Check if user is member of this tenant
+        const userTenant = await db
+          .select()
+          .from(tenantUser)
+          .where(
+            and(
+              eq(tenantUser.tenantId, project[0].tenantId),
+              eq(tenantUser.userId, ctx.user.id),
+              eq(tenantUser.isActive, true)
+            )
+          )
+          .limit(1);
+
+        if (userTenant.length === 0) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Access denied to this tenant",
+          });
+        }
+
+        // Prepare bulk insert data
+        const insertData = input.items.map(item => ({
+          carbonProjectId: input.carbonProjectId,
+          keterangan: item.keterangan,
+          nilaiInt: item.nilaiInt,
+          nilaiString: item.nilaiString,
+          satuan: item.satuan,
+          source: item.source,
+        }));
+
+        // Bulk insert step tiga additionals
+        const newStepTigaAdditionals = await db
+          .insert(stepTigaAdditional)
+          .values(insertData)
+          .returning();
+
+        return {
+          success: true,
+          stepTigaAdditionals: newStepTigaAdditionals,
+          count: newStepTigaAdditionals.length,
+        };
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to bulk create step tiga additionals",
+        });
+      }
+    }),
+
   // Add new step tiga additional
   add: protectedProcedure
     .input(stepTigaAdditionalSchema)
