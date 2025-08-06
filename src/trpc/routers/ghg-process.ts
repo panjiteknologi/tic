@@ -2,7 +2,10 @@ import { z } from "zod";
 import { eq, and } from "drizzle-orm";
 import { protectedProcedure, createTRPCRouter } from "../init";
 import { db } from "@/db";
-import { stepTigaGhgCalculationProcess, carbonProject } from "@/db/schema/carbon-calculation-schema";
+import {
+  stepTigaGhgCalculationProcess,
+  carbonProject,
+} from "@/db/schema/carbon-calculation-schema";
 import { tenantUser } from "@/db/schema/tenant-schema";
 import { TRPCError } from "@trpc/server";
 
@@ -17,7 +20,7 @@ const stepTigaGhgCalculationProcessSchema = z.object({
 
 const updateStepTigaGhgCalculationProcessSchema = z.object({
   id: z.number(),
-  keterangan: z.string().min(1, "Keterangan is required"),
+  keterangan: z.string().optional(),
   nilaiInt: z.number().optional(),
   nilaiString: z.string().optional(),
   satuan: z.string().optional(),
@@ -26,13 +29,17 @@ const updateStepTigaGhgCalculationProcessSchema = z.object({
 
 const bulkAddStepTigaGhgCalculationProcessSchema = z.object({
   carbonProjectId: z.string().uuid(),
-  items: z.array(z.object({
-    keterangan: z.string().min(1, "Keterangan is required"),
-    nilaiInt: z.number().optional(),
-    nilaiString: z.string().optional(),
-    satuan: z.string().optional(),
-    source: z.string().optional(),
-  })).min(1, "At least one item is required"),
+  items: z
+    .array(
+      z.object({
+        keterangan: z.string().min(1, "Keterangan is required"),
+        nilaiInt: z.number().optional(),
+        nilaiString: z.string().optional(),
+        satuan: z.string().optional(),
+        source: z.string().optional(),
+      })
+    )
+    .min(1, "At least one item is required"),
 });
 
 export const ghgProcessRouter = createTRPCRouter({
@@ -76,7 +83,7 @@ export const ghgProcessRouter = createTRPCRouter({
         }
 
         // Prepare bulk insert data
-        const insertData = input.items.map(item => ({
+        const insertData = input.items.map((item) => ({
           carbonProjectId: input.carbonProjectId,
           keterangan: item.keterangan,
           nilaiInt: item.nilaiInt,
@@ -187,7 +194,10 @@ export const ghgProcessRouter = createTRPCRouter({
             tenantId: carbonProject.tenantId,
           })
           .from(stepTigaGhgCalculationProcess)
-          .innerJoin(carbonProject, eq(stepTigaGhgCalculationProcess.carbonProjectId, carbonProject.id))
+          .innerJoin(
+            carbonProject,
+            eq(stepTigaGhgCalculationProcess.carbonProjectId, carbonProject.id)
+          )
           .where(eq(stepTigaGhgCalculationProcess.id, input.id))
           .limit(1);
 
@@ -263,7 +273,10 @@ export const ghgProcessRouter = createTRPCRouter({
             tenantId: carbonProject.tenantId,
           })
           .from(stepTigaGhgCalculationProcess)
-          .innerJoin(carbonProject, eq(stepTigaGhgCalculationProcess.carbonProjectId, carbonProject.id))
+          .innerJoin(
+            carbonProject,
+            eq(stepTigaGhgCalculationProcess.carbonProjectId, carbonProject.id)
+          )
           .where(eq(stepTigaGhgCalculationProcess.id, input.id))
           .limit(1);
 
@@ -295,7 +308,9 @@ export const ghgProcessRouter = createTRPCRouter({
         }
 
         // Delete step tiga ghg calculation process
-        await db.delete(stepTigaGhgCalculationProcess).where(eq(stepTigaGhgCalculationProcess.id, input.id));
+        await db
+          .delete(stepTigaGhgCalculationProcess)
+          .where(eq(stepTigaGhgCalculationProcess.id, input.id));
 
         return {
           success: true,
@@ -331,7 +346,10 @@ export const ghgProcessRouter = createTRPCRouter({
           tenantId: carbonProject.tenantId,
         })
         .from(stepTigaGhgCalculationProcess)
-        .innerJoin(carbonProject, eq(stepTigaGhgCalculationProcess.carbonProjectId, carbonProject.id))
+        .innerJoin(
+          carbonProject,
+          eq(stepTigaGhgCalculationProcess.carbonProjectId, carbonProject.id)
+        )
         .where(eq(stepTigaGhgCalculationProcess.id, input.id))
         .limit(1);
 
@@ -419,7 +437,12 @@ export const ghgProcessRouter = createTRPCRouter({
           source: stepTigaGhgCalculationProcess.source,
         })
         .from(stepTigaGhgCalculationProcess)
-        .where(eq(stepTigaGhgCalculationProcess.carbonProjectId, input.carbonProjectId));
+        .where(
+          eq(
+            stepTigaGhgCalculationProcess.carbonProjectId,
+            input.carbonProjectId
+          )
+        );
 
       return { stepTigaGhgCalculationProcesses: projectProcesses };
     }),

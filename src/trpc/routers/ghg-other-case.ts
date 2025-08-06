@@ -2,7 +2,10 @@ import { z } from "zod";
 import { eq, and } from "drizzle-orm";
 import { protectedProcedure, createTRPCRouter } from "../init";
 import { db } from "@/db";
-import { stepTigaOtherCase, carbonProject } from "@/db/schema/carbon-calculation-schema";
+import {
+  stepTigaOtherCase,
+  carbonProject,
+} from "@/db/schema/carbon-calculation-schema";
 import { tenantUser } from "@/db/schema/tenant-schema";
 import { TRPCError } from "@trpc/server";
 
@@ -17,7 +20,7 @@ const stepTigaOtherCaseSchema = z.object({
 
 const updateStepTigaOtherCaseSchema = z.object({
   id: z.number(),
-  keterangan: z.string().min(1, "Keterangan is required"),
+  keterangan: z.string().optional(),
   nilaiInt: z.number().optional(),
   nilaiString: z.string().optional(),
   satuan: z.string().optional(),
@@ -26,13 +29,17 @@ const updateStepTigaOtherCaseSchema = z.object({
 
 const bulkAddStepTigaOtherCaseSchema = z.object({
   carbonProjectId: z.string().uuid(),
-  items: z.array(z.object({
-    keterangan: z.string().min(1, "Keterangan is required"),
-    nilaiInt: z.number().optional(),
-    nilaiString: z.string().optional(),
-    satuan: z.string().optional(),
-    source: z.string().optional(),
-  })).min(1, "At least one item is required"),
+  items: z
+    .array(
+      z.object({
+        keterangan: z.string().min(1, "Keterangan is required"),
+        nilaiInt: z.number().optional(),
+        nilaiString: z.string().optional(),
+        satuan: z.string().optional(),
+        source: z.string().optional(),
+      })
+    )
+    .min(1, "At least one item is required"),
 });
 
 export const ghgOtherCaseRouter = createTRPCRouter({
@@ -76,7 +83,7 @@ export const ghgOtherCaseRouter = createTRPCRouter({
         }
 
         // Prepare bulk insert data
-        const insertData = input.items.map(item => ({
+        const insertData = input.items.map((item) => ({
           carbonProjectId: input.carbonProjectId,
           keterangan: item.keterangan,
           nilaiInt: item.nilaiInt,
@@ -187,7 +194,10 @@ export const ghgOtherCaseRouter = createTRPCRouter({
             tenantId: carbonProject.tenantId,
           })
           .from(stepTigaOtherCase)
-          .innerJoin(carbonProject, eq(stepTigaOtherCase.carbonProjectId, carbonProject.id))
+          .innerJoin(
+            carbonProject,
+            eq(stepTigaOtherCase.carbonProjectId, carbonProject.id)
+          )
           .where(eq(stepTigaOtherCase.id, input.id))
           .limit(1);
 
@@ -263,7 +273,10 @@ export const ghgOtherCaseRouter = createTRPCRouter({
             tenantId: carbonProject.tenantId,
           })
           .from(stepTigaOtherCase)
-          .innerJoin(carbonProject, eq(stepTigaOtherCase.carbonProjectId, carbonProject.id))
+          .innerJoin(
+            carbonProject,
+            eq(stepTigaOtherCase.carbonProjectId, carbonProject.id)
+          )
           .where(eq(stepTigaOtherCase.id, input.id))
           .limit(1);
 
@@ -295,7 +308,9 @@ export const ghgOtherCaseRouter = createTRPCRouter({
         }
 
         // Delete step tiga other case
-        await db.delete(stepTigaOtherCase).where(eq(stepTigaOtherCase.id, input.id));
+        await db
+          .delete(stepTigaOtherCase)
+          .where(eq(stepTigaOtherCase.id, input.id));
 
         return {
           success: true,
@@ -331,7 +346,10 @@ export const ghgOtherCaseRouter = createTRPCRouter({
           tenantId: carbonProject.tenantId,
         })
         .from(stepTigaOtherCase)
-        .innerJoin(carbonProject, eq(stepTigaOtherCase.carbonProjectId, carbonProject.id))
+        .innerJoin(
+          carbonProject,
+          eq(stepTigaOtherCase.carbonProjectId, carbonProject.id)
+        )
         .where(eq(stepTigaOtherCase.id, input.id))
         .limit(1);
 

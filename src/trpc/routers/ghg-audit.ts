@@ -2,7 +2,10 @@ import { z } from "zod";
 import { eq, and } from "drizzle-orm";
 import { protectedProcedure, createTRPCRouter } from "../init";
 import { db } from "@/db";
-import { stepEmpatGhgAudit, carbonProject } from "@/db/schema/carbon-calculation-schema";
+import {
+  stepEmpatGhgAudit,
+  carbonProject,
+} from "@/db/schema/carbon-calculation-schema";
 import { tenantUser } from "@/db/schema/tenant-schema";
 import { TRPCError } from "@trpc/server";
 
@@ -17,7 +20,7 @@ const stepEmpatGhgAuditSchema = z.object({
 
 const updateStepEmpatGhgAuditSchema = z.object({
   id: z.number(),
-  keterangan: z.string().min(1, "Keterangan is required"),
+  keterangan: z.string().optional(),
   nilaiInt: z.number().optional(),
   nilaiString: z.string().optional(),
   satuan: z.string().optional(),
@@ -26,13 +29,17 @@ const updateStepEmpatGhgAuditSchema = z.object({
 
 const bulkAddStepEmpatGhgAuditSchema = z.object({
   carbonProjectId: z.string().uuid(),
-  items: z.array(z.object({
-    keterangan: z.string().min(1, "Keterangan is required"),
-    nilaiInt: z.number().optional(),
-    nilaiString: z.string().optional(),
-    satuan: z.string().optional(),
-    source: z.string().optional(),
-  })).min(1, "At least one item is required"),
+  items: z
+    .array(
+      z.object({
+        keterangan: z.string().min(1, "Keterangan is required"),
+        nilaiInt: z.number().optional(),
+        nilaiString: z.string().optional(),
+        satuan: z.string().optional(),
+        source: z.string().optional(),
+      })
+    )
+    .min(1, "At least one item is required"),
 });
 
 export const ghgAuditRouter = createTRPCRouter({
@@ -76,7 +83,7 @@ export const ghgAuditRouter = createTRPCRouter({
         }
 
         // Prepare bulk insert data
-        const insertData = input.items.map(item => ({
+        const insertData = input.items.map((item) => ({
           carbonProjectId: input.carbonProjectId,
           keterangan: item.keterangan,
           nilaiInt: item.nilaiInt,
@@ -187,7 +194,10 @@ export const ghgAuditRouter = createTRPCRouter({
             tenantId: carbonProject.tenantId,
           })
           .from(stepEmpatGhgAudit)
-          .innerJoin(carbonProject, eq(stepEmpatGhgAudit.carbonProjectId, carbonProject.id))
+          .innerJoin(
+            carbonProject,
+            eq(stepEmpatGhgAudit.carbonProjectId, carbonProject.id)
+          )
           .where(eq(stepEmpatGhgAudit.id, input.id))
           .limit(1);
 
@@ -263,7 +273,10 @@ export const ghgAuditRouter = createTRPCRouter({
             tenantId: carbonProject.tenantId,
           })
           .from(stepEmpatGhgAudit)
-          .innerJoin(carbonProject, eq(stepEmpatGhgAudit.carbonProjectId, carbonProject.id))
+          .innerJoin(
+            carbonProject,
+            eq(stepEmpatGhgAudit.carbonProjectId, carbonProject.id)
+          )
           .where(eq(stepEmpatGhgAudit.id, input.id))
           .limit(1);
 
@@ -295,7 +308,9 @@ export const ghgAuditRouter = createTRPCRouter({
         }
 
         // Delete step empat ghg audit
-        await db.delete(stepEmpatGhgAudit).where(eq(stepEmpatGhgAudit.id, input.id));
+        await db
+          .delete(stepEmpatGhgAudit)
+          .where(eq(stepEmpatGhgAudit.id, input.id));
 
         return {
           success: true,
@@ -331,7 +346,10 @@ export const ghgAuditRouter = createTRPCRouter({
           tenantId: carbonProject.tenantId,
         })
         .from(stepEmpatGhgAudit)
-        .innerJoin(carbonProject, eq(stepEmpatGhgAudit.carbonProjectId, carbonProject.id))
+        .innerJoin(
+          carbonProject,
+          eq(stepEmpatGhgAudit.carbonProjectId, carbonProject.id)
+        )
         .where(eq(stepEmpatGhgAudit.id, input.id))
         .limit(1);
 
