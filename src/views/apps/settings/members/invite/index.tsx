@@ -548,7 +548,7 @@ const InviteView = () => {
                   <div className="space-y-2">
                     <h4 className="font-medium text-green-700">
                       Successful Invitations
-                    </h4>
+                    </span>
                     {bulkResults.results.map((result: any, index: number) => (
                       <div
                         key={index}
@@ -590,7 +590,7 @@ const InviteView = () => {
                   <div className="space-y-2">
                     <h4 className="font-medium text-red-700">
                       Failed Invitations
-                    </h4>
+                    </span>
                     {bulkResults.errors.map((error: any, index: number) => (
                       <div
                         key={index}

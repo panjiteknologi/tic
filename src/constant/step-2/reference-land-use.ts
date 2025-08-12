@@ -1,4 +1,13 @@
 const referenceLandUse = {
+  landUseReference: {
+    keterangan: "Reference land use (CSR)",
+    satuan: "Unit",
+    type: "text",
+    placeholder: "Input CSR",
+    disabled: false,
+    labelColor: "text-black",
+    bold: false,
+  },
   socstReference: {
     keterangan: "Standard soil organic carbon SOCST",
     satuan: "tC/ha",

@@ -1,7 +1,7 @@
+import { Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormCalculationTypes } from "@/types/carbon-types";
-import { Fragment } from "react";
 import ProductInputCalculation from "./product-input-calculation";
 import RawMaterialsnputCalculation from "./raw-materials-input-calculation";
 import FertilizerInputCalculation from "./fertilizer-input-calculation";
@@ -17,9 +17,22 @@ export default function FormGHGVerification({
   renderInput,
   isSubmitting,
 }: FormCalculationTypes) {
+  const sections = [
+    { title: "Products", Component: ProductInputCalculation },
+    { title: "Raw Materials Input", Component: RawMaterialsnputCalculation },
+    { title: "Fertilizer", Component: FertilizerInputCalculation },
+    { title: "Herbicides", Component: HerbicidesInputCalculation },
+    { title: "Energy", Component: EnergyInputCalculation },
+    {
+      title: "Total Cultivation Emissions",
+      Component: CultivationEmissionInputCalculation,
+    },
+    { title: "Land Use Change", Component: LandUseChangeInputCalculation },
+  ];
+
   return (
     <Fragment>
-      <div className="flex justify-end sticky top-0 z-10 bg-white">
+      <div className="flex justify-end sticky top-0 z-20 py-3 bg-white">
         <Button
           form="carbon-form"
           type="submit"
@@ -29,88 +42,24 @@ export default function FormGHGVerification({
           {isSubmitting ? "Saving..." : "Save Calculation"}
         </Button>
       </div>
-      <div className="w-full space-y-6 mt-6 mb-6">
-        <form
-          id="carbon-form"
-          onSubmit={handleSubmit}
-          className="space-y-6 w-full"
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle>📦 Product</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ProductInputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>🌽 Raw Materials</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RawMaterialsnputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>🧪 Fertilizer (Nitrogen)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <FertilizerInputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>🧴 Herbicides</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <HerbicidesInputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>⚡ Energy</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <EnergyInputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>🌾 Cultivation Emissions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CultivationEmissionInputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>🌍 Land Use Change</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <LandUseChangeInputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
+      <div className="w-full py-6 mx-auto">
+        <form id="carbon-form" onSubmit={handleSubmit} className="space-y-6">
+          {sections.map(({ title, Component }, idx) => (
+            <Card
+              key={idx}
+              className="p-0 shadow-md border border-gray-200 hover:shadow-lg transition"
+            >
+              <CardHeader className="rounded-t-2xl bg-gradient-to-r from-sky-500 to-sky-700 text-white p-3">
+                <CardTitle className="text-md tracking-wide font-bold px-2">
+                  {title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="py-2">
+                <Component {...{ form, handleChange, renderInput }} />
+              </CardContent>
+            </Card>
+          ))}
         </form>
       </div>
     </Fragment>

@@ -1,10 +1,12 @@
 const emissionProcessing = {
   ep: {
     keterangan: "Emissions processing",
-    satuan: "g CO2eq/MJ Bioethanol",
+    satuan: "g CO₂eq/MJ Bioethanol",
     type: "number",
-    disabled: false,
+    disabled: true,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
 };
 

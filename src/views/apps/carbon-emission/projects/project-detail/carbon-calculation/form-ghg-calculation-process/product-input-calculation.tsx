@@ -8,39 +8,42 @@ export default function ProductInputCalculation({
   renderInput,
 }: FormCalculationTypes) {
   return (
-    <div className="space-y-4 mx-5 mb-6">
-      <div>
+    <Fragment>
+      <div className="mx-5 mb-6">
         <p className="text-sm font-semibold">Main Product:</p>
-        {Object.entries(product).map(([key, value]) => (
-          <Fragment key={key}>
-            {renderInput(
-              value.keterangan,
-              key,
-              value.satuan,
-              value.disabled,
-              value.type,
-              value.placeholder
-            )}
-          </Fragment>
-        ))}
-      </div>
-      <div>
-        <div className="text-sm font-semibold flex flex-row">
-          Co-products: <p className="text-red-500">*</p>
+        <div className="space-y-4 mt-3">
+          {Object.entries(product).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder
+              )}
+            </Fragment>
+          ))}
         </div>
       </div>
-      {Object.entries(coProduct).map(([key, value]) => (
-        <Fragment key={key}>
-          {renderInput(
-            value.keterangan,
-            key,
-            value.satuan,
-            value.disabled,
-            value.type,
-            value.placeholder
-          )}
-        </Fragment>
-      ))}
-    </div>
+
+      <div className="mx-5 mb-6">
+        <p className="text-sm font-semibold">Co-products:</p>
+        <div className="space-y-4 mt-3">
+          {Object.entries(coProduct).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </div>
+    </Fragment>
   );
 }

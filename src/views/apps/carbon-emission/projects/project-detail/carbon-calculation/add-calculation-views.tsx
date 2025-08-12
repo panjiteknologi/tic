@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { ArrowLeft } from "lucide-react";
@@ -34,7 +35,9 @@ export default function AddCalculationViews({
     unit?: string,
     disabled: boolean = false,
     type: "text" | "number" | "date" = "number",
-    inputPlaceholder?: string
+    inputPlaceholder?: string,
+    labelColor?: string | any,
+    bold?: boolean
   ) => {
     const sourceName = (name + "Source") as keyof typeof form;
 
@@ -43,48 +46,65 @@ export default function AddCalculationViews({
       handleChange(name, value);
     };
 
+    const labelClass = `text-sm ${labelColor || ""} ${bold ? "font-bold" : ""}`;
+
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-4 items-center">
-        <Label className="text-sm sm:text-xs sm:col-span-4">
-          <span className="inline-flex items-center gap-1">
-            {label}
-            {!disabled && label && <span className="text-red-500">*</span>}
-          </span>
-        </Label>
+      <div className="flex flex-col gap-2 sm:grid sm:grid-cols-12 sm:gap-4 w-full">
+        <div className="sm:col-span-3">
+          <Label className={labelClass}>
+            <span className="inline-flex items-center gap-1">
+              {label}
+              {!disabled && label && <span className="text-red-500">*</span>}
+            </span>
+          </Label>
+        </div>
 
-        {type === "date" ? (
+        <div className="sm:col-span-3">
+          {type === "date" ? (
+            <Input
+              type="date"
+              value={
+                form[name] ? format(new Date(form[name]), "yyyy-MM-dd") : ""
+              }
+              onChange={handleDateChange}
+              disabled={disabled}
+              required={!disabled}
+              className={`w-full ${
+                disabled ? "bg-gray-100 cursor-not-allowed" : ""
+              }`}
+            />
+          ) : (
+            <Input
+              type={type}
+              value={form[name]}
+              placeholder={type === "number" ? "0" : inputPlaceholder}
+              onChange={(e) => handleChange(name, e.target.value)}
+              disabled={disabled}
+              required={!disabled}
+              className={`w-full ${
+                disabled ? "bg-gray-100 cursor-not-allowed" : ""
+              }`}
+            />
+          )}
+        </div>
+
+        <div className="sm:col-span-2">
+          {unit && <p className="text-sm text-gray-700 mt-2 sm:mt-0">{unit}</p>}
+        </div>
+
+        <div className="sm:col-span-4">
           <Input
-            type="date"
-            value={form[name] ? format(new Date(form[name]), "yyyy-MM-dd") : ""}
-            onChange={handleDateChange}
+            type="text"
+            value={form[sourceName] || ""}
+            placeholder="Source"
+            onChange={(e) => handleChange(sourceName, e.target.value)}
             disabled={disabled}
-            className={`w-full sm:col-span-3 ${
+            required={!disabled}
+            className={`w-full ${
               disabled ? "bg-gray-100 cursor-not-allowed" : ""
             }`}
           />
-        ) : (
-          <Input
-            type={type}
-            value={form[name]}
-            placeholder={type === "number" ? "0" : inputPlaceholder}
-            onChange={(e) => handleChange(name, e.target.value)}
-            disabled={disabled}
-            className={`w-full sm:col-span-3 ${
-              disabled ? "bg-gray-100 cursor-not-allowed" : ""
-            }`}
-          />
-        )}
-
-        <p className="text-sm sm:text-xs sm:col-span-2">{unit || ""}</p>
-
-        <Input
-          type="text"
-          value={form[sourceName] || ""}
-          placeholder="Source"
-          onChange={(e) => handleChange(sourceName, e.target.value)}
-          disabled={false}
-          className="w-full sm:col-span-3"
-        />
+        </div>
       </div>
     );
   };

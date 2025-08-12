@@ -1,4 +1,4 @@
-const cultivation = {
+const upstream = {
   transportType: {
     keterangan: "Type of transport",
     satuan: "",
@@ -12,63 +12,37 @@ const cultivation = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   totalCornTransported: {
-    keterangan: "Total quantity of corn transported",
+    keterangan:
+      "Total quantity of corn transported to produce all ethanol and co-products",
     satuan: "mt/Year",
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   distanceLoaded: {
-    keterangan: "Total distance loaded (average)",
+    keterangan: "Total distance loaded (average distances)",
     satuan: "km",
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   distanceEmpty: {
-    keterangan: "Total distance empty (average)",
+    keterangan: "Total distance empty (average distances)",
     satuan: "km",
     type: "number",
     disabled: false,
     placeholder: "",
-  },
-  fuelConsumptionLoaded: {
-    keterangan: "Fuel consumption loaded",
-    satuan: "L/km",
-    type: "number",
-    disabled: false,
-    placeholder: "",
-  },
-  fuelConsumptionEmpty: {
-    keterangan: "Fuel consumption empty",
-    satuan: "L/km",
-    type: "number",
-    disabled: false,
-    placeholder: "",
-  },
-  emissionFactorFuel: {
-    keterangan: "Emission factor fuel",
-    satuan: "kgCO2eq/L",
-    type: "number",
-    disabled: false,
-    placeholder: "",
-  },
-  upstreamTransportTotal: {
-    keterangan: "Upstream transport corn",
-    satuan: "kg CO2eq/Year",
-    type: "number",
-    disabled: false,
-    placeholder: "",
-  },
-  upstreamTransportPerTon: {
-    keterangan: "Upstream transport per ton",
-    satuan: "kgCO2eq/dry-mt corn",
-    type: "number",
-    disabled: false,
-    placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
 };
 
-export default cultivation;
+export default upstream;

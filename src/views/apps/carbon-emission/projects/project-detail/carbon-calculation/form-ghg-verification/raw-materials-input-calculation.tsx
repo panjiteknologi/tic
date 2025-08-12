@@ -15,7 +15,9 @@ export default function RawMaterialsnputCalculation({
             value.satuan,
             value.disabled,
             value.type,
-            value.placeholder
+            value.placeholder,
+            value.labelColor,
+            value.bold
           )}
         </Fragment>
       ))}

@@ -1,15 +1,26 @@
 "use client";
 
+import { carbonCapture } from "@/constant/step-6";
 import { FormCalculationTypes } from "@/types/carbon-types";
+import { Fragment } from "react";
 
 export default function CarbonCaptureInputCalculation({
   renderInput,
 }: FormCalculationTypes) {
   return (
     <div className="space-y-4 mx-5 mb-6">
-      {renderInput("CO2 captured", "co2Capture", "kg CO2/yr")}
-      {renderInput("CO2e emissions", "co2eEmission", "kg CO2e/t ethanol")}
-      {renderInput("", "", "g CO2e/MJ ethanol")}
+      {Object.entries(carbonCapture).map(([key, value]) => (
+        <Fragment key={key}>
+          {renderInput(
+            value.keterangan,
+            key,
+            value.satuan,
+            value.disabled,
+            value.type,
+            value.placeholder
+          )}
+        </Fragment>
+      ))}
     </div>
   );
 }

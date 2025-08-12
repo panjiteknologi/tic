@@ -1,14 +1,14 @@
-import { allofactor } from "@/constant/step-3";
+import { allocation } from "@/constant/step-3";
 import { FormCalculationTypes } from "@/types/carbon-types";
 import { Fragment } from "react";
 
-export default function AllofactorInputCalculation({
+export default function AllocationInputCalculation({
   renderInput,
 }: FormCalculationTypes) {
   return (
     <Fragment>
       <div className="space-y-4 mx-5 mb-6">
-        {Object.entries(allofactor).map(([key, value]) => (
+        {Object.entries(allocation).map(([key, value]) => (
           <Fragment key={key}>
             {renderInput(
               value.keterangan,
@@ -16,7 +16,9 @@ export default function AllofactorInputCalculation({
               value.satuan,
               value.disabled,
               value.type,
-              value.placeholder
+              value.placeholder,
+              value.labelColor,
+              value.bold
             )}
           </Fragment>
         ))}

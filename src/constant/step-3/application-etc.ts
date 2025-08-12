@@ -1,10 +1,10 @@
 const applicationETC = {
   co2eqEmissions: {
-    keterangan: "CO2eq emissions",
+    keterangan: "CO₂eq emissions",
     satuan: "",
     type: "text",
     disabled: false,
-    placeholder: "Input CO2eq emissions",
+    placeholder: "Input CO₂eq emissions",
   },
 };
 

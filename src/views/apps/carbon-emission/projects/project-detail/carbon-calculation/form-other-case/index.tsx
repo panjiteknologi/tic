@@ -1,7 +1,7 @@
+import { Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormCalculationTypes } from "@/types/carbon-types";
-import { Fragment } from "react";
 import RawMaterialsnputCalculation from "./raw-materials-input-calculation";
 import CultivationEmissionInputCalculation from "./cultivation-emission-input-calculation";
 import UpstreamTransportInputCalculation from "./upstream-transport-input-calculation";
@@ -17,9 +17,40 @@ export default function FormOtherCaseCalculation({
   renderInput,
   isSubmitting,
 }: FormCalculationTypes) {
+  const sections = [
+    {
+      title: "General Infos",
+      Component: InfosInputCalculation,
+    },
+    {
+      title: "Raw materials and products",
+      Component: RawMaterialsnputCalculation,
+    },
+    {
+      title: "Cultivation emissions",
+      Component: CultivationEmissionInputCalculation,
+    },
+    {
+      title: "Upstream transport emissions",
+      Component: UpstreamTransportInputCalculation,
+    },
+    {
+      title: "Process-specific emissions",
+      Component: ProcessSpecificInputCalculation,
+    },
+    {
+      title: "Conversion and allocation",
+      Component: ConversionAllocationInputCalculation,
+    },
+    {
+      title: "Calculation of GHG-savings",
+      Component: GHGSavingsInputCalculation,
+    },
+  ];
+
   return (
     <Fragment>
-      <div className="flex justify-end sticky top-0 z-10 bg-white">
+      <div className="flex justify-end sticky top-0 z-20 py-3 bg-white">
         <Button
           form="carbon-form"
           type="submit"
@@ -29,85 +60,28 @@ export default function FormOtherCaseCalculation({
           {isSubmitting ? "Saving..." : "Save Calculation"}
         </Button>
       </div>
-      <div className="w-full space-y-6 mt-6 mb-6">
-        <form
-          id="carbon-form"
-          onSubmit={handleSubmit}
-          className="space-y-6 w-full"
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle></CardTitle>
-            </CardHeader>
-            <CardContent>
-              <InfosInputCalculation {...{ form, handleChange, renderInput }} />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Raw materials and products</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RawMaterialsnputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Cultivation emissions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CultivationEmissionInputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Upstream transport emissions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <UpstreamTransportInputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Process-specific emissions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ProcessSpecificInputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Conversion and allocation </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ConversionAllocationInputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Calculation of GHG-savings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <GHGSavingsInputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
+      <div className="w-full py-6 mx-auto">
+        <form id="carbon-form" onSubmit={handleSubmit} className="space-y-6">
+          {sections.map(({ title, Component }, idx) => (
+            <Card
+              key={idx}
+              className="p-0 shadow-md border border-gray-200 hover:shadow-lg transition duration-300"
+            >
+              <CardHeader className="rounded-tr-2xl rounded-tl-2xl bg-gradient-to-r from-sky-500 to-sky-700 text-white p-3">
+                <CardTitle className="px-2 text-md tracking-wide font-bold">
+                  {title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="py-2">
+                <Component
+                  form={form}
+                  handleChange={handleChange}
+                  renderInput={renderInput}
+                />
+              </CardContent>
+            </Card>
+          ))}
         </form>
       </div>
     </Fragment>

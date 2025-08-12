@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import * as React from "react";
@@ -16,8 +17,8 @@ type ConfirmDialogProps = {
   onOpenChange: (open: boolean) => void;
   title: string;
   description?: string;
-  onConfirm: () => void;
-  isDelete: boolean;
+  onConfirm: (id: any) => void;
+  isDelete?: boolean;
   cancelText?: string;
 };
 

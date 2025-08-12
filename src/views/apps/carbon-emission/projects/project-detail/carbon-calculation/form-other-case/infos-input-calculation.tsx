@@ -6,37 +6,46 @@ export default function InfosInputCalculation({
   renderInput,
 }: FormCalculationTypes) {
   return (
-    <div className="space-y-4 mx-5 mb-6">
-      {Object.entries(infos).map(([key, value]) => (
-        <Fragment key={key}>
-          {renderInput(
-            value.keterangan,
-            key,
-            value.satuan,
-            value.disabled,
-            value.type,
-            value.placeholder
-          )}
-        </Fragment>
-      ))}
-      <p className="text-sm font-semibold">Time period of data input</p>
-      {Object.entries(period).map(([key, value]) => (
-        <Fragment key={key}>
-          {renderInput(
-            value.keterangan,
-            key,
-            value.satuan,
-            value.disabled,
-            value.type,
-            value.placeholder
-          )}
-        </Fragment>
-      ))}
+    <Fragment>
+      <div className="space-y-4 mx-5 mb-6">
+        <div className="space-y-4 mt-3">
+          {Object.entries(infos).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </div>
 
-      <p className="text-sm font-semibold">
-        The time frame of data collection should be 12 months. It is suggested,
-        if possible, to consider the 12 months prior to the audit
-      </p>
-    </div>
+      <div className="space-y-4 mx-5 mb-6">
+        <span className="text-sm font-bold">Time period of data input</span>
+        <div className="space-y-4 mt-3">
+          {Object.entries(period).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder
+              )}
+            </Fragment>
+          ))}
+        </div>
+
+        <span className="text-sm font-bold">
+          The time frame of data collection should be 12 months. It is
+          suggested, if possible, to consider the 12 months prior to the audit
+        </span>
+      </div>
+    </Fragment>
   );
 }

@@ -1,80 +1,73 @@
 "use client";
 
+import { totalBatch1, totalBatch2, totalBatch3 } from "@/constant/step-6";
 import { FormCalculationTypes } from "@/types/carbon-types";
+import { Fragment } from "react";
 
 export default function TotalIndividuInputCalculation({
   renderInput,
 }: FormCalculationTypes) {
   return (
-    <div className="space-y-4 mx-5 mb-6">
-      <h4 className="text-md font-semibold">Batch 1</h4>
-      {renderInput(
-        "Cultivation emissions (eec)",
-        "cultivationEEC1",
-        "g CO2e/MJ ethanol"
-      )}
-      {renderInput(
-        "Processing emissions (ep)",
-        "processingEmission1",
-        "g CO2e/MJ ethanol"
-      )}
-      {renderInput(
-        "Emissions from transport & distribution (etd)",
-        "emissionTransportDistributionETD1",
-        "g CO2e/MJ ethanol"
-      )}
-      {renderInput(
-        "Carbon Capture and Replacement (eCCR)",
-        "eCCR1",
-        "g CO2e/MJ ethanol"
-      )}
-      {renderInput("Total emissions", "totalEmissions1", "g CO2e/MJ ethanol")}
+    <Fragment>
+      <div className="mx-5 mb-6">
+        <span className="text-sm font-bold">Batch 1</span>
+        <div className="space-y-4 mt-3">
+          {Object.entries(totalBatch1).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder,
+                value.labelColor,
+                value.bold
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </div>
 
-      <h4 className="text-md font-semibold">Batch 2</h4>
-      {renderInput(
-        "Cultivation emissions (eec)",
-        "cultivationEEC2",
-        "g CO2e/MJ ethanol"
-      )}
-      {renderInput(
-        "Processing emissions (ep)",
-        "processingEmission2",
-        "g CO2e/MJ ethanol"
-      )}
-      {renderInput(
-        "Emissions from transport & distribution (etd)",
-        "emissionTransportDistributionETD2",
-        "g CO2e/MJ ethanol"
-      )}
-      {renderInput(
-        "Carbon Capture and Replacement (eCCR)",
-        "eCCR2",
-        "g CO2e/MJ ethanol"
-      )}
-      {renderInput("Total emissions", "totalEmissions2", "g CO2e/MJ ethanol")}
+      <div className="mx-5 mb-6">
+        <span className="text-sm font-bold">Batch 2</span>
+        <div className="space-y-4 mt-3">
+          {Object.entries(totalBatch2).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder,
+                value.labelColor,
+                value.bold
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </div>
 
-      <h4 className="text-md font-semibold">Batch 3</h4>
-      {renderInput(
-        "Cultivation emissions (eec)",
-        "cultivationEEC3",
-        "g CO2e/MJ ethanol"
-      )}
-      {renderInput(
-        "Processing emissions (ep)",
-        "processingEmission3",
-        "g CO2e/MJ ethanol"
-      )}
-      {renderInput(
-        "Emissions from transport & distribution (etd)",
-        "emissionTransportDistributionETD3",
-        "g CO2e/MJ ethanol"
-      )}
-      {renderInput(
-        "Carbon Capture and Replacement (eCCR)",
-        "eCCR3",
-        "g CO2e/MJ ethanol"
-      )}
-      {renderInput("Total emissions", "totalEmissions3", "g CO2e/MJ ethanol")}
-    </div>
+      <div className="mx-5 mb-6">
+        <span className="text-sm font-bold">Batch 3</span>
+        <div className="space-y-4 mt-3">
+          {Object.entries(totalBatch3).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder,
+                value.labelColor,
+                value.bold
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </div>
+    </Fragment>
   );
 }

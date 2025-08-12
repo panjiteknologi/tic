@@ -1,20 +1,20 @@
 const totalProcessing = {
   totalProcessing1: {
-    keterangan: "Total Processing 1",
+    keterangan: "",
     satuan: "",
     type: "text",
     disabled: false,
     placeholder: "Input Total Processing",
   },
   totalProcessing2: {
-    keterangan: "Total Processing 2",
+    keterangan: "",
     satuan: "",
     type: "text",
     disabled: false,
     placeholder: "Input Total Processing",
   },
   totalProcessing3: {
-    keterangan: "Total Processing 3",
+    keterangan: "",
     satuan: "",
     type: "text",
     disabled: false,

@@ -1,7 +1,7 @@
+import { Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormCalculationTypes } from "@/types/carbon-types";
-import { Fragment } from "react";
 import FactorInputCalculation from "./factor-input-calculation";
 import OutputsCalculation from "./outputs-calculation";
 import InputsCalculation from "./inputs-calculation";
@@ -15,9 +15,20 @@ export default function FormAddViews({
   renderInput,
   isSubmitting,
 }: FormCalculationTypes) {
+  const sections = [
+    { title: "Input Factor", Component: FactorInputCalculation },
+    { title: "Outputs", Component: OutputsCalculation },
+    { title: "Inputs", Component: InputsCalculation },
+    {
+      title: "Process Specific Inputs",
+      Component: ProcessSpecificInputCalculation,
+    },
+    { title: "Emission Factors", Component: EmissionFactors },
+  ];
+
   return (
     <Fragment>
-      <div className="flex justify-end sticky top-0 z-10 bg-white">
+      <div className="flex justify-end sticky top-0 z-20 py-3 bg-white">
         <Button
           form="carbon-form"
           type="submit"
@@ -27,60 +38,24 @@ export default function FormAddViews({
           {isSubmitting ? "Saving..." : "Save Calculation"}
         </Button>
       </div>
-      <div className="w-full space-y-6 mt-6 mb-6">
-        <form
-          id="carbon-form"
-          onSubmit={handleSubmit}
-          className="space-y-6 w-full"
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle>Input factor</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <FactorInputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Outputs:</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <OutputsCalculation {...{ form, handleChange, renderInput }} />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Inputs:</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <InputsCalculation {...{ form, handleChange, renderInput }} />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Process specific inputs</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ProcessSpecificInputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Emission factors</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <EmissionFactors />
-            </CardContent>
-          </Card>
+      <div className="w-full py-6 mx-auto">
+        <form id="carbon-form" onSubmit={handleSubmit} className="space-y-6">
+          {sections.map(({ title, Component }, idx) => (
+            <Card
+              key={idx}
+              className="p-0 shadow-md border border-gray-200 hover:shadow-lg transition"
+            >
+              <CardHeader className="rounded-t-2xl bg-gradient-to-r from-sky-500 to-sky-700 text-white p-3">
+                <CardTitle className="text-md tracking-wide font-bold px-2">
+                  {title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="py-2">
+                <Component {...{ form, handleChange, renderInput }} />
+              </CardContent>
+            </Card>
+          ))}
         </form>
       </div>
     </Fragment>

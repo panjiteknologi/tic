@@ -5,6 +5,8 @@ const product = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-red-600",
+    bold: true,
   },
   moistureContent: {
     keterangan: "Moisture content of the anhydrous undenatured ethanol",
@@ -12,6 +14,8 @@ const product = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
 };
 

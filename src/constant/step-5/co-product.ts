@@ -1,10 +1,12 @@
-const product = {
+const coProduct = {
   cornOil: {
     keterangan: "Corn oil",
     satuan: "mt/Year",
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   cornOilMoisture: {
     keterangan: "Moisture content of corn oil",
@@ -12,6 +14,8 @@ const product = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   ddgs: {
     keterangan: "Dried Distillers Grains with Solubles (DDGS)",
@@ -19,6 +23,8 @@ const product = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   ddgsMoisture: {
     keterangan: "Moisture content of DDGS",
@@ -26,6 +32,8 @@ const product = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   wdg: {
     keterangan: "Wet Distillers Grains (WDG)",
@@ -33,6 +41,8 @@ const product = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   wdgMoisture: {
     keterangan: "Moisture content of WDG",
@@ -40,6 +50,8 @@ const product = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   syrup: {
     keterangan: "Soluble Distillers Grains (Syrup)",
@@ -47,6 +59,8 @@ const product = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   syrupMoisture: {
     keterangan: "Moisture content of Syrup",
@@ -54,7 +68,9 @@ const product = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
 };
 
-export default product;
+export default coProduct;

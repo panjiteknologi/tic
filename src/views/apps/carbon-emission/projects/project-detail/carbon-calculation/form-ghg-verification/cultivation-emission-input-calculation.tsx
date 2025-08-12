@@ -15,7 +15,9 @@ export default function CultivationEmissionInputCalculation({
             value.satuan,
             value.disabled,
             value.type,
-            value.placeholder
+            value.placeholder,
+            value.labelColor,
+            value.bold
           )}
         </Fragment>
       ))}

@@ -7,66 +7,79 @@ export default function GHGEmissionFPInputCalculation({
   renderInput,
 }: FormCalculationTypes) {
   return (
-    <div className="space-y-4 mx-5 mb-6">
-      <div>
-        <p className="text-sm font-semibold">A. Input amounts</p>
-        {Object.entries(ghgFP).map(([key, value]) => (
-          <Fragment key={key}>
-            {renderInput(
-              value.keterangan,
-              key,
-              value.satuan,
-              value.disabled,
-              value.type,
-              value.placeholder
-            )}
-          </Fragment>
-        ))}
+    <Fragment>
+      <div className="mx-5 mb-6">
+        <span className="text-sm font-bold">A. Input amounts</span>
+        <div className="space-y-4 mt-3">
+          {Object.entries(ghgFP).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder
+              )}
+            </Fragment>
+          ))}
+        </div>
       </div>
-      {Object.entries(ghgFPName).map(([key, value]) => (
-        <Fragment key={key}>
-          {renderInput(
-            value.keterangan,
-            key,
-            value.satuan,
-            value.disabled,
-            value.type,
-            value.placeholder
-          )}
-        </Fragment>
-      ))}
-      <div>
-        <p className="text-sm font-semibold">B. Emission Factors</p>
+
+      <div className="mx-5 mb-6">
+        <div className="space-y-4 mt-3">
+          {Object.entries(ghgFPName).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder
+              )}
+            </Fragment>
+          ))}
+        </div>
       </div>
-      {Object.entries(emissionFactors).map(([key, value]) => (
-        <Fragment key={key}>
-          {renderInput(
-            value.keterangan,
-            key,
-            value.satuan,
-            value.disabled,
-            value.type,
-            value.placeholder
-          )}
-        </Fragment>
-      ))}
-      <div>
-        <p className="text-sm font-semibold">
+
+      <div className="mx-5 mb-6">
+        <span className="text-sm font-bold">B. Emission Factors</span>
+        <div className="space-y-4 mt-3">
+          {Object.entries(emissionFactors).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </div>
+
+      <div className="mx-5 mb-6">
+        <span className="text-sm font-bold">
           C. Total processing GHG emissions
-        </p>
+        </span>
+        <div className="space-y-4 mt-3">
+          {Object.entries(totalProcessing).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder
+              )}
+            </Fragment>
+          ))}
+        </div>
       </div>
-      {Object.entries(totalProcessing).map(([key, value]) => (
-        <Fragment key={key}>
-          {renderInput(
-            value.keterangan,
-            key,
-            value.satuan,
-            value.disabled,
-            value.type,
-            value.placeholder
-          )}
-        </Fragment>
-      ))}
-    </div>
+    </Fragment>
   );
 }

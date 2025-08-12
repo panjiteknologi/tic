@@ -1,10 +1,12 @@
 const emissionTransport = {
   et: {
-    keterangan: "Emissions transport",
-    satuan: "g CO2eq/MJ Bioethanol",
+    keterangan: "Emissions transport Corn",
+    satuan: "g CO₂eq/MJ Bioethanol",
     type: "number",
-    disabled: false,
+    disabled: true,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
 };
 

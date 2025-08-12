@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import RawMaterialsnputCalculation from "./raw-materials-input-calculation";
-import CultivationEmissionInputCalculation from "./cultivation-emission-input-calculation";
 import { FormCalculationTypes } from "@/types/carbon-types";
 import { Fragment } from "react";
+import RawMaterialsnputCalculation from "./raw-materials-input-calculation";
+import CultivationEmissionInputCalculation from "./cultivation-emission-input-calculation";
 import GHGEmissionReductionInputCalculation from "./ghg-emission-reduction-input-calculation";
 import TotalIndividuInputCalculation from "./total-individu-input-calculation";
 import CarbonCaptureInputCalculation from "./carbon-capture-input-calculation";
@@ -17,9 +17,40 @@ export default function FormGHGAuditCalculation({
   renderInput,
   isSubmitting,
 }: FormCalculationTypes) {
+  const sections = [
+    {
+      title: "Raw materials and products of the ethanol plant",
+      Component: RawMaterialsnputCalculation,
+    },
+    {
+      title: "Feedstock- and Allocation factor",
+      Component: FeedstockAllocationInputCalculation,
+    },
+    {
+      title: "Cultivation emissions (eec)",
+      Component: CultivationEmissionInputCalculation,
+    },
+    {
+      title: "Process specific emissions",
+      Component: ProcessSpecificInputCalculation,
+    },
+    {
+      title: "Carbon capture and replacement",
+      Component: CarbonCaptureInputCalculation,
+    },
+    {
+      title: "Total individual emissions and sum of emissions",
+      Component: TotalIndividuInputCalculation,
+    },
+    {
+      title: "GHG emission reduction potential",
+      Component: GHGEmissionReductionInputCalculation,
+    },
+  ];
+
   return (
     <Fragment>
-      <div className="flex justify-end sticky top-0 z-10 bg-white">
+      <div className="flex justify-end sticky top-0 z-20 py-3 bg-white">
         <Button
           form="carbon-form"
           type="submit"
@@ -29,92 +60,28 @@ export default function FormGHGAuditCalculation({
           {isSubmitting ? "Saving..." : "Save Calculation"}
         </Button>
       </div>
-      <div className="w-full space-y-6 mt-6 mb-6">
-        <form
-          id="carbon-form"
-          onSubmit={handleSubmit}
-          className="space-y-6 w-full"
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Raw materials and products of the ethanol plant
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RawMaterialsnputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Feedstock- and Allocation factor</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <FeedstockAllocationInputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Cultivation emissions eec</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CultivationEmissionInputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Process specific emissions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ProcessSpecificInputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Carbon capture and replacement</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CarbonCaptureInputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Total individual emissions and sum of emissions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TotalIndividuInputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>GHG emission reduction potential</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <GHGEmissionReductionInputCalculation
-                {...{ form, handleChange, renderInput }}
-              />
-            </CardContent>
-          </Card>
+      <div className="w-full py-6 mx-auto">
+        <form id="carbon-form" onSubmit={handleSubmit} className="space-y-6">
+          {sections.map(({ title, Component }, idx) => (
+            <Card
+              key={idx}
+              className="p-0 shadow-md border border-gray-200 hover:shadow-lg transition duration-300"
+            >
+              <CardHeader className="rounded-tr-2xl rounded-tl-2xl bg-gradient-to-r from-sky-500 to-sky-700 text-white p-3">
+                <CardTitle className="px-2 text-md tracking-wide font-bold">
+                  {title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="py-2">
+                <Component
+                  form={form}
+                  handleChange={handleChange}
+                  renderInput={renderInput}
+                />
+              </CardContent>
+            </Card>
+          ))}
         </form>
       </div>
     </Fragment>

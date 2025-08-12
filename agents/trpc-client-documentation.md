@@ -1385,7 +1385,7 @@ const GhgErrorHandler = ({ error }: { error: any }) => {
   if (error?.data?.zodError) {
     return (
       <div className="validation-errors">
-        {Object.entries(error.data.zodError.fieldErrors).map(
+        <div className="mt-2">{Object.entries(error.data.zodError.fieldErrors).map(
           ([field, messages]) => (
             <div key={field} className="field-error">
               <strong>{field}:</strong> {messages?.join(", ")}

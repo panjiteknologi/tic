@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 export type CarbonFormType = Record<string, string>;
 
-export function useCarbonCalculationForm() {
+export function useCalculationGHGVerification() {
   const [form, setForm] = useState<CarbonFormType>({
     //Products
     cornWet: "", //26
@@ -180,7 +180,6 @@ export function useCarbonCalculationForm() {
       indirectN2OEmissionsNH3NOx +
       indirectN2OEmissionsNLeachingRunoff;
 
-    console.log(co2eqEmissionsNitrogenFertilizersFieldN20HaYr);
     const co2eqEmissionsNitrogenFertilizersFieldN20TFFB =
       cornWet > 0
         ? (co2eqEmissionsNitrogenFertilizersHaYr +

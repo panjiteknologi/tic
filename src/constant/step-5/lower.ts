@@ -5,6 +5,8 @@ const lower = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   lowerBioethanol: {
     keterangan: "Bioethanol",
@@ -12,6 +14,8 @@ const lower = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   lowerCornOil: {
     keterangan: "Corn oil",
@@ -19,6 +23,8 @@ const lower = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   lowerDdgs: {
     keterangan: "Dried Distillers Grains with Solubles (DDGS)",
@@ -26,6 +32,8 @@ const lower = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   lowerWdg: {
     keterangan: "Wet Distillers Grains (WDG)",
@@ -33,6 +41,8 @@ const lower = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   lowerSyrup: {
     keterangan: "Soluble Distillers Grains (Syrup)",
@@ -40,6 +50,8 @@ const lower = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
 };
 

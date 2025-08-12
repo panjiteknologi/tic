@@ -2,16 +2,20 @@ const factor = {
   firstGatheringPoint: {
     keterangan: "First gathering point and oil mill at Malaysia",
     satuan: "",
-    type: "number",
+    type: "text",
     disabled: false,
-    placeholder: "",
+    placeholder: "Input in here...",
+    labelColor: "text-black",
+    bold: false,
   },
   pomeEfbTreatment: {
     keterangan: "POME and EFB treatment: Co-composting",
     satuan: "",
-    type: "number",
+    type: "text",
     disabled: false,
-    placeholder: "",
+    placeholder: "Input in here...",
+    labelColor: "text-black",
+    bold: false,
   },
 };
 

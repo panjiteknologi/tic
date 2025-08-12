@@ -5,6 +5,8 @@ const electricity = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   electricityOrigin: {
     keterangan: "Origin of the electricity",

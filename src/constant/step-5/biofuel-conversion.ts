@@ -3,8 +3,10 @@ const biofuelConversion = {
     keterangan: "Feedstock factor Ethanol",
     satuan: "",
     type: "number",
-    disabled: false,
+    disabled: true,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
 };
 

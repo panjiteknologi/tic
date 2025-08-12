@@ -5,6 +5,8 @@ const period = {
     type: "date",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   endingDate: {
     keterangan: "Ending Date",
@@ -12,6 +14,8 @@ const period = {
     type: "date",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
 };
 

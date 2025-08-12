@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { Fragment, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,7 @@ import { Input } from "@/components/ui/input";
 interface CarbonCalculationViewProps {
   projectId: string;
   data: EmissionsTypes[];
-  onEdit: (id: string) => void;
+  onEdit?: (updated: EmissionsTypes) => void;
   onDelete: (id: string) => void;
   activeStep: string;
 }
@@ -22,11 +21,9 @@ export function CarbonCalculationView({
   activeStep,
 }: CarbonCalculationViewProps) {
   const router = useRouter();
-
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   const [search, setSearch] = useState("");
-
   const [currentPage, setCurrentPage] = useState(1);
 
   const filteredData = useMemo(() => {
@@ -40,9 +37,7 @@ export function CarbonCalculationView({
   }, [search, data]);
 
   const isEmpty = !filteredData || filteredData.length === 0;
-
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentData = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
@@ -67,8 +62,8 @@ export function CarbonCalculationView({
 
   return (
     <Fragment>
-      <div className="p-2">
-        <div className="flex flex-row justify-between items-center mb-4">
+      <div className="space-y-4 mt-2 mb-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
           <h2 className="text-black text-lg font-bold">Carbon Calculation</h2>
           <Input
             placeholder="Search carbon data..."
@@ -78,15 +73,21 @@ export function CarbonCalculationView({
           />
         </div>
 
-        {data?.length > 0 ? null : (
-          <div className="flex justify-end mb-4">
+        {data?.length === 0 && (
+          <div className="flex justify-end">
             <Button className="cursor-pointer" onClick={goAddCalculation}>
               + Add Calculation
             </Button>
           </div>
         )}
 
-        <div className="overflow-x-auto">
+        <div
+          className={
+            isEmpty
+              ? ""
+              : "pb-4 w-full overflow-x-auto rounded-md border bg-white shadow-sm"
+          }
+        >
           <TableCalculationView
             data={currentData}
             onEdit={onEdit}

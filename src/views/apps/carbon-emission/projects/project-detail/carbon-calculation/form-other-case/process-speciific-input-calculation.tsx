@@ -12,78 +12,101 @@ export default function ProcessSpecificInputCalculation({
   renderInput,
 }: FormCalculationTypes) {
   return (
-    <div className="space-y-4 mx-5 mb-6">
-      <p className="text-sm font-semibold">Electricity consumption </p>
-      {Object.entries(electricity).map(([key, value]) => (
-        <Fragment key={key}>
-          {renderInput(
-            value.keterangan,
-            key,
-            value.satuan,
-            value.disabled,
-            value.type,
-            value.placeholder
-          )}
-        </Fragment>
-      ))}
+    <Fragment>
+      <div className="mx-5 mb-6">
+        <span className="text-sm font-bold">Electricity consumption</span>
+        <div className="space-y-4 mt-3">
+          {Object.entries(electricity).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </div>
+      <div className="mx-5 mb-6">
+        <span className="text-sm font-bold">Steam consumption</span>
+        <div className="space-y-4 mt-3">
+          {Object.entries(steamConsumption).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </div>
 
-      <p className="text-sm font-semibold">Steam consumption</p>
-      {Object.entries(steamConsumption).map(([key, value]) => (
-        <Fragment key={key}>
-          {renderInput(
-            value.keterangan,
-            key,
-            value.satuan,
-            value.disabled,
-            value.type,
-            value.placeholder
-          )}
-        </Fragment>
-      ))}
+      <div className="mx-5 mb-6">
+        <span className="text-sm font-bold">Process-specific inputs</span>
+        <div className="space-y-4 mt-3">
+          {Object.entries(processSpecificInputs).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </div>
 
-      <p className="text-sm font-semibold">Process-specific inputs</p>
-      {Object.entries(processSpecificInputs).map(([key, value]) => (
-        <Fragment key={key}>
-          {renderInput(
-            value.keterangan,
-            key,
-            value.satuan,
-            value.disabled,
-            value.type,
-            value.placeholder
-          )}
-        </Fragment>
-      ))}
+      <div className="mx-5 mb-6">
+        <span className="text-sm font-bold">
+          Emission factors for processing
+        </span>
+        <div className="space-y-4 mt-3">
+          {Object.entries(emissionFactor).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </div>
 
-      <p className="text-sm font-semibold">Emission factors for processing</p>
-      {Object.entries(emissionFactor).map(([key, value]) => (
-        <Fragment key={key}>
-          {renderInput(
-            value.keterangan,
-            key,
-            value.satuan,
-            value.disabled,
-            value.type,
-            value.placeholder
-          )}
-        </Fragment>
-      ))}
-
-      <p className="text-sm font-semibold">
-        Emissions from process-specific inputs (not allocated)
-      </p>
-      {Object.entries(allofactor).map(([key, value]) => (
-        <Fragment key={key}>
-          {renderInput(
-            value.keterangan,
-            key,
-            value.satuan,
-            value.disabled,
-            value.type,
-            value.placeholder
-          )}
-        </Fragment>
-      ))}
-    </div>
+      <div className="mx-5 mb-6">
+        <span className="text-sm font-bold">
+          Emissions from process-specific inputs (not allocated)
+        </span>
+        <div className="space-y-4 mt-3">
+          {Object.entries(allofactor).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder,
+                value.labelColor,
+                value.bold
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </div>
+    </Fragment>
   );
 }

@@ -6,22 +6,26 @@ export default function GHGSavingsInputCalculation({
   renderInput,
 }: FormCalculationTypes) {
   return (
-    <div className="space-y-4 mx-5 mb-6">
-      <p className="text-sm font-semibold">
+    <div className="mx-5 mb-6">
+      <span className="text-sm font-bold">
         Total emissions bioethanol (Raw material: corn from farm)
-      </p>
-      {Object.entries(ghgCalculation).map(([key, value]) => (
-        <Fragment key={key}>
-          {renderInput(
-            value.keterangan,
-            key,
-            value.satuan,
-            value.disabled,
-            value.type,
-            value.placeholder
-          )}
-        </Fragment>
-      ))}
+      </span>
+      <div className="space-y-4 mt-3">
+        {Object.entries(ghgCalculation).map(([key, value]) => (
+          <Fragment key={key}>
+            {renderInput(
+              value.keterangan,
+              key,
+              value.satuan,
+              value.disabled,
+              value.type,
+              value.placeholder,
+              value.labelColor,
+              value.bold
+            )}
+          </Fragment>
+        ))}
+      </div>
     </div>
   );
 }

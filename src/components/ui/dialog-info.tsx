@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { CheckCircle, AlertTriangle, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "./button";
 
 interface DialogInfoProps {
   open: boolean;
@@ -15,6 +16,7 @@ interface DialogInfoProps {
   description: string;
   variant?: "success" | "error" | "info";
   onOpenChange: (open: boolean) => void;
+  onClose?: () => void;
 }
 
 export function DialogInfo({
@@ -23,6 +25,7 @@ export function DialogInfo({
   description,
   variant = "info",
   onOpenChange,
+  onClose,
 }: DialogInfoProps) {
   const iconStyle = "w-12 h-12";
   const iconMap = {
@@ -55,6 +58,7 @@ export function DialogInfo({
             {description}
           </p>
         </DialogHeader>
+        <Button onClick={onClose}>Tutup</Button>
       </DialogContent>
     </Dialog>
   );

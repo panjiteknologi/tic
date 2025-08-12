@@ -21,4 +21,5 @@ export { default as inputNeeded } from "./input-needed";
 export { default as calculationEnergy } from "./calculation-energy";
 export { default as allocationFactor } from "./allocation-factor";
 export { default as biofuelConversion } from "./biofuel-conversion";
-export { default as rawMaterialConversion } from "./raw-material-conversion";
+export { default as bioethanolTransport } from "./bioethanol-transport";
+export { default as bioethanolCultivation } from "./bioethanol-cultivation";

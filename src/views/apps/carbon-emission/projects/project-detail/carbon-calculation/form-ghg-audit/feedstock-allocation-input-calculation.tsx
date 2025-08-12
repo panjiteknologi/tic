@@ -1,23 +1,51 @@
+import { allocationFactor, feedstockFactor } from "@/constant/step-6";
 import { FormCalculationTypes } from "@/types/carbon-types";
+import { Fragment } from "react";
 
 export default function FeedstockAllocationInputCalculation({
   renderInput,
 }: FormCalculationTypes) {
   return (
-    <div className="space-y-4 mx-5 mb-6">
-      <h4 className="text-md font-semibold">Feedstock factor</h4>
-      {renderInput("Corn dry", "cornDry", "ton dry per year")}
-      {renderInput("Energy content corn", "energyContentCorn", "MJ")}
-      {renderInput("Ethanol -dry", "ethanolDry", "ton dry per year")}
-      {renderInput("Energy content ethanol", "energyContentEthanol", "MJ")}
+    <Fragment>
+      <div className="mx-5 mb-6">
+        <span className="text-sm font-bold">Feedstock factor</span>
+        <div className="space-y-4 mt-3">
+          {Object.entries(feedstockFactor).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder,
+                value.labelColor,
+                value.bold
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </div>
 
-      {renderInput("Feedstock factor", "feedstockFactor", "")}
-
-      <h4 className="text-md font-semibold">Allocation factor</h4>
-      {renderInput("Ethanol energy content", "ethanolEnergyContent", "MJ")}
-      {renderInput("DDGS", "ddgs", "ton per year")}
-      {renderInput("Energy content DDGS", "energyContentDDGS", "MJ")}
-      {renderInput("Allocation factor", "allocationFactor", "")}
-    </div>
+      <div className="mx-5 mb-6">
+        <span className="text-sm font-bold">Allocation factor</span>
+        <div className="space-y-4 mt-3">
+          {Object.entries(allocationFactor).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder,
+                value.labelColor,
+                value.bold
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </div>
+    </Fragment>
   );
 }

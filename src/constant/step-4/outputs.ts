@@ -5,6 +5,8 @@ const outputs = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   palmKernels: {
     keterangan: "Palm kernels",
@@ -12,6 +14,8 @@ const outputs = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   nutShells: {
     keterangan: "Nut shells",
@@ -19,6 +23,8 @@ const outputs = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   efbAmount: {
     keterangan: "EFB amount",
@@ -26,6 +32,8 @@ const outputs = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
 };
 

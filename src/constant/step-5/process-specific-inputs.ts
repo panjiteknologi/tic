@@ -5,6 +5,8 @@ const processSpecificInputs = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   freshWater: {
     keterangan: "Amount of fresh water deployed",
@@ -12,6 +14,8 @@ const processSpecificInputs = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   alphaAmylase: {
     keterangan: "Alpha Amylase Enzyme",
@@ -19,6 +23,8 @@ const processSpecificInputs = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   glucoAmylase: {
     keterangan: "Gluco Amylase Enzyme",
@@ -26,6 +32,8 @@ const processSpecificInputs = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   sulfuricAcid: {
     keterangan: "Sulfuric Acid",
@@ -33,6 +41,8 @@ const processSpecificInputs = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   sodiumHydroxide: {
     keterangan: "Sodium Hydroxide",
@@ -40,6 +50,8 @@ const processSpecificInputs = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   urea: {
     keterangan: "Urea",
@@ -47,6 +59,8 @@ const processSpecificInputs = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
 };
 

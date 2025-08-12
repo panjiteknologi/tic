@@ -6,33 +6,43 @@ export default function UpstreamTransportInputCalculation({
   renderInput,
 }: FormCalculationTypes) {
   return (
-    <div className="space-y-4 mx-5 mb-6">
-      {Object.entries(upstream).map(([key, value]) => (
-        <Fragment key={key}>
-          {renderInput(
-            value.keterangan,
-            key,
-            value.satuan,
-            value.disabled,
-            value.type,
-            value.placeholder
-          )}
-        </Fragment>
-      ))}
+    <Fragment>
+      <div className="mx-5 mb-6">
+        <div className="space-y-4 mt-3">
+          {Object.entries(upstream).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </div>
 
-      <p className="text-sm font-semibold">Emission factor for transport</p>
-      {Object.entries(upstreamTransport).map(([key, value]) => (
-        <Fragment key={key}>
-          {renderInput(
-            value.keterangan,
-            key,
-            value.satuan,
-            value.disabled,
-            value.type,
-            value.placeholder
-          )}
-        </Fragment>
-      ))}
-    </div>
+      <div className="mx-5 mb-6">
+        <p className="text-sm font-semibold">Emission factor for transport</p>
+        <div className="space-y-4 mt-3">
+          {Object.entries(upstreamTransport).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder,
+                value.labelColor,
+                value.bold
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </div>
+    </Fragment>
   );
 }

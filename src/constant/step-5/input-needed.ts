@@ -5,13 +5,17 @@ const inputNeeded = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   totalInputDry: {
     keterangan: "Total input required for all products (dry)",
     satuan: "dry-mt corn",
     type: "number",
-    disabled: false,
+    disabled: true,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   cornMoisture: {
     keterangan: "Moisture content corn",
@@ -19,6 +23,8 @@ const inputNeeded = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
 };
 

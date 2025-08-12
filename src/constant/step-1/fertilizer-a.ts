@@ -5,6 +5,8 @@ const fertilizerA = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   urea: {
     keterangan: "Urea",
@@ -12,6 +14,8 @@ const fertilizerA = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   appliedManure: {
     keterangan: "Applied quantity of liquid and solid manure",
@@ -19,6 +23,8 @@ const fertilizerA = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   nContentCropResidue: {
     keterangan: "N-Content crop residue",
@@ -26,6 +32,8 @@ const fertilizerA = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   totalNSyntheticFertilizer: {
     keterangan: "Total N amount from synthetic fertilizer",
@@ -33,20 +41,26 @@ const fertilizerA = {
     type: "number",
     disabled: true,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   emissionFactorAmmoniumNitrate: {
     keterangan: "Emission factor Ammonium nitrate",
-    satuan: "kgCO2eq/kg N",
+    satuan: "kgCO₂eq/kg N",
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   emissionFactorUrea: {
     keterangan: "Emission factor Urea",
-    satuan: "kgCO2eq/kg N",
+    satuan: "kgCO₂eq/kg N",
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   emissionFactorDirectN2O: {
     keterangan: "Emission factor direct N2O emissions",
@@ -54,6 +68,8 @@ const fertilizerA = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   fractionNVolatilizedSynthetic: {
     keterangan: "Fraction of Nsynt that volatiles as NH3, NOx",
@@ -61,6 +77,8 @@ const fertilizerA = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   fractionNVolatilizedOrganic: {
     keterangan: "Fraction of Norg that volatiles as NH3,NOx",
@@ -68,6 +86,8 @@ const fertilizerA = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   emissionFactorAtmosphericDeposition: {
     keterangan: "Emission factor atmospheric deposition",
@@ -75,6 +95,8 @@ const fertilizerA = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   fractionNLostRunoff: {
     keterangan: "Fraction of mineralized N, lost via runoff/leaching",
@@ -82,6 +104,8 @@ const fertilizerA = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   emissionFactorLeachingRunoff: {
     keterangan: "Emission factor leaching/runoff",
@@ -89,6 +113,8 @@ const fertilizerA = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
 };
 

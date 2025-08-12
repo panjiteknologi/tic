@@ -1,58 +1,79 @@
 "use client";
 
+import {
+  electricityConsumption,
+  heatProduction,
+  processEmission,
+} from "@/constant/step-6";
 import { FormCalculationTypes } from "@/types/carbon-types";
+import { Fragment } from "react";
 
 export default function ProcessSpecificInputCalculation({
   renderInput,
 }: FormCalculationTypes) {
   return (
-    <div className="space-y-4 mx-5 mb-6">
-      <h4 className="text-md font-semibold">
-        Emissions of electricity consumption
-      </h4>
-      {renderInput(
-        "Electricity for ethanol production",
-        "electricityForEthanolProduction",
-        "kWh/yr"
-      )}
-      {renderInput(
-        "Electricity for CO2 liquefication",
-        "co2LiqueficationElectricity",
-        "kWh/yr"
-      )}
-      {renderInput(
-        "Emission factor electricity",
-        "emissionFactorElectricity",
-        "kg CO2e/kWh"
-      )}
-      {renderInput(
-        "CO2e emissions electricity",
-        "co2eElectricity",
-        "kg CO2e/yr"
-      )}
+    <Fragment>
+      <div className="mx-5 mb-6">
+        <span className="text-sm font-bold">
+          Emissions of electricity consumption
+        </span>
+        <div className="space-y-4 mt-3">
+          {Object.entries(electricityConsumption).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder,
+                value.labelColor,
+                value.bold
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </div>
 
-      <h4 className="text-md font-semibold">Emissions of heat production</h4>
-      {renderInput("Heat from natural gas", "heatFromNaturalGas", "MJ/yr")}
-      {renderInput(
-        "Emission factor natural gas",
-        "emissionFactorNaturalGas",
-        "kg CO2e/MJ"
-      )}
-      {renderInput(
-        "CO2e emissions heat production",
-        "co2eEmissionHeatProduction",
-        "kg CO2e/yr"
-      )}
+      <div className="mx-5 mb-6">
+        <span className="text-sm font-bold">Emissions of heat production</span>
+        <div className="space-y-4 mt-3">
+          {Object.entries(heatProduction).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder,
+                value.labelColor,
+                value.bold
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </div>
 
-      <h4 className="text-md font-semibold">Sum of process emissions</h4>
-      {renderInput("CO2e emissions", "co2eEmissions", "kg CO2e/yr")}
-      {renderInput("", "co2eEmissionsEtEthanol", "kg CO2e/t ethanol")}
-      {renderInput("", "co2eEmissionsMJEthanol", "g CO2eq/MJ ethanol")}
-      {renderInput(
-        "Allocated processing emissions",
-        "allocatedProcessingEmissions",
-        "g CO2eq/MJ ethanol"
-      )}
-    </div>
+      <div className="mx-5 mb-6">
+        <span className="text-sm font-bold">Sum of process emissions</span>
+        <div className="space-y-4 mt-3">
+          {Object.entries(processEmission).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder,
+                value.labelColor,
+                value.bold
+              )}
+            </Fragment>
+          ))}
+        </div>
+      </div>
+    </Fragment>
   );
 }

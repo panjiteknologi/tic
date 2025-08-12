@@ -5,6 +5,8 @@ const processSpecificInputs = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   heat: {
     keterangan: "Heat (nutshells, fibres in conventional boiler)",
@@ -12,6 +14,8 @@ const processSpecificInputs = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   cycloHexane: {
     keterangan: "Cyclo-Hexane",
@@ -19,6 +23,8 @@ const processSpecificInputs = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   processWaterConsumption: {
     keterangan: "Process water consumption",
@@ -26,6 +32,8 @@ const processSpecificInputs = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
 };
 

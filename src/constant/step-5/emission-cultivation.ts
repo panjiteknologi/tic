@@ -1,10 +1,12 @@
 const emissionCultivation = {
   eec: {
-    keterangan: "Emissions cultivation",
-    satuan: "g CO2eq/MJ Bioethanol",
+    keterangan: "Emissions cultivation corn",
+    satuan: "g CO₂eq/MJ Bioethanol",
     type: "number",
-    disabled: false,
+    disabled: true,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
 };
 

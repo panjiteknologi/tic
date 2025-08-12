@@ -5,6 +5,8 @@ const product = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   moistureContent: {
     keterangan: "Moisture content",
@@ -12,6 +14,8 @@ const product = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   cornDry: {
     keterangan: "Corn - dry",
@@ -19,6 +23,8 @@ const product = {
     type: "number",
     disabled: true,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   cultivationArea: {
     keterangan: "Cultivation area",
@@ -26,6 +32,8 @@ const product = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
 };
 

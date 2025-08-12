@@ -5,6 +5,8 @@ const rawMaterial = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   emissionFactorCornSeeds: {
     keterangan: "Emission factor corn seeds",
@@ -12,6 +14,8 @@ const rawMaterial = {
     type: "number",
     disabled: false,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
   co2eqEmissionsRawMaterialInputHaYr: {
     keterangan: "CO₂eq emissions raw material input",
@@ -19,6 +23,8 @@ const rawMaterial = {
     type: "number",
     disabled: true,
     placeholder: "",
+    labelColor: "text-black",
+    bold: true,
   },
   co2eqEmissionsRawMaterialInputTFFB: {
     keterangan: "",
@@ -26,6 +32,8 @@ const rawMaterial = {
     type: "number",
     disabled: true,
     placeholder: "",
+    labelColor: "text-black",
+    bold: false,
   },
 };
 

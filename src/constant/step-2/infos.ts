@@ -22,7 +22,7 @@ const infos = {
   },
   ddv: {
     keterangan: "DDV rape seed/canola",
-    satuan: "g CO2eq/ MU",
+    satuan: "g CO₂eq/ MU",
     type: "text",
     disabled: false,
     placeholder: "Input DDV rape seed/canola",

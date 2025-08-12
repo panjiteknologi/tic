@@ -6,4 +6,5 @@ export { default as herbicides } from "./herbicides";
 export { default as energyA } from "./energy-a";
 export { default as energyB } from "./energy-b";
 export { default as cultivation } from "./cultivation";
-export { default as landUse } from "./land-use";
+export { default as landUseA } from "./land-use-a";
+export { default as landUseB } from "./land-use-b";

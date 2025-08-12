@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -8,13 +9,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Edit, Trash } from "lucide-react";
+import { Edit, Trash, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { EmissionsTypes } from "@/types/carbon-types";
+import { Spinner } from "@/components/ui/shadcn-io/spinner";
 
 type TableCalculationViewProps = {
   data: EmissionsTypes[];
-  onEdit?: (id: string) => void;
+  onEdit?: (id: EmissionsTypes) => void;
   onDelete?: (id: string) => void;
   isEmpty?: boolean;
   totalPages?: number;
@@ -35,87 +38,238 @@ export function TableCalculationView({
   onNext,
   setCurrentPage,
 }: TableCalculationViewProps) {
-  const startIndex = (currentPage - 1) * data.length;
+  const [isLoading, setIsLoading] = useState(false);
+  const [editingRowId, setEditingRowId] = useState<string | null>(null);
+  const [editedData, setEditedData] = useState<Partial<EmissionsTypes>>({});
+
+  const itemsPerPage = 10;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+
+  const startEditing = (row: EmissionsTypes) => {
+    setEditingRowId(row.id);
+    setEditedData({ ...row });
+  };
+
+  const cancelEditing = () => {
+    setEditingRowId(null);
+    setEditedData({});
+  };
+
+  const handleInputChange = (field: keyof EmissionsTypes, value: string) => {
+    setEditedData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const saveChanges = async () => {
+    if (onEdit && editedData.id) {
+      setIsLoading(true);
+      try {
+        await onEdit(editedData as EmissionsTypes);
+        setEditingRowId(null);
+        setEditedData({});
+      } catch (error) {
+        console.error("Error saat mengupdate:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
 
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto rounded-md overflow-hidden border shadow-inner">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted">
-              <TableHead className="w-10">#</TableHead>
-              <TableHead>Carbon Name</TableHead>
-              <TableHead>Nilai</TableHead>
-              <TableHead>Satuan</TableHead>
-              <TableHead>Source</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isEmpty ? (
-              <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="text-center py-4 text-muted-foreground"
-                >
-                  No data available
-                </TableCell>
+      <div className="w-full overflow-x-auto rounded-md border shadow-inner">
+        <div className="min-w-[700px]">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted">
+                <TableHead className="w-10">#</TableHead>
+                <TableHead>Carbon Name</TableHead>
+                <TableHead>Nilai</TableHead>
+                <TableHead>Satuan</TableHead>
+                <TableHead>Source</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            ) : (
-              data.map((emission, index) => (
-                <TableRow key={emission.id}>
-                  <TableCell>{startIndex + index + 1}</TableCell>
-                  <TableCell>{emission.keterangan ?? "-"}</TableCell>
-                  <TableCell>
-                    {emission.nilaiInt ?? emission.nilaiString}
-                  </TableCell>
-                  <TableCell>{emission.satuan ?? "-"}</TableCell>
-                  <TableCell>{emission.source ?? "-"}</TableCell>
-                  <TableCell className="text-right space-x-2">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => onEdit?.(emission.id)}
-                    >
-                      <Edit className="w-4 h-4 text-blue-500" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => onDelete?.(emission.id)}
-                    >
-                      <Trash className="w-4 h-4 text-red-500" />
-                    </Button>
+            </TableHeader>
+            <TableBody>
+              {isEmpty ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={6}
+                    className="text-center py-4 text-muted-foreground"
+                  >
+                    No data available
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                data.map((row, index) => {
+                  const isEditing = editingRowId === row.id;
+
+                  return (
+                    <TableRow key={row.id}>
+                      <TableCell>{startIndex + index + 1}</TableCell>
+
+                      <TableCell>
+                        {isEditing ? (
+                          <Input
+                            value={editedData.keterangan || ""}
+                            onChange={(e) =>
+                              handleInputChange("keterangan", e.target.value)
+                            }
+                            disabled={isLoading}
+                            className="w-full"
+                          />
+                        ) : (
+                          row.keterangan || "-"
+                        )}
+                      </TableCell>
+
+                      <TableCell>
+                        {isEditing ? (
+                          <Input
+                            value={
+                              editedData.nilaiInt?.toString() ||
+                              editedData.nilaiString?.toString() ||
+                              ""
+                            }
+                            onChange={(e) =>
+                              handleInputChange("nilaiInt", e.target.value)
+                            }
+                            disabled={isLoading}
+                            className="w-full"
+                          />
+                        ) : (
+                          row.nilaiInt ?? row.nilaiString ?? "-"
+                        )}
+                      </TableCell>
+
+                      <TableCell>
+                        {isEditing ? (
+                          <Input
+                            value={editedData.satuan || ""}
+                            onChange={(e) =>
+                              handleInputChange("satuan", e.target.value)
+                            }
+                            disabled={isLoading}
+                            className="w-full"
+                          />
+                        ) : (
+                          row.satuan || "-"
+                        )}
+                      </TableCell>
+
+                      <TableCell>
+                        {isEditing ? (
+                          <Input
+                            value={editedData.source || ""}
+                            onChange={(e) =>
+                              handleInputChange("source", e.target.value)
+                            }
+                            disabled={isLoading}
+                            className="w-full"
+                          />
+                        ) : (
+                          row.source || "-"
+                        )}
+                      </TableCell>
+
+                      <TableCell className="text-right space-x-2 whitespace-nowrap">
+                        {isEditing ? (
+                          <>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={saveChanges}
+                              disabled={isLoading}
+                            >
+                              {isLoading ? (
+                                <Spinner className="w-4 h-4 text-green-600" />
+                              ) : (
+                                <Check className="w-4 h-4 text-green-600" />
+                              )}
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={cancelEditing}
+                            >
+                              <X className="w-4 h-4 text-gray-500" />
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => startEditing(row)}
+                              disabled={isLoading}
+                              className="hover:bg-blue-100 transition-all"
+                            >
+                              <Edit className="w-4 h-4 text-blue-500" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => onDelete?.(row.id)}
+                              disabled={isLoading}
+                              className="hover:bg-red-100 transition-all"
+                            >
+                              <Trash className="w-4 h-4 text-red-500" />
+                            </Button>
+                          </>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       {!isEmpty && totalPages > 1 && (
-        <div className="flex items-center justify-between flex-wrap gap-2 px-2">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-2">
           <Button
             variant="outline"
             size="sm"
             onClick={onPrev}
             disabled={currentPage === 1}
+            className="w-full sm:w-auto"
           >
             Prev
           </Button>
 
-          <div className="hidden sm:flex items-center gap-2">
-            {Array.from({ length: totalPages }, (_, i) => (
-              <Button
-                key={i}
-                variant={currentPage === i + 1 ? "default" : "outline"}
-                size="sm"
-                onClick={() => setCurrentPage?.(i + 1)}
-              >
-                {i + 1}
-              </Button>
-            ))}
+          <div className="flex flex-wrap justify-center gap-1 max-w-full overflow-x-auto">
+            {(() => {
+              const pageButtons = [];
+              const maxVisiblePages = 10;
+
+              let startPage = Math.max(
+                1,
+                currentPage - Math.floor(maxVisiblePages / 2)
+              );
+              let endPage = startPage + maxVisiblePages - 1;
+
+              if (endPage > totalPages) {
+                endPage = totalPages;
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+              }
+
+              for (let i = startPage; i <= endPage; i++) {
+                pageButtons.push(
+                  <Button
+                    key={i}
+                    variant={currentPage === i ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage?.(i)}
+                    className="min-w-[36px]"
+                  >
+                    {i}
+                  </Button>
+                );
+              }
+
+              return pageButtons;
+            })()}
           </div>
 
           <Button
@@ -123,6 +277,7 @@ export function TableCalculationView({
             size="sm"
             onClick={onNext}
             disabled={currentPage === totalPages}
+            className="w-full sm:w-auto"
           >
             Next
           </Button>

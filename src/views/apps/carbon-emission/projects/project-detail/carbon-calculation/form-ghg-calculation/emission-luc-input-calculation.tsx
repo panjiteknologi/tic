@@ -10,64 +10,70 @@ export default function EmissionLUCInputCalculation({
 }: FormCalculationTypes) {
   return (
     <Fragment>
-      <div className="space-y-4 mx-5 mb-6">
-        {Object.entries(emissionsLUC).map(([key, value]) => (
-          <Fragment key={key}>
-            {renderInput(
-              value.keterangan,
-              key,
-              value.satuan,
-              value.disabled,
-              value.type,
-              value.placeholder
-            )}
-          </Fragment>
-        ))}
+      <div className="mx-5 mb-6">
+        <div className="space-y-4 mt-3">
+          {Object.entries(emissionsLUC).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder
+              )}
+            </Fragment>
+          ))}
+        </div>
       </div>
 
-      <div className="space-y-4 mx-5 mb-6">
-        <h4 className="text-md font-semibold">Reference Land Use (CSR)</h4>
-        {Object.entries(referenceLandUse).map(([key, value]) => (
-          <Fragment key={key}>
-            {renderInput(
-              value.keterangan,
-              key,
-              value.satuan,
-              value.disabled,
-              value.type,
-              value.placeholder
-            )}
-          </Fragment>
-        ))}
-
-        <h4 className="text-md font-semibold mt-6">Actual Land Use (CSA)</h4>
-        {Object.entries(actualLandUse).map(([key, value]) => (
-          <Fragment key={key}>
-            {renderInput(
-              value.keterangan,
-              key,
-              value.satuan,
-              value.disabled,
-              value.type,
-              value.placeholder
-            )}
-          </Fragment>
-        ))}
+      <div className="mx-5 mb-6">
+        <span className="text-sm font-bold">LUC emissions per ton canola</span>
+        <div className="space-y-4 mt-3">
+          {Object.entries(referenceLandUse).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder
+              )}
+            </Fragment>
+          ))}
+          {Object.entries(actualLandUse).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder
+              )}
+            </Fragment>
+          ))}
+        </div>
       </div>
 
-      <div className="space-y-4 mx-5 mb-6">
-        {Object.entries(GHGEmissionLUC).map(([key, value]) => (
-          <Fragment key={key}>
-            {renderInput(
-              value.keterangan,
-              key,
-              value.satuan,
-              value.disabled,
-              value.type,
-              value.placeholder
-            )}
-          </Fragment>
-        ))}
+      <div className="mx-5 mb-6">
+        <div className="space-y-4 mt-3">
+          {Object.entries(GHGEmissionLUC).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder,
+                value.labelColor,
+                value.bold
+              )}
+            </Fragment>
+          ))}
+        </div>
       </div>
     </Fragment>
   );

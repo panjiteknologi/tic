@@ -18,7 +18,6 @@ export default function ProjectsPage() {
 
   const [infoDialogTitle, setInfoDialogTitle] = useState("");
   const [infoDialogDesc, setInfoDialogDesc] = useState("");
-
   const [infoVariant, setInfoVariant] = useState<"success" | "error" | "info">(
     "info"
   );
@@ -168,6 +167,7 @@ export default function ProjectsPage() {
         title={infoDialogTitle}
         description={infoDialogDesc}
         variant={infoVariant}
+        onClose={() => setInfoDialogOpen(false)}
       />
     </DashboardLayout>
   );

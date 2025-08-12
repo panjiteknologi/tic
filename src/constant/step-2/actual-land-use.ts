@@ -1,4 +1,11 @@
 const actualLandUse = {
+  actualLandUse: {
+    keterangan: "Actual land use",
+    satuan: "Unit",
+    type: "text",
+    placeholder: "Input Actual land use",
+    disabled: false,
+  },
   socstActual: {
     keterangan: "Standard soil organic carbon SOCST",
     satuan: "tC/ha",
