@@ -1,16 +1,25 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { LucideIcon } from "lucide-react";
+
+export interface SidebarChildItem {
+  id?: string;
+  title: string;
+  url: string;
+  icon: LucideIcon;
+}
+
+export interface SidebarItem extends SidebarChildItem {
+  isActive?: boolean;
+  children?: SidebarChildItem[];
+}
+
 export interface AppSidebarTypes {
-  navMain: {
-    title: string;
-    url: string;
-    icon: any;
-    isActive?: boolean | undefined;
-    items?: { title: string; url: string }[] | undefined;
-  }[];
   user: {
     name: string;
     email: string;
     avatar: string;
   };
-  navSecondary: [];
-  projects: [];
+  navMain: SidebarItem[];
+  navSecondary: SidebarItem[]; // <- ubah dari `[]` menjadi `SidebarItem[]`
+  projects: any[]; // atau definisikan jika kamu punya tipe project
 }

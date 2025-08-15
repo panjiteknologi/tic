@@ -1,4 +1,11 @@
-import { BadgeCheck, Gauge, FolderOpenDot } from "lucide-react";
+import {
+  BadgeCheck,
+  Gauge,
+  FolderOpenDot,
+  Droplets,
+  List,
+  FormInputIcon,
+} from "lucide-react";
 
 export const AuditStatusMenu = {
   user: {
@@ -18,7 +25,7 @@ export const AuditStatusMenu = {
   projects: [],
 };
 
-export const CarbonCalculationMenu = {
+export const CarbonProjectISCCMenu = {
   user: {
     name: "shadcn",
     email: "m@example.com",
@@ -27,40 +34,50 @@ export const CarbonCalculationMenu = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/apps/carbon-emission/dashboard",
+      url: "/apps/carbon-emission/iscc/dashboard",
       icon: Gauge,
       isActive: false,
     },
     {
       title: "All Projects",
-      url: "/apps/carbon-emission/projects",
+      url: "/apps/carbon-emission/iscc/projects",
       icon: FolderOpenDot,
       isActive: false,
     },
-    // {
-    //   title: "Carbon Emission",
-    //   url: "/apps/carbon-calculation/list-emission",
-    //   icon: Leaf,
-    //   isActive: false,
-    //   children: [
-    //     {
-    //       title: "List Emission",
-    //       url: "/apps/carbon-calculation/list-emission",
-    //       icon: BadgeCheck,
-    //     },
-    //     {
-    //       title: "Add Emission",
-    //       url: "/apps/carbon-calculation/add-emission",
-    //       icon: BadgeCheck,
-    //     },
-    //     {
-    //       title: "Emission Report",
-    //       url: "/apps/carbon-calculation/emission-report",
-    //       icon: BadgeCheck,
-    //     },
-    //   ],
-    // },
   ],
   navSecondary: [],
   projects: [],
 };
+
+export const getCarbonCalculationMenu = (projectId: string) => ({
+  user: {
+    name: "shadcn",
+    email: "m@example.com",
+    avatar: "",
+  },
+  navMain: [
+    {
+      id: "carbon-calculation",
+      title: "Carbon Calculation",
+      url: `/apps/carbon-emission/iscc/projects/${projectId}`,
+      icon: Droplets,
+      isActive: false,
+      children: [
+        {
+          id: "list-calculation",
+          title: "List Calculation",
+          url: `/apps/carbon-emission/iscc/projects/${projectId}`,
+          icon: List,
+        },
+        {
+          id: "add-emission",
+          title: "Form Calculation",
+          url: `/apps/carbon-emission/iscc/projects/${projectId}/add-calculation`,
+          icon: FormInputIcon,
+        },
+      ],
+    },
+  ],
+  navSecondary: [],
+  projects: [],
+});

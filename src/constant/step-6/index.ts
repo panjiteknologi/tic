@@ -1,0 +1,17 @@
+export { default as product } from "./product";
+export { default as batch1 } from "./batch1";
+export { default as batch2 } from "./batch2";
+export { default as batch3 } from "./batch3";
+export { default as feedstockFactor } from "./feedstock-factor";
+export { default as allocationFactor } from "./allocation-factor";
+export { default as cultivation1 } from "./cultivation1";
+export { default as cultivation2 } from "./cultivation2";
+export { default as cultivation3 } from "./cultivation3";
+export { default as electricityConsumption } from "./electricity-consumption";
+export { default as heatProduction } from "./heat-production";
+export { default as processEmission } from "./process-emission";
+export { default as carbonCapture } from "./carbon-capture";
+export { default as totalBatch1 } from "./total-batch1";
+export { default as totalBatch2 } from "./total-batch2";
+export { default as totalBatch3 } from "./total-batch3";
+export { default as reductionPotential } from "./reduction-potential";

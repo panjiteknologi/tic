@@ -1,0 +1,58 @@
+const calculationEnergy = {
+  calculationBioethanol: {
+    keterangan: "Bioethanol",
+    satuan: "MJ/Year",
+    type: "number",
+    disabled: true,
+    placeholder: "",
+    labelColor: "text-black",
+    bold: false,
+  },
+  calculationCornOil: {
+    keterangan: "Corn oil",
+    satuan: "MJ/Year",
+    type: "number",
+    disabled: true,
+    placeholder: "",
+    labelColor: "text-black",
+    bold: false,
+  },
+  calculationDdgs: {
+    keterangan: "Dried Distillers Grains with Solubles (DDGS)",
+    satuan: "MJ/Year",
+    type: "number",
+    disabled: true,
+    placeholder: "",
+    labelColor: "text-black",
+    bold: false,
+  },
+  calculationWdg: {
+    keterangan: "Wet Distillers Grains (WDG)",
+    satuan: "MJ/Year",
+    type: "number",
+    disabled: true,
+    placeholder: "",
+    labelColor: "text-black",
+    bold: false,
+  },
+  calculationSyrup: {
+    keterangan: "Soluble Distillers Grains (Syrup)",
+    satuan: "MJ/Year",
+    type: "number",
+    disabled: true,
+    placeholder: "",
+    labelColor: "text-black",
+    bold: false,
+  },
+  calculationTotal: {
+    keterangan: "Total energy content of all products",
+    satuan: "MJ/Year",
+    type: "number",
+    disabled: true,
+    placeholder: "",
+    labelColor: "text-black",
+    bold: false,
+  },
+};
+
+export default calculationEnergy;

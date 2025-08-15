@@ -1,0 +1,58 @@
+const lower = {
+  lowerCorn: {
+    keterangan: "Corn",
+    satuan: "MJ/kg",
+    type: "number",
+    disabled: false,
+    placeholder: "",
+    labelColor: "text-black",
+    bold: false,
+  },
+  lowerBioethanol: {
+    keterangan: "Bioethanol",
+    satuan: "MJ/kg",
+    type: "number",
+    disabled: false,
+    placeholder: "",
+    labelColor: "text-black",
+    bold: false,
+  },
+  lowerCornOil: {
+    keterangan: "Corn oil",
+    satuan: "MJ/kg",
+    type: "number",
+    disabled: false,
+    placeholder: "",
+    labelColor: "text-black",
+    bold: false,
+  },
+  lowerDdgs: {
+    keterangan: "Dried Distillers Grains with Solubles (DDGS)",
+    satuan: "MJ/kg",
+    type: "number",
+    disabled: false,
+    placeholder: "",
+    labelColor: "text-black",
+    bold: false,
+  },
+  lowerWdg: {
+    keterangan: "Wet Distillers Grains (WDG)",
+    satuan: "MJ/kg",
+    type: "number",
+    disabled: false,
+    placeholder: "",
+    labelColor: "text-black",
+    bold: false,
+  },
+  lowerSyrup: {
+    keterangan: "Soluble Distillers Grains (Syrup)",
+    satuan: "MJ/kg",
+    type: "number",
+    disabled: false,
+    placeholder: "",
+    labelColor: "text-black",
+    bold: false,
+  },
+};
+
+export default lower;

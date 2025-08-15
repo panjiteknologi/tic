@@ -8,10 +8,6 @@ const DashboardView = () => {
     { staleTime: 5 * 60 * 1000 } // 5 menit
   );
 
-  console.log("DATA Cust : ", data);
-  console.log("Eror Cust : ", error);
-  console.log("isError Cust : ", isError);
-
   if (isLoading) {
     <div>
       <h1 className="text-teal-800 font-bold">TEST Loading...</h1>

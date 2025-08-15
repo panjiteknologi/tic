@@ -1,0 +1,58 @@
+const fertilizerB = {
+  directN2OEmissions: {
+    keterangan: "Direct N2O-Emissions",
+    satuan: "kgN2O/ha/yr",
+    type: "number",
+    disabled: true,
+    placeholder: "",
+    labelColor: "text-black",
+    bold: false,
+  },
+  indirectN2OEmissionsNH3NOx: {
+    keterangan: "Indirect N2O-Emissions from NH3, NOx",
+    satuan: "kgN2O/ha/yr",
+    type: "number",
+    disabled: true,
+    placeholder: "",
+    labelColor: "text-black",
+    bold: false,
+  },
+  indirectN2OEmissionsNLeachingRunoff: {
+    keterangan: "Indirect N2O-Emissions from N leaching/ runoff",
+    satuan: "kgN2O/ha/yr",
+    type: "number",
+    disabled: true,
+    placeholder: "",
+    labelColor: "text-black",
+    bold: false,
+  },
+  co2eqEmissionsNitrogenFertilizersHaYr: {
+    keterangan: "CO₂eq emissions nitrogen fertilizers",
+    satuan: "kgCO₂eq/ha/yr",
+    type: "number",
+    disabled: true,
+    placeholder: "",
+    labelColor: "text-black",
+    bold: true,
+  },
+  co2eqEmissionsNitrogenFertilizersFieldN20HaYr: {
+    keterangan: "CO₂eq emissions fertilizer field N2O-Emissions",
+    satuan: "kgCO₂eq/ha/yr",
+    type: "number",
+    disabled: true,
+    placeholder: "",
+    labelColor: "text-black",
+    bold: true,
+  },
+  co2eqEmissionsNitrogenFertilizersFieldN20TFFB: {
+    keterangan: "",
+    satuan: "kgCO₂eq/t FFB",
+    type: "number",
+    disabled: true,
+    placeholder: "",
+    labelColor: "text-black",
+    bold: true,
+  },
+};
+
+export default fertilizerB;
