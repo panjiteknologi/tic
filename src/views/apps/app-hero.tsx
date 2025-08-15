@@ -1,6 +1,6 @@
 "use client";
 
-import { SquareStack, UserPlus } from "lucide-react";
+import { SquareStack, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { trpc } from "@/trpc/react";
@@ -20,9 +20,9 @@ export function AppsHero() {
   const userRole = tenantsData?.tenants?.[0]?.role;
   const isSuperAdmin = userRole === "superadmin";
 
-  const handleInviteMember = () => {
+  const handleNavigateSettings = () => {
     // TODO: Open invite member modal/dialog
-    router.push("/apps/settings/members");
+    router.push("/apps/settings");
   };
 
   return (
@@ -41,12 +41,12 @@ export function AppsHero() {
 
         {isSuperAdmin && (
           <Button
-            onClick={handleInviteMember}
+            onClick={handleNavigateSettings}
             className="flex items-center gap-2"
             variant={"origin"}
           >
-            <UserPlus className="h-4 w-4" />
-            Invite Member
+            <Settings className="h-4 w-4" />
+            Settings
           </Button>
         )}
       </div>
