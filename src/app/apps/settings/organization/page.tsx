@@ -1,14 +1,14 @@
-import MainLayout from "@/layout/main-layout";
 import { NavbarApps } from "@/components/navbar-apps";
+import MainLayout from "@/layout/main-layout";
 import SettingsView from "@/views/apps/settings";
-import MembersView from "@/views/apps/settings/members";
+import OrganizationView from "@/views/apps/settings/organization";
 
-export default function MembersPage() {
+export default function OrganizationPage() {
   return (
     <MainLayout>
       <NavbarApps />
       <SettingsView>
-        <MembersView />
+        <OrganizationView />
       </SettingsView>
     </MainLayout>
   );

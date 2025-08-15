@@ -1,15 +1,12 @@
 import { NavbarApps } from "@/components/navbar-apps";
 import MainLayout from "@/layout/main-layout";
 import SettingsView from "@/views/apps/settings";
-import InviteView from "@/views/apps/settings/members/invite";
 
-export default function InviteMemberPage() {
+export default function SettingsPage() {
   return (
     <MainLayout>
       <NavbarApps />
-      <SettingsView>
-        <InviteView />
-      </SettingsView>
+      <SettingsView />
     </MainLayout>
   );
 }
