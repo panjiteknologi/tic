@@ -11,6 +11,8 @@ import { ghgProcessRouter } from "./ghg-process";
 import { ghgAdditionalRouter } from "./ghg-additional";
 import { ghgOtherCaseRouter } from "./ghg-other-case";
 import { ghgAuditRouter } from "./ghg-audit";
+import { standardRouter } from "./standard";
+import { certificationRouter } from "./certification";
 
 export const appRouter = createTRPCRouter({
   hello: baseProcedure
@@ -35,6 +37,8 @@ export const appRouter = createTRPCRouter({
   stepThreeGhgOtherCase: ghgOtherCaseRouter,
   stepFourGhgAudit: ghgAuditRouter,
   user: userRouter,
+  standard: standardRouter,
+  certification: certificationRouter,
 });
 
 // export type definition of API
