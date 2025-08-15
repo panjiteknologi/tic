@@ -124,32 +124,12 @@ export function NavbarApps() {
               {/* Settings submenu - only show for superadmin/admin */}
               {["superadmin", "admin"].includes(userRole) && (
                 <>
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>
+                  <DropdownMenuItem asChild>
+                    <Link href="/apps/settings">
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Settings</span>
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent>
-                      <DropdownMenuItem asChild>
-                        <Link href="/apps/settings/members">
-                          <Users className="mr-2 h-4 w-4" />
-                          <span>Manage Members</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/apps/settings/members/invite">
-                          <UserPlus className="mr-2 h-4 w-4" />
-                          <span>Invite Member</span>
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/apps/settings/invitations">
-                          <Mail className="mr-2 h-4 w-4" />
-                          <span>View Invitations</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    </DropdownMenuSubContent>
-                  </DropdownMenuSub>
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                 </>
               )}
