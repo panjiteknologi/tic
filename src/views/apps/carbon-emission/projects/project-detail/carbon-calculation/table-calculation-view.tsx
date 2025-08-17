@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Edit, Trash, Check, X } from "lucide-react";
+import { Edit, Trash, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmissionsTypes } from "@/types/carbon-types";
@@ -25,6 +25,7 @@ type TableCalculationViewProps = {
   onPrev?: () => void;
   onNext?: () => void;
   setCurrentPage?: (page: number) => void;
+  isRefreshing: boolean;
 };
 
 export function TableCalculationView({
@@ -37,6 +38,7 @@ export function TableCalculationView({
   onPrev,
   onNext,
   setCurrentPage,
+  isRefreshing,
 }: TableCalculationViewProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
@@ -45,14 +47,11 @@ export function TableCalculationView({
   const itemsPerPage = 10;
   const startIndex = (currentPage - 1) * itemsPerPage;
 
+  const disabledAll = isLoading || isRefreshing;
+
   const startEditing = (row: EmissionsTypes) => {
     setEditingRowId(row.id);
     setEditedData({ ...row });
-  };
-
-  const cancelEditing = () => {
-    setEditingRowId(null);
-    setEditedData({});
   };
 
   const handleInputChange = (field: keyof EmissionsTypes, value: string) => {
@@ -84,6 +83,7 @@ export function TableCalculationView({
                 <TableHead className="w-10">#</TableHead>
                 <TableHead>Carbon Name</TableHead>
                 <TableHead>Nilai</TableHead>
+                <TableHead>Deskripsi</TableHead>
                 <TableHead>Satuan</TableHead>
                 <TableHead>Source</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -110,64 +110,75 @@ export function TableCalculationView({
                       <TableCell>
                         {isEditing ? (
                           <Input
-                            value={editedData.keterangan || ""}
+                            value={editedData.keterangan ?? ""}
                             onChange={(e) =>
                               handleInputChange("keterangan", e.target.value)
                             }
-                            disabled={isLoading}
+                            disabled={disabledAll}
                             className="w-full"
                           />
                         ) : (
-                          row.keterangan || "-"
+                          row.keterangan ?? "-"
                         )}
                       </TableCell>
 
                       <TableCell>
                         {isEditing ? (
                           <Input
-                            value={
-                              editedData.nilaiInt?.toString() ||
-                              editedData.nilaiString?.toString() ||
-                              ""
-                            }
+                            value={editedData.nilaiInt?.toString() ?? ""}
                             onChange={(e) =>
                               handleInputChange("nilaiInt", e.target.value)
                             }
-                            disabled={isLoading}
+                            disabled={disabledAll}
                             className="w-full"
                           />
                         ) : (
-                          row.nilaiInt ?? row.nilaiString ?? "-"
+                          row.nilaiInt ?? "-"
                         )}
                       </TableCell>
 
                       <TableCell>
                         {isEditing ? (
                           <Input
-                            value={editedData.satuan || ""}
+                            value={editedData.nilaiString?.toString() ?? ""}
+                            onChange={(e) =>
+                              handleInputChange("nilaiString", e.target.value)
+                            }
+                            disabled={disabledAll}
+                            className="w-full"
+                          />
+                        ) : (
+                          row.nilaiString ?? "-"
+                        )}
+                      </TableCell>
+
+                      <TableCell>
+                        {isEditing ? (
+                          <Input
+                            value={editedData.satuan ?? ""}
                             onChange={(e) =>
                               handleInputChange("satuan", e.target.value)
                             }
-                            disabled={isLoading}
+                            disabled={disabledAll}
                             className="w-full"
                           />
                         ) : (
-                          row.satuan || "-"
+                          row.satuan ?? "-"
                         )}
                       </TableCell>
 
                       <TableCell>
                         {isEditing ? (
                           <Input
-                            value={editedData.source || ""}
+                            value={editedData.source ?? ""}
                             onChange={(e) =>
                               handleInputChange("source", e.target.value)
                             }
-                            disabled={isLoading}
+                            disabled={disabledAll}
                             className="w-full"
                           />
                         ) : (
-                          row.source || "-"
+                          row.source ?? "-"
                         )}
                       </TableCell>
 
@@ -178,20 +189,13 @@ export function TableCalculationView({
                               size="icon"
                               variant="ghost"
                               onClick={saveChanges}
-                              disabled={isLoading}
+                              disabled={disabledAll}
                             >
                               {isLoading ? (
                                 <Spinner className="w-4 h-4 text-green-600" />
                               ) : (
                                 <Check className="w-4 h-4 text-green-600" />
                               )}
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={cancelEditing}
-                            >
-                              <X className="w-4 h-4 text-gray-500" />
                             </Button>
                           </>
                         ) : (
@@ -200,7 +204,7 @@ export function TableCalculationView({
                               size="icon"
                               variant="ghost"
                               onClick={() => startEditing(row)}
-                              disabled={isLoading}
+                              disabled={disabledAll}
                               className="hover:bg-blue-100 transition-all"
                             >
                               <Edit className="w-4 h-4 text-blue-500" />
@@ -209,7 +213,7 @@ export function TableCalculationView({
                               size="icon"
                               variant="ghost"
                               onClick={() => onDelete?.(row.id)}
-                              disabled={isLoading}
+                              disabled={disabledAll}
                               className="hover:bg-red-100 transition-all"
                             >
                               <Trash className="w-4 h-4 text-red-500" />

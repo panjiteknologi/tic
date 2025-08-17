@@ -1,6 +1,6 @@
 const energyContent = {
   energyContent: {
-    keterangan: "Energy content of feedstock",
+    keterangan: "Energie content of feedstock",
     satuan: "MJ/Year",
     type: "number",
     disabled: true,

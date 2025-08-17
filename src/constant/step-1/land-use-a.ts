@@ -34,48 +34,6 @@ const landUseA = {
     placeholder: "Input Current input to soil",
     disabled: false,
   },
-  actualCarbonStockSoil: {
-    keterangan: "Actual carbon stock in soil",
-    satuan: "t/ha/yr",
-    type: "number",
-    placeholder: "",
-    disabled: false,
-  },
-  socstActual: {
-    keterangan: "SOCST",
-    satuan: "ton C /ha",
-    type: "number",
-    placeholder: "",
-    disabled: false,
-  },
-  fluActual: {
-    keterangan: "FLU",
-    satuan: "ton C /ha",
-    type: "number",
-    placeholder: "",
-    disabled: false,
-  },
-  fmgActual: {
-    keterangan: "FMG",
-    satuan: "ton C /ha",
-    type: "number",
-    placeholder: "",
-    disabled: false,
-  },
-  fiActual: {
-    keterangan: "FI",
-    satuan: "ton C /ha",
-    type: "number",
-    placeholder: "",
-    disabled: false,
-  },
-  cvegActual: {
-    keterangan: "Cveg",
-    satuan: "ton C /ha",
-    type: "number",
-    placeholder: "",
-    disabled: false,
-  },
 };
 
 export default landUseA;

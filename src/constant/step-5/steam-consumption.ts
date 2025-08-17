@@ -1,6 +1,6 @@
 const steamConsumption = {
   steamConsumptionNaturalGas: {
-    keterangan: "Natural gas consumption for steam and drying",
+    keterangan: "Natural gas consumption for steam power and drying energy",
     satuan: "GJ/Year",
     type: "number",
     disabled: false,
