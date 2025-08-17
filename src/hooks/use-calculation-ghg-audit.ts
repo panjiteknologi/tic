@@ -1,3 +1,4 @@
+import { formatNumber, parseNumber } from "@/utils/number";
 import { useEffect, useState } from "react";
 
 export type CarbonFormType = Record<string, string>;
@@ -109,47 +110,34 @@ export function useCalculationGHGAudit() {
   };
 
   useEffect(() => {
-    const parse = (val: string | number | null | undefined): number => {
-      if (typeof val === "number") return val;
-      if (!val) return 0;
-
-      const cleaned = val
-        .toString()
-        .replace(/\./g, "")
-        .replace(",", ".")
-        .trim();
-      const parsed = parseFloat(cleaned);
-      return isNaN(parsed) ? 0 : parsed;
-    };
-
     // Parsing all necessary fields
-    const mainProduct1 = parse(form.mainProduct1); // H22
-    const mainProduct2 = parse(form.mainProduct2); // H23
-    const coProduct1 = parse(form.coProduct1); // H24
-    const coProduct2 = parse(form.coProduct2); // H25
-    const lhvProduct = parse(form.lhvProduct); // H27
+    const mainProduct1 = parseNumber(form.mainProduct1); // H22
+    const mainProduct2 = parseNumber(form.mainProduct2); // H23
+    const coProduct1 = parseNumber(form.coProduct1); // H24
+    const coProduct2 = parseNumber(form.coProduct2); // H25
+    const lhvProduct = parseNumber(form.lhvProduct); // H27
 
-    const ddgs = parse(form.coProduct1);
+    const ddgs = parseNumber(form.coProduct1);
 
-    const amountBatch1 = parse(form.amountBatch1); // H30
-    const moistureContentBatch1 = parse(form.moistureContentBatch1); // H31
-    const ghgEmissionEECBatch1 = parse(form.ghgEmissionEECBatch1); // H32
+    const amountBatch1 = parseNumber(form.amountBatch1); // H30
+    const moistureContentBatch1 = parseNumber(form.moistureContentBatch1); // H31
+    const ghgEmissionEECBatch1 = parseNumber(form.ghgEmissionEECBatch1); // H32
 
-    const amountBatch2 = parse(form.amountBatch2); // H37
-    const moistureContentBatch2 = parse(form.moistureContentBatch2); // H38
+    const amountBatch2 = parseNumber(form.amountBatch2); // H37
+    const moistureContentBatch2 = parseNumber(form.moistureContentBatch2); // H38
 
-    const amountBatch3 = parse(form.amountBatch3); // H43
-    const ghgEmissionBatch3 = parse(form.ghgEmissionBatch3); // H45
+    const amountBatch3 = parseNumber(form.amountBatch3); // H43
+    const ghgEmissionEECBatch3 = parseNumber(form.ghgEmissionEECBatch3); // H45
 
-    const ethanolProduction = parse(form.ethanolProduction); // H84
-    const co2liquefication = parse(form.co2liquefication); // H85
-    const factorElectricity = parse(form.factorElectricity); // H87
+    const ethanolProduction = parseNumber(form.ethanolProduction); // H84
+    const co2liquefication = parseNumber(form.co2liquefication); // H85
+    const factorElectricity = parseNumber(form.factorElectricity); // H87
 
-    const heatNaturalGas = parse(form.heatNaturalGas); // H92
-    const emissionFactorNaturalGas = parse(form.emissionFactorNaturalGas); // H94
+    const heatNaturalGas = parseNumber(form.heatNaturalGas); // H92
+    const emissionFactorNaturalGas = parseNumber(form.emissionFactorNaturalGas); // H94
 
-    const co2Capture = parse(form.co2Capture); // H108
-    const fuelReference = parse(form.fuelReference); // H140
+    const co2Capture = parseNumber(form.co2Capture); // H108
+    const fuelReference = parseNumber(form.fuelReference); // H140
 
     // 1. Feedstock Factor
     const cornDry =
@@ -177,17 +165,13 @@ export function useCalculationGHGAudit() {
     const ghgMoist = ghgEmissionEECBatch1;
     const ghgDry = ghgMoist / (1 - moistureContentBatch1 / 100);
     const allocatedCultivationEmission =
-      lhvProduct > 0
-        ? (ghgMoist / lhvProduct) * feedstockFactor * allocationFactor
-        : 0;
+      (ghgMoist / lhvProduct) * (feedstockFactor * allocationFactor);
 
     // 4. Cultivation - Batch 3
-    const ghgMoist3 = ghgEmissionBatch3;
+    const ghgMoist3 = ghgEmissionEECBatch3;
     const ghgDry3 = ghgMoist3;
     const allocatedCultivation3Emission =
-      lhvProduct > 0
-        ? (ghgDry3 / lhvProduct) * feedstockFactor * allocationFactor
-        : 0;
+      (ghgDry3 / lhvProduct) * feedstockFactor * allocationFactor;
 
     // 5. Electricity
     const co2eEmissionsElectricity =
@@ -196,7 +180,7 @@ export function useCalculationGHGAudit() {
     // 6. Heat
     const co2eHeatProduction = heatNaturalGas * emissionFactorNaturalGas;
 
-    // 7. Energy b
+    // 7. Process emissions
     const co2eEmissions1 = co2eEmissionsElectricity + co2eHeatProduction;
     const co2eEmissions2 = mainProduct1 > 0 ? co2eEmissions1 / mainProduct1 : 0;
     const co2eEmissions3 = mainProduct2 > 0 ? co2eEmissions2 / mainProduct2 : 0;
@@ -212,14 +196,14 @@ export function useCalculationGHGAudit() {
     const cultivationEEC1 = allocatedCultivationEmission;
     const epProcessingEmissions1 = allocatedProcessingEmissions;
     const eCCR1 = -co2eEmissionsEthanol2;
-    const etd1 = parse(form.etd1); // assumed to be filled separately
+    const etd1 = parseNumber(form.etd1); // assumed to be filled separately
     const totalEmission1 =
       cultivationEEC1 + epProcessingEmissions1 + etd1 + eCCR1;
 
     // 10. Total Emission - Batch 2
-    const cultivationEEC2 = parse(form.allocatedCultivation2Emission);
+    const cultivationEEC2 = parseNumber(form.allocatedCultivation2Emission);
     const epProcessingEmissions2 = allocatedProcessingEmissions;
-    const etd2 = parse(form.etd2);
+    const etd2 = parseNumber(form.etd2);
     const eCCR2 = -co2eEmissionsEthanol2;
     const totalEmission2 =
       cultivationEEC2 + epProcessingEmissions2 + etd2 + eCCR2;
@@ -227,7 +211,7 @@ export function useCalculationGHGAudit() {
     // 11. Total Emission - Batch 3
     const cultivationEEC3 = allocatedCultivation3Emission;
     const epProcessingEmissions3 = allocatedProcessingEmissions;
-    const etd3 = parse(form.etd3);
+    const etd3 = parseNumber(form.etd3);
     const eCCR3 = -co2eEmissionsEthanol2;
     const totalEmission3 =
       cultivationEEC3 + epProcessingEmissions3 + etd3 + eCCR3;
@@ -251,55 +235,95 @@ export function useCalculationGHGAudit() {
     // Update form state
     setForm((prev) => ({
       ...prev,
-      cornDry: cornDry.toFixed(3),
-      energyContentCorn: energyContentCorn.toFixed(3),
-      ethanolDry: ethanolDry.toFixed(3),
-      energyContentEthanol: energyContentEthanol.toFixed(3),
-      feedstockFactor: feedstockFactor.toFixed(4),
+      cornDry: formatNumber(cornDry, 0, "floor"),
+      energyContentCorn: formatNumber(energyContentCorn, 0, "none"),
+      ethanolDry: formatNumber(ethanolDry, 0, "none"),
+      energyContentEthanol: formatNumber(energyContentEthanol, 0, "none"),
+      feedstockFactor: formatNumber(feedstockFactor, 0, "none"),
 
-      ethanolEnergyContent: ethanolEnergyContent.toFixed(3),
-      ddgs: ddgs.toFixed(3),
-      energyContentDDGS: energyContentDDGS.toFixed(3),
-      allocationFactor: allocationFactor.toFixed(3),
+      ethanolEnergyContent: formatNumber(ethanolEnergyContent, 0, "none"),
+      ddgs: formatNumber(ddgs, 0, "none"),
+      energyContentDDGS: formatNumber(energyContentDDGS, 0, "none"),
+      allocationFactor: formatNumber(allocationFactor, 0, "none"),
 
-      ghgMoist: ghgMoist.toFixed(1),
-      ghgDry: ghgDry.toFixed(1),
-      allocatedCultivationEmission: allocatedCultivationEmission.toFixed(1),
+      ghgMoist: formatNumber(ghgMoist, 1, "none"),
+      ghgDry: formatNumber(ghgDry, 1, "none"),
+      allocatedCultivationEmission: formatNumber(
+        allocatedCultivationEmission,
+        1,
+        "none"
+      ),
 
-      ghgMoist3: ghgMoist3.toFixed(1),
-      ghgDry3: ghgDry3.toFixed(1),
-      allocatedCultivation3Emission: allocatedCultivation3Emission.toFixed(1),
+      ghgMoist3: formatNumber(ghgMoist3, 1, "none"),
+      ghgDry3: formatNumber(ghgDry3, 1, "none"),
+      allocatedCultivation3Emission: formatNumber(
+        allocatedCultivation3Emission,
+        1,
+        "none"
+      ),
 
-      co2eEmissionsElectricity: co2eEmissionsElectricity.toFixed(2),
-      co2eHeatProduction: co2eHeatProduction.toFixed(2),
-      co2eEmissions1: co2eEmissions1.toFixed(2),
-      co2eEmissions2: co2eEmissions2.toFixed(1),
-      co2eEmissions3: co2eEmissions3.toFixed(1),
-      allocatedProcessingEmissions: allocatedProcessingEmissions.toFixed(1),
+      co2eEmissionsElectricity: formatNumber(
+        co2eEmissionsElectricity,
+        0,
+        "none"
+      ),
+      co2eHeatProduction: formatNumber(co2eHeatProduction, 0, "none"),
+      co2eEmissions1: formatNumber(co2eEmissions1, 0, "none"),
+      co2eEmissions2: formatNumber(co2eEmissions2, 1, "none"),
+      co2eEmissions3: formatNumber(co2eEmissions3, 1, "none"),
+      allocatedProcessingEmissions: formatNumber(
+        allocatedProcessingEmissions,
+        1,
+        "none"
+      ),
 
-      co2eEmissionsEthanol1: co2eEmissionsEthanol1.toFixed(1),
-      co2eEmissionsEthanol2: co2eEmissionsEthanol2.toFixed(1),
+      co2eEmissionsEthanol1: formatNumber(co2eEmissionsEthanol1, 1, "none"),
+      co2eEmissionsEthanol2: formatNumber(co2eEmissionsEthanol2, 1, "none"),
 
-      cultivationEEC1: cultivationEEC1.toFixed(1),
-      epProcessingEmissions1: epProcessingEmissions1.toFixed(1),
-      eCCR1: eCCR1.toFixed(1),
-      totalEmission1: totalEmission1.toFixed(1),
+      cultivationEEC1: formatNumber(cultivationEEC1, 1, "none"),
+      epProcessingEmissions1: formatNumber(epProcessingEmissions1, 1, "none"),
+      eCCR1: formatNumber(eCCR1, 1, "none"),
+      totalEmission1: formatNumber(totalEmission1, 1, "none"),
 
-      cultivationEEC2: cultivationEEC2.toFixed(1),
-      epProcessingEmissions2: epProcessingEmissions2.toFixed(1),
-      eCCR2: eCCR2.toFixed(1),
-      totalEmission2: totalEmission2.toFixed(1),
+      cultivationEEC2: formatNumber(cultivationEEC2, 1, "none"),
+      epProcessingEmissions2: formatNumber(epProcessingEmissions2, 1, "none"),
+      eCCR2: formatNumber(eCCR2, 1, "none"),
+      totalEmission2: formatNumber(totalEmission2, 1, "none"),
 
-      cultivationEEC3: cultivationEEC3.toFixed(1),
-      epProcessingEmissions3: epProcessingEmissions3.toFixed(1),
-      eCCR3: eCCR3.toFixed(1),
-      totalEmission3: totalEmission3.toFixed(1),
+      cultivationEEC3: formatNumber(cultivationEEC3, 1, "none"),
+      epProcessingEmissions3: formatNumber(epProcessingEmissions3, 1, "none"),
+      eCCR3: formatNumber(eCCR3, 1, "none"),
+      totalEmission3: formatNumber(totalEmission3, 1, "none"),
 
-      reductionBatch1: reductionBatch1.toFixed(1),
-      reductionBatch2: reductionBatch2.toFixed(1),
-      reductionBatch3: reductionBatch3.toFixed(1),
+      reductionBatch1: formatNumber(reductionBatch1, 1, "none"),
+      reductionBatch2: formatNumber(reductionBatch2, 1, "none"),
+      reductionBatch3: formatNumber(reductionBatch3, 1, "none"),
     }));
-  }, [form]);
+  }, [
+    form.allocatedCultivation2Emission,
+    form.amountBatch1,
+    form.amountBatch2,
+    form.amountBatch3,
+    form.co2Capture,
+    form.co2liquefication,
+    form.coProduct1,
+    form.coProduct2,
+    form.emissionFactorNaturalGas,
+    form.etd1,
+    form.etd2,
+    form.etd3,
+    form.ethanolProduction,
+    form.factorElectricity,
+    form.fuelReference,
+    form.ghgEmissionEECBatch1,
+    form.ghgEmissionEECBatch3,
+    form.heatNaturalGas,
+    form.lhvProduct,
+    form.mainProduct1,
+    form.mainProduct2,
+    form.moistureContentBatch1,
+    form.moistureContentBatch2,
+  ]);
 
   return {
     form,

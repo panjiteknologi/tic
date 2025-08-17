@@ -51,6 +51,7 @@ export default function CalculationListPage() {
     additional,
     otherCase,
     audit,
+    refetchAll,
   } = useCarbonCalculationData();
 
   const tabs = [
@@ -166,7 +167,7 @@ export default function CalculationListPage() {
         mutations.update[activeStep as keyof typeof mutations.update];
       if (!mutation) throw new Error("Unknown step");
 
-      await mutation.mutateAsync(payload);
+      await mutation.mutateAsync(payload as any);
       await invalidateCacheByStep(activeStep, carbonProjectId);
 
       setInfoVariant("success");
@@ -275,6 +276,7 @@ export default function CalculationListPage() {
                   onDelete={onDelete}
                   activeStep={activeStep}
                   data={data as []}
+                  onRefresh={refetchAll}
                 />
               </TabsContent>
             ))}

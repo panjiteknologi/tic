@@ -7,4 +7,6 @@ export { default as energyA } from "./energy-a";
 export { default as energyB } from "./energy-b";
 export { default as cultivation } from "./cultivation";
 export { default as landUseA } from "./land-use-a";
+export { default as landUseChangeA } from "./land-use-change-a";
 export { default as landUseB } from "./land-use-b";
+export { default as landUseChangeB } from "./land-use-change-b";

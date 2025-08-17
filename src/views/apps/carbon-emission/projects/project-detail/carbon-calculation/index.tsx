@@ -1,15 +1,17 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { TableCalculationView } from "./table-calculation-view";
 import { EmissionsTypes } from "@/types/carbon-types";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/shadcn-io/spinner";
 
 interface CarbonCalculationViewProps {
   projectId: string;
   data: EmissionsTypes[];
   onEdit?: (updated: EmissionsTypes) => void;
   onDelete: (id: string) => void;
+  onRefresh?: () => void; // 🔄 tambahin ini
   activeStep: string;
 }
 
@@ -18,6 +20,7 @@ export function CarbonCalculationView({
   data,
   onEdit,
   onDelete,
+  onRefresh, // 🔄 terima dari parent
   activeStep,
 }: CarbonCalculationViewProps) {
   const router = useRouter();
@@ -25,6 +28,8 @@ export function CarbonCalculationView({
 
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const filteredData = useMemo(() => {
     if (!search.trim()) return data;
@@ -58,13 +63,38 @@ export function CarbonCalculationView({
     }
   };
 
-  useMemo(() => setCurrentPage(1), [search]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   return (
     <Fragment>
       <div className="space-y-4 mt-2 mb-6">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+        <div className="flex items-center justify-between">
           <h2 className="text-black text-lg font-bold">Carbon Calculation</h2>
+          {onRefresh && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                if (onRefresh) {
+                  setIsRefreshing(true);
+                  try {
+                    await onRefresh();
+                  } finally {
+                    setIsRefreshing(false);
+                  }
+                }
+              }}
+              disabled={isRefreshing}
+              className="flex items-center gap-1 cursor-pointer"
+            >
+              {isRefreshing ? <Spinner className="w-4 h-4" /> : "🔄"}
+              <span className="text-sm ml-1">Refresh</span>
+            </Button>
+          )}
+        </div>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
           <Input
             placeholder="Search carbon data..."
             value={search}
@@ -98,6 +128,7 @@ export function CarbonCalculationView({
             onPrev={handlePrev}
             onNext={handleNext}
             setCurrentPage={setCurrentPage}
+            isRefreshing={isRefreshing}
           />
         </div>
       </div>

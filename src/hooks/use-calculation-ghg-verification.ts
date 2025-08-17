@@ -1,3 +1,4 @@
+import { formatNumber, parseNumber } from "@/utils/number";
 import { useEffect, useState } from "react";
 
 export type CarbonFormType = Record<string, string>;
@@ -68,7 +69,6 @@ export function useCalculationGHGVerification() {
 
     //Land Use Change - a
     actualLandUse: "", //111
-
     climateRegionActual: "", //113
     soilTypeActual: "", //114
     currentSoilManagementActual: "", //115
@@ -82,7 +82,6 @@ export function useCalculationGHGVerification() {
 
     //Land Use Change - b
     referenceLandUse: "", //128
-
     climateRegionReference: "", //130
     soilTypeReference: "", //131
     currentSoilManagementReference: "", //132
@@ -109,47 +108,41 @@ export function useCalculationGHGVerification() {
   };
 
   useEffect(() => {
-    const parse = (val: string | number | null | undefined): number => {
-      if (typeof val === "number") return val;
-      if (!val) return 0;
-      const cleaned = val.toString().replace(",", ".").trim();
-      const parsed = parseFloat(cleaned);
-      return isNaN(parsed) ? 0 : parsed;
-    };
-
     //Products
-    const cornWet = parse(form.cornWet);
-    const moistureContent = parse(form.moistureContent);
+    const cornWet = parseNumber(form.cornWet);
+    const moistureContent = parseNumber(form.moistureContent);
     const cornDry = cornWet - (cornWet * moistureContent) / 100;
 
     //Raws material input
-    const cornSeedsAmount = parse(form.cornSeedsAmount);
-    const emissionFactorCornSeeds = parse(form.emissionFactorCornSeeds);
+    const cornSeedsAmount = parseNumber(form.cornSeedsAmount);
+    const emissionFactorCornSeeds = parseNumber(form.emissionFactorCornSeeds);
     const co2eqEmissionsRawMaterialInputHaYr =
       cornSeedsAmount * emissionFactorCornSeeds;
     const co2eqEmissionsRawMaterialInputTFFB =
       co2eqEmissionsRawMaterialInputHaYr / cornWet;
 
     //Fertilizer
-    const ammoniumNitrate = parse(form.ammoniumNitrate);
-    const urea = parse(form.urea);
-    const appliedManure = parse(form.appliedManure);
-    const nContentCropResidue = parse(form.nContentCropResidue);
+    const ammoniumNitrate = parseNumber(form.ammoniumNitrate);
+    const urea = parseNumber(form.urea);
+    const appliedManure = parseNumber(form.appliedManure);
+    const nContentCropResidue = parseNumber(form.nContentCropResidue);
     const totalNSyntheticFertilizer =
       ammoniumNitrate + urea + appliedManure + nContentCropResidue;
 
-    const emissionFactorDirectN2O = parse(form.emissionFactorDirectN2O);
+    const emissionFactorDirectN2O = parseNumber(form.emissionFactorDirectN2O);
     const directN2OEmissions =
       ((totalNSyntheticFertilizer + appliedManure) *
         emissionFactorDirectN2O *
         44) /
       28;
 
-    const fractionNVolatilizedSynthetic = parse(
+    const fractionNVolatilizedSynthetic = parseNumber(
       form.fractionNVolatilizedSynthetic
     );
-    const fractionNVolatilizedOrganic = parse(form.fractionNVolatilizedOrganic);
-    const emissionFactorAtmosphericDeposition = parse(
+    const fractionNVolatilizedOrganic = parseNumber(
+      form.fractionNVolatilizedOrganic
+    );
+    const emissionFactorAtmosphericDeposition = parseNumber(
       form.emissionFactorAtmosphericDeposition
     );
     const indirectN2OEmissionsNH3NOx =
@@ -159,8 +152,8 @@ export function useCalculationGHGVerification() {
         44) /
         28;
 
-    const fractionNLostRunoff = parse(form.fractionNLostRunoff);
-    const emissionFactorLeachingRunoff = parse(
+    const fractionNLostRunoff = parseNumber(form.fractionNLostRunoff);
+    const emissionFactorLeachingRunoff = parseNumber(
       form.emissionFactorLeachingRunoff
     );
     const indirectN2OEmissionsNLeachingRunoff =
@@ -170,7 +163,7 @@ export function useCalculationGHGVerification() {
         44) /
       28;
 
-    const emissionFactorAmmoniumNitrate = parse(
+    const emissionFactorAmmoniumNitrate = parseNumber(
       form.emissionFactorAmmoniumNitrate
     );
     const co2eqEmissionsNitrogenFertilizersHaYr =
@@ -188,34 +181,36 @@ export function useCalculationGHGVerification() {
         : 0;
 
     //Hebicide
-    const acetochlor = parse(form.acetochlor);
-    const emissionFactorPesticides = parse(form.emissionFactorPesticides);
+    const acetochlor = parseNumber(form.acetochlor);
+    const emissionFactorPesticides = parseNumber(form.emissionFactorPesticides);
     const co2eqEmissionsHerbicidesPesticidesHaYr =
       acetochlor * emissionFactorPesticides;
     const co2eqEmissionsHerbicidesPesticidesTFFB =
       co2eqEmissionsHerbicidesPesticidesHaYr / cornWet;
 
     //Energy - a
-    const electricityConsumptionSoilPrep = parse(
+    const electricityConsumptionSoilPrep = parseNumber(
       form.electricityConsumptionSoilPrep
     );
-    const emissionFactorElectricity = parse(form.emissionFactorElectricity);
+    const emissionFactorElectricity = parseNumber(
+      form.emissionFactorElectricity
+    );
     const co2eEmissionsElectricityYr =
       electricityConsumptionSoilPrep * emissionFactorElectricity;
     const co2eEmissionsElectricityTFFB = co2eEmissionsElectricityYr / cornWet;
 
     //Energy - b
-    const dieselConsumed = parse(form.dieselConsumed);
-    const emissionFactorDiesel = parse(form.emissionFactorDiesel);
+    const dieselConsumed = parseNumber(form.dieselConsumed);
+    const emissionFactorDiesel = parseNumber(form.emissionFactorDiesel);
     const co2eEmissionsDieselYr = dieselConsumed * emissionFactorDiesel;
     const co2eEmissionsDieselTFFB = co2eEmissionsDieselYr / cornWet;
 
     //Cultivation
-    const ghgEmissionsRawMaterialInput = parse(
+    const ghgEmissionsRawMaterialInput = parseNumber(
       form.ghgEmissionsRawMaterialInput
     );
-    const ghgEmissionsFertilizers = parse(form.ghgEmissionsFertilizers);
-    const ghgEmissionsHerbicidesPesticides = parse(
+    const ghgEmissionsFertilizers = parseNumber(form.ghgEmissionsFertilizers);
+    const ghgEmissionsHerbicidesPesticides = parseNumber(
       form.ghgEmissionsHerbicidesPesticides
     );
     const ghgEmissionsEnergy =
@@ -227,18 +222,18 @@ export function useCalculationGHGVerification() {
       ghgEmissionsEnergy;
 
     //Land Use Change
-    const socstActual = parse(form.socstActual);
-    const fluActual = parse(form.fluActual);
-    const fmgActual = parse(form.fmgActual);
-    const fiActual = parse(form.fiActual);
-    const cvegActual = parse(form.cvegActual);
+    const socstActual = parseNumber(form.socstActual);
+    const fluActual = parseNumber(form.fluActual);
+    const fmgActual = parseNumber(form.fmgActual);
+    const fiActual = parseNumber(form.fiActual);
+    const cvegActual = parseNumber(form.cvegActual);
     const soilOrganicCarbonActual =
       (socstActual * fluActual * fmgActual * fiActual + cvegActual) * 1;
 
-    const socstReference = parse(form.socstReference);
-    const fluReference = parse(form.fluReference);
-    const fmgReference = parse(form.fmgReference);
-    const fiReference = parse(form.fiReference);
+    const socstReference = parseNumber(form.socstReference);
+    const fluReference = parseNumber(form.fluReference);
+    const fmgReference = parseNumber(form.fmgReference);
+    const fiReference = parseNumber(form.fiReference);
     const soilOrganicCarbonReference =
       socstReference * fluReference * fmgReference * fiReference * 1;
 
@@ -256,38 +251,94 @@ export function useCalculationGHGVerification() {
 
     setForm((prev) => ({
       ...prev,
-      cornDry: cornDry.toFixed(1),
-      co2eqEmissionsRawMaterialInputHaYr:
-        co2eqEmissionsRawMaterialInputHaYr.toFixed(1),
-      co2eqEmissionsRawMaterialInputTFFB:
-        co2eqEmissionsRawMaterialInputTFFB.toFixed(2),
-      totalNSyntheticFertilizer: totalNSyntheticFertilizer.toFixed(1),
-      directN2OEmissions: directN2OEmissions.toFixed(1),
-      indirectN2OEmissionsNH3NOx: indirectN2OEmissionsNH3NOx.toFixed(1),
-      indirectN2OEmissionsNLeachingRunoff:
-        indirectN2OEmissionsNLeachingRunoff.toFixed(1),
-      co2eqEmissionsNitrogenFertilizersHaYr:
-        co2eqEmissionsNitrogenFertilizersHaYr.toFixed(1),
-      co2eqEmissionsNitrogenFertilizersFieldN20HaYr:
-        co2eqEmissionsNitrogenFertilizersFieldN20HaYr.toFixed(1),
-      co2eqEmissionsNitrogenFertilizersFieldN20TFFB:
-        co2eqEmissionsNitrogenFertilizersFieldN20TFFB.toFixed(1),
-      co2eqEmissionsHerbicidesPesticidesHaYr:
-        co2eqEmissionsHerbicidesPesticidesHaYr.toFixed(1),
-      co2eqEmissionsHerbicidesPesticidesTFFB:
-        co2eqEmissionsHerbicidesPesticidesTFFB.toFixed(1),
-      co2eEmissionsElectricityYr: co2eEmissionsElectricityYr.toFixed(1),
-      co2eEmissionsElectricityTFFB: co2eEmissionsElectricityTFFB.toFixed(1),
-      co2eEmissionsDieselYr: co2eEmissionsDieselYr.toFixed(1),
-      co2eEmissionsDieselTFFB: co2eEmissionsDieselTFFB.toFixed(1),
-      ghgEmissionsEnergy: ghgEmissionsEnergy.toFixed(1),
-      totalEmissionsCorn: totalEmissionsCorn.toFixed(1),
-      soilOrganicCarbonActual: soilOrganicCarbonActual.toFixed(1),
-      soilOrganicCarbonReference: soilOrganicCarbonReference.toFixed(1),
-      accumulatedSoilCarbon: accumulatedSoilCarbon.toFixed(1),
-      lucCarbonEmissionsPerKgCorn: lucCarbonEmissionsPerKgCorn.toFixed(1),
-      totalLUCCO2EmissionsHaYr: totalLUCCO2EmissionsHaYr.toFixed(1),
-      totalLUCCO2EmissionsTDryCorn: totalLUCCO2EmissionsTDryCorn.toFixed(1),
+      cornDry: formatNumber(cornDry),
+      co2eqEmissionsRawMaterialInputHaYr: formatNumber(
+        co2eqEmissionsRawMaterialInputHaYr,
+        0,
+        "round"
+      ),
+      co2eqEmissionsRawMaterialInputTFFB: formatNumber(
+        co2eqEmissionsRawMaterialInputTFFB,
+        2,
+        "none"
+      ),
+      totalNSyntheticFertilizer: formatNumber(
+        totalNSyntheticFertilizer,
+        1,
+        "none"
+      ),
+      directN2OEmissions: formatNumber(directN2OEmissions, 1, "none"),
+      indirectN2OEmissionsNH3NOx: formatNumber(
+        indirectN2OEmissionsNH3NOx,
+        1,
+        "none"
+      ),
+      indirectN2OEmissionsNLeachingRunoff: formatNumber(
+        indirectN2OEmissionsNLeachingRunoff,
+        1,
+        "none"
+      ),
+      co2eqEmissionsNitrogenFertilizersHaYr: formatNumber(
+        co2eqEmissionsNitrogenFertilizersHaYr,
+        1,
+        "none"
+      ),
+      co2eqEmissionsNitrogenFertilizersFieldN20HaYr: formatNumber(
+        co2eqEmissionsNitrogenFertilizersFieldN20HaYr,
+        1,
+        "none"
+      ),
+      co2eqEmissionsNitrogenFertilizersFieldN20TFFB: formatNumber(
+        co2eqEmissionsNitrogenFertilizersFieldN20TFFB,
+        1,
+        "none"
+      ),
+      co2eqEmissionsHerbicidesPesticidesHaYr: formatNumber(
+        co2eqEmissionsHerbicidesPesticidesHaYr,
+        1,
+        "none"
+      ),
+      co2eqEmissionsHerbicidesPesticidesTFFB: formatNumber(
+        co2eqEmissionsHerbicidesPesticidesTFFB,
+        1,
+        "none"
+      ),
+      co2eEmissionsElectricityYr: formatNumber(
+        co2eEmissionsElectricityYr,
+        2,
+        "none"
+      ),
+      co2eEmissionsElectricityTFFB: formatNumber(
+        co2eEmissionsElectricityTFFB,
+        2,
+        "none"
+      ),
+      co2eEmissionsDieselYr: formatNumber(co2eEmissionsDieselYr, 2, "none"),
+      co2eEmissionsDieselTFFB: formatNumber(co2eEmissionsDieselTFFB, 2, "none"),
+      ghgEmissionsEnergy: formatNumber(ghgEmissionsEnergy, 2, "none"),
+      totalEmissionsCorn: formatNumber(totalEmissionsCorn, 1, "none"),
+      soilOrganicCarbonActual: formatNumber(soilOrganicCarbonActual, 1, "none"),
+      soilOrganicCarbonReference: formatNumber(
+        soilOrganicCarbonReference,
+        1,
+        "none"
+      ),
+      accumulatedSoilCarbon: formatNumber(accumulatedSoilCarbon, 2, "none"),
+      lucCarbonEmissionsPerKgCorn: formatNumber(
+        lucCarbonEmissionsPerKgCorn,
+        3,
+        "none"
+      ),
+      totalLUCCO2EmissionsHaYr: formatNumber(
+        totalLUCCO2EmissionsHaYr,
+        2,
+        "none"
+      ),
+      totalLUCCO2EmissionsTDryCorn: formatNumber(
+        totalLUCCO2EmissionsTDryCorn,
+        2,
+        "none"
+      ),
     }));
   }, [
     form.acetochlor,

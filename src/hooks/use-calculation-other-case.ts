@@ -1,17 +1,32 @@
+import { formatNumber, parseNumber } from "@/utils/number";
 import { useEffect, useState } from "react";
 
 export type CarbonFormType = Record<string, string>;
 
 export function useCalculationOtherCase() {
   const [form, setForm] = useState<CarbonFormType>({
+    //Product Main
+    ethanolExampleYear: "", //33
+    moistureContent: "", //34
+
+    //CO Product
+    cornOil: "", //37
+    cornOilMoisture: "", //38
+    ddgs: "", //39
+    ddgsMoisture: "", //40
+    wdg: "", //41
+    wdgMoisture: "", //42
+    syrup: "", //43
+    syrupMoisture: "", //44
+
     //Input Needed
     totalInputWet: "", //47
-    totalMoistureContent: "", //49
-    totalInputDry: "", //48
+    cornMoisture: "", //49
+    totalInputDry: "", //48 ->=E47-(E47*E49/100)
 
     //Cultivation emissions
     cultivationEmissionsTotal: "", //55
-    cultivationEmissionsPerTon: "",
+    cultivationEmissionsPerTon: "", //56
 
     //Upstream transport
     maxLoadTransport: "", //63
@@ -21,8 +36,8 @@ export function useCalculationOtherCase() {
     fuelConsumptionLoaded: "", //69
     fuelConsumptionEmpty: "", //70
     emissionFactorFuel: "", //71
-    upstreamTransportTotal: "", //74
-    upstreamTransportMTCorn: "", //75
+    upstreamTransportTotal: "", //74 ->=((E64/E63)*(E65*E69+E66*E70)*E71)
+    upstreamTransportMTCorn: "", //75 ->=(E64/E63*E65*$E$70+E64/E63*E66*$E$70)*$E$71/E64/(1-(E49/100))
 
     //Electricity
     electricityConsumption: "", //81
@@ -72,6 +87,7 @@ export function useCalculationOtherCase() {
     lowerCornOil: "", //136
     lowerDdgs: "", //137
     lowerWdg: "", //138
+    lowerSyrup: "", //139
     calculationBioethanol: "", //142 -> =(E33-(E33*E34/100))*E135*1000
     calculationCornOil: "", //143 -> =(E37-(E37*E38/100))*E136*1000
     calculationDdgs: "", //144 -> =(E39-(E39*E40/100))*1000*E138
@@ -101,146 +117,248 @@ export function useCalculationOtherCase() {
   };
 
   useEffect(() => {
-    const parse = (val: string | number | null | undefined): number => {
-      if (typeof val === "number") return val;
-      if (!val) return 0;
-      const cleaned = val.toString().replace(",", ".").trim();
-      const parsed = parseFloat(cleaned);
-      return isNaN(parsed) ? 0 : parsed;
-    };
-
-    // Input
-    const totalInputWet = parse(form.totalInputWet);
-    const cornMoisture = parse(form.cornMoisture);
+    const totalInputWet = parseNumber(form.totalInputWet);
+    const cornMoisture = parseNumber(form.cornMoisture);
     const totalInputDry = totalInputWet - (totalInputWet * cornMoisture) / 100;
 
-    // Cultivation emissions
-    const cultivationEmissionsPerTon = parse(form.cultivationEmissionsPerTon);
+    const cultivationEmissionsPerTon = parseNumber(
+      form.cultivationEmissionsPerTon
+    );
     const cultivationEmissionsTotal =
       cultivationEmissionsPerTon * totalInputDry;
 
-    // Transport emissions
-    const maxLoad = parse(form.maxLoadTransport);
-    const cornTransported = parse(form.totalCornTransported);
-    const distLoaded = parse(form.distanceLoaded);
-    const distEmpty = parse(form.distanceEmpty);
-    const fuelLoaded = parse(form.fuelConsumptionLoaded);
-    const fuelEmpty = parse(form.fuelConsumptionEmpty);
-    const efFuel = parse(form.emissionFactorFuel);
+    const maxLoadTransport = parseNumber(form.maxLoadTransport);
+    const totalCornTransported = parseNumber(form.totalCornTransported);
+    const distanceLoaded = parseNumber(form.distanceLoaded);
+    const distanceEmpty = parseNumber(form.distanceEmpty);
+    const fuelConsumptionLoaded = parseNumber(form.fuelConsumptionLoaded);
+    const fuelConsumptionEmpty = parseNumber(form.fuelConsumptionEmpty);
+    const emissionFactorFuel = parseNumber(form.emissionFactorFuel);
 
     const upstreamTransportTotal =
-      (cornTransported / maxLoad) *
-      (distLoaded * fuelLoaded + distEmpty * fuelEmpty) *
-      efFuel;
+      (totalCornTransported / maxLoadTransport) *
+      (distanceLoaded * fuelConsumptionLoaded +
+        distanceEmpty * fuelConsumptionEmpty) *
+      emissionFactorFuel;
 
     const upstreamTransportMTCorn =
-      ((cornTransported / maxLoad) *
-        (distLoaded * fuelLoaded + distEmpty * fuelEmpty) *
-        efFuel) /
-      cornTransported /
+      (((totalCornTransported / maxLoadTransport) *
+        distanceLoaded *
+        fuelConsumptionEmpty +
+        (totalCornTransported / maxLoadTransport) *
+          distanceEmpty *
+          fuelConsumptionEmpty) *
+        emissionFactorFuel) /
+      totalCornTransported /
       (1 - cornMoisture / 100);
 
-    // Process inputs emissions
-    const electricity = parse(form.electricityConsumption);
-    const efElectricity = parse(form.emissionFactorElectricity);
-    const allofactorElectricity = electricity * efElectricity;
+    const electricityConsumption = parseNumber(form.electricityConsumption);
+    const ethanolExampleYear = parseNumber(form.ethanolExampleYear);
+    const steamConsumptionNaturalGas = parseNumber(
+      form.steamConsumptionNaturalGas
+    );
+    const yeastFermentation = parseNumber(form.yeastFermentation);
+    const freshWater = parseNumber(form.freshWater);
+    const alphaAmylase = parseNumber(form.alphaAmylase);
+    const glucoAmylase = parseNumber(form.glucoAmylase);
+    const sulfuricAcid = parseNumber(form.sulfuricAcid);
+    const sodiumHydroxide = parseNumber(form.sodiumHydroxide);
+    const urea = parseNumber(form.urea);
+    const emissionFactorElectricity = parseNumber(
+      form.emissionFactorElectricity
+    );
+    const emissionFactorNaturalGas = parseNumber(form.emissionFactorNaturalGas);
+    const emissionFactorYeast = parseNumber(form.emissionFactorYeast);
+    const emissionFactorFreshWater = parseNumber(form.emissionFactorFreshWater);
+    const emissionFactorAlphaAmylase = parseNumber(
+      form.emissionFactorAlphaAmylase
+    );
+    const emissionFactorGlucoAmylase = parseNumber(
+      form.emissionFactorGlucoAmylase
+    );
+    const emissionFactorSulfuricAcid = parseNumber(
+      form.emissionFactorSulfuricAcid
+    );
+    const emissionFactorSodiumHydroxide = parseNumber(
+      form.emissionFactorSodiumHydroxide
+    );
 
-    const steam = parse(form.steamConsumptionNaturalGas);
-    const efSteam = parse(form.emissionFactorSteamNaturalGas);
-    const allofactorSteam = steam * efSteam;
-
-    const yeast = parse(form.yeastFermentation);
-    const efYeast = parse(form.emissionFactorYeast);
-    const allofactorYeast = yeast * efYeast;
-
-    const water = parse(form.freshWater);
-    const efWater = parse(form.emissionFactorFreshWater);
-    const allofactorWater = water * efWater;
-
-    const alpha = parse(form.alphaAmylase);
-    const beta = parse(form.glucoAmylase);
-    const efAlpha = parse(form.emissionFactorAlphaAmylase);
-    const efBeta = parse(form.emissionFactorGlucoAmylase);
-    const allofactorEnzymes = alpha * efAlpha + beta * efBeta;
-
-    const acid = parse(form.sulfuricAcid);
-    const efAcid = parse(form.emissionFactorSulfuricAcid);
-    const allofactorAcid = acid * efAcid;
-
-    const naoh = parse(form.sodiumHydroxide);
-    const efNaoh = parse(form.emissionFactorSodiumHydroxide);
-    const allofactorNaoh = naoh * efNaoh;
-
-    const urea = parse(form.urea);
-    const efUrea = parse(form.emissionFactorUrea);
-    const allofactorUrea = urea * efUrea;
-
+    const allofactorElectricity =
+      electricityConsumption * emissionFactorElectricity;
+    const allofactorSteamNaturalGas =
+      steamConsumptionNaturalGas * emissionFactorNaturalGas;
+    const allofactorYeast = yeastFermentation * emissionFactorYeast;
+    const allofactorWater = freshWater * emissionFactorFreshWater;
+    const allofactorEnzymes =
+      alphaAmylase * emissionFactorAlphaAmylase +
+      glucoAmylase * emissionFactorGlucoAmylase;
+    const allofactorSulfuricAcid = sulfuricAcid * emissionFactorSulfuricAcid;
+    const allofactorSodiumHydroxide =
+      sodiumHydroxide * emissionFactorSodiumHydroxide;
+    const allofactorUrea = urea * emissionFactorSodiumHydroxide;
     const allofactorTotal =
       allofactorElectricity +
-      allofactorSteam +
+      allofactorSteamNaturalGas +
       allofactorYeast +
       allofactorWater +
       allofactorEnzymes +
-      allofactorAcid +
-      allofactorNaoh +
+      allofactorSulfuricAcid +
+      allofactorSodiumHydroxide +
       allofactorUrea;
+    const allofactorPerTonBioethanol = allofactorTotal / ethanolExampleYear;
 
-    const allofactorPerTonBioethanol = allofactorTotal / totalInputDry;
-
-    // Conversion
-    const lowerCorn = parse(form.lowerCorn);
+    const lowerCorn = parseNumber(form.lowerCorn);
     const energyContent = lowerCorn * totalInputWet * 1000;
 
-    const calculationBioethanol = parse(form.calculationBioethanol);
-    const conversionFactor =
-      calculationBioethanol > 0 ? energyContent / calculationBioethanol : 0;
+    const lowerBioethanol = parseNumber(form.lowerBioethanol);
+    const moistureContent = parseNumber(form.moistureContent);
+    const calculationBioethanol =
+      (ethanolExampleYear - (ethanolExampleYear * moistureContent) / 100) *
+      lowerBioethanol *
+      1000;
+    const conversionFactor = energyContent / calculationBioethanol;
 
     const bCultivation =
-      lowerCorn > 0
-        ? (cultivationEmissionsTotal / lowerCorn) * conversionFactor
-        : 0;
-    const bTransport =
-      lowerCorn > 0
-        ? (upstreamTransportMTCorn / lowerCorn) * conversionFactor
-        : 0;
+      (cultivationEmissionsPerTon / lowerCorn) * conversionFactor;
+    const bTransport = (upstreamTransportMTCorn / lowerCorn) * conversionFactor;
 
-    // Allocation
-    const allocation = parse(form.allocationBioethanol);
-    const eec = bCultivation * allocation;
-    const et = bTransport * allocation;
-    const ep = lowerCorn > 0 ? (allofactorTotal / lowerCorn) * allocation : 0;
+    const lowerCornOil = parseNumber(form.lowerCornOil);
+    const lowerWdg = parseNumber(form.lowerWdg);
+    const lowerSyrup = parseNumber(form.lowerSyrup);
+    const cornOil = parseNumber(form.cornOil);
+    const cornOilMoisture = parseNumber(form.cornOilMoisture);
+    const ddgs = parseNumber(form.ddgs);
+    const ddgsMoisture = parseNumber(form.ddgsMoisture);
+    const wdg = parseNumber(form.wdg);
+    const wdgMoisture = parseNumber(form.wdgMoisture);
+    const syrup = parseNumber(form.syrup);
+    const syrupMoisture = parseNumber(form.syrupMoisture);
 
-    const total = eec + et + ep;
+    const calculationCornOil =
+      (cornOil - (cornOil * cornOilMoisture) / 100) * lowerCornOil * 1000;
+    const calculationDdgs =
+      (ddgs - (ddgs * ddgsMoisture) / 100) * 1000 * lowerWdg;
+    const calculationWdg = (wdg - (wdg * wdgMoisture) / 100) * 1000 * lowerWdg;
+    const calculationSyrup =
+      (syrup - (syrup * syrupMoisture) / 100) * 1000 * lowerSyrup;
+    const calculationTotal =
+      calculationBioethanol +
+      calculationCornOil +
+      calculationDdgs +
+      calculationWdg +
+      calculationSyrup;
+
+    const allocationBioethanol = calculationBioethanol / calculationTotal;
+    const allocationCornOil = calculationCornOil / calculationTotal;
+    const allocationDdgs = calculationDdgs / calculationTotal;
+    const allocationSyrup = calculationSyrup / calculationTotal;
+
+    const eec = bCultivation * allocationBioethanol;
+    const et = bTransport * allocationBioethanol;
+    const ep = (allofactorPerTonBioethanol / lowerCorn) * allocationBioethanol;
+    const totalEEC = eec;
+    const totalEEP = ep;
+    const totalET = et;
+    const total = totalEEC + totalEEP;
 
     setForm((prev) => ({
       ...prev,
-      totalInputDry: totalInputDry.toFixed(2),
-      cultivationEmissionsTotal: cultivationEmissionsTotal.toFixed(2),
-      upstreamTransportTotal: upstreamTransportTotal.toFixed(2),
-      upstreamTransportMTCorn: upstreamTransportMTCorn.toFixed(4),
-      allofactorElectricity: allofactorElectricity.toFixed(4),
-      allofactorSteamNaturalGas: allofactorSteam.toFixed(4),
-      allofactorYeast: allofactorYeast.toFixed(4),
-      allofactorFreshWater: allofactorWater.toFixed(4),
-      allofactorEnzymes: allofactorEnzymes.toFixed(4),
-      allofactorSulfuricAcid: allofactorAcid.toFixed(4),
-      allofactorSodiumHydroxide: allofactorNaoh.toFixed(4),
-      allofactorUrea: allofactorUrea.toFixed(4),
-      allofactorTotal: allofactorTotal.toFixed(4),
-      allofactorPerTonBioethanol: allofactorPerTonBioethanol.toFixed(4),
-      energyContent: energyContent.toFixed(2),
-      conversionFactor: conversionFactor.toFixed(4),
-      bCultivation: bCultivation.toFixed(4),
-      bTransport: bTransport.toFixed(4),
-      eec: eec.toFixed(4),
-      et: et.toFixed(4),
-      ep: ep.toFixed(4),
-      totalEEC: eec.toFixed(4),
-      totalET: et.toFixed(4),
-      totalEEP: ep.toFixed(4),
-      total: total.toFixed(4),
+      totalInputDry: formatNumber(totalInputDry, 1, "none"),
+      cultivationEmissionsTotal: formatNumber(
+        cultivationEmissionsTotal,
+        1,
+        "none"
+      ),
+      upstreamTransportTotal: formatNumber(upstreamTransportTotal, 1, "none"),
+      upstreamTransportMTCorn: formatNumber(upstreamTransportMTCorn, 1, "none"),
+      allofactorElectricity: formatNumber(allofactorElectricity, 2, "none"),
+      allofactorSteamNaturalGas: formatNumber(
+        allofactorSteamNaturalGas,
+        2,
+        "none"
+      ),
+      allofactorYeast: formatNumber(allofactorYeast, 2, "none"),
+      allofactorFreshWater: formatNumber(allofactorWater, 1, "none"),
+      allofactorEnzymes: formatNumber(allofactorEnzymes, 1, "none"),
+      allofactorSulfuricAcid: formatNumber(allofactorSulfuricAcid, 1, "none"),
+      allofactorSodiumHydroxide: formatNumber(
+        allofactorSodiumHydroxide,
+        1,
+        "none"
+      ),
+      allofactorUrea: formatNumber(allofactorUrea, 2, "none"),
+      allofactorTotal: formatNumber(allofactorTotal, 0, "none"),
+      allofactorPerTonBioethanol: formatNumber(
+        allofactorPerTonBioethanol,
+        3,
+        "none"
+      ),
+      energyContent: formatNumber(energyContent, 1, "none"),
+      conversionFactor: formatNumber(conversionFactor, 1, "none"),
+      bCultivation: formatNumber(bCultivation, 1, "none"),
+      bTransport: formatNumber(bTransport, 1, "none"),
+      calculationBioethanol: formatNumber(calculationBioethanol, 0, "none"),
+      calculationCornOil: formatNumber(calculationCornOil, 0, "none"),
+      calculationDdgs: formatNumber(calculationDdgs, 0, "none"),
+      calculationWdg: formatNumber(calculationWdg, 0, "none"),
+      calculationSyrup: formatNumber(calculationSyrup, 0, "none"),
+      calculationTotal: formatNumber(calculationTotal, 0, "none"),
+      allocationBioethanol: formatNumber(allocationBioethanol, 2, "none"),
+      allocationCornOil: formatNumber(allocationCornOil, 2, "none"),
+      allocationDdgs: formatNumber(allocationDdgs, 2, "none"),
+      allocationSyrup: formatNumber(allocationSyrup, 2, "none"),
+      eec: formatNumber(eec, 2, "none"),
+      et: formatNumber(et, 2, "none"),
+      ep: formatNumber(ep, 2, "none"),
+      totalEEC: formatNumber(totalEEC, 2, "none"),
+      totalEEP: formatNumber(totalEEP, 2, "none"),
+      totalET: formatNumber(totalET, 2, "none"),
+      total: formatNumber(total, 2, "none"),
     }));
-  }, [form]);
+  }, [
+    form.alphaAmylase,
+    form.cornMoisture,
+    form.cornOil,
+    form.cornOilMoisture,
+    form.cultivationEmissionsPerTon,
+    form.ddgs,
+    form.ddgsMoisture,
+    form.distanceEmpty,
+    form.distanceLoaded,
+    form.electricityConsumption,
+    form.emissionFactorAlphaAmylase,
+    form.emissionFactorElectricity,
+    form.emissionFactorFreshWater,
+    form.emissionFactorFuel,
+    form.emissionFactorGlucoAmylase,
+    form.emissionFactorNaturalGas,
+    form.emissionFactorSodiumHydroxide,
+    form.emissionFactorSulfuricAcid,
+    form.emissionFactorYeast,
+    form.ethanolExampleYear,
+    form.freshWater,
+    form.fuelConsumptionEmpty,
+    form.fuelConsumptionLoaded,
+    form.glucoAmylase,
+    form.lowerBioethanol,
+    form.lowerCorn,
+    form.lowerCornOil,
+    form.lowerSyrup,
+    form.lowerWdg,
+    form.maxLoadTransport,
+    form.moistureContent,
+    form.sodiumHydroxide,
+    form.steamConsumptionNaturalGas,
+    form.sulfuricAcid,
+    form.syrup,
+    form.syrupMoisture,
+    form.totalCornTransported,
+    form.totalInputWet,
+    form.urea,
+    form.wdg,
+    form.wdgMoisture,
+    form.yeastFermentation,
+  ]);
 
   return {
     form,

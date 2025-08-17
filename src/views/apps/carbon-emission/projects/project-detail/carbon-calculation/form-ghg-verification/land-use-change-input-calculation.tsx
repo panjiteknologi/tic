@@ -1,6 +1,11 @@
 import { Fragment } from "react";
 import { FormCalculationTypes } from "@/types/carbon-types";
-import { landUseA, landUseB } from "@/constant/step-1";
+import {
+  landUseA,
+  landUseB,
+  landUseChangeA,
+  landUseChangeB,
+} from "@/constant/step-1";
 
 export default function LandUseChangeInputCalculation({
   renderInput,
@@ -13,6 +18,23 @@ export default function LandUseChangeInputCalculation({
         </span>
         <div className="space-y-4 mt-3">
           {Object.entries(landUseA).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder
+              )}
+            </Fragment>
+          ))}
+        </div>
+        <div className="space-y-4 mt-3">
+          <span className="text-sm font-bold">Actual carbon stock in soil</span>
+        </div>
+        <div className="space-y-4 mt-3">
+          {Object.entries(landUseChangeA).map(([key, value]) => (
             <Fragment key={key}>
               {renderInput(
                 value.keterangan,
@@ -43,6 +65,25 @@ export default function LandUseChangeInputCalculation({
                 value.placeholder,
                 value.labelColor,
                 value.bold
+              )}
+            </Fragment>
+          ))}
+        </div>
+        <div className="space-y-4 mt-3">
+          <span className="text-sm font-bold">
+            Reference carbon stock in soil
+          </span>
+        </div>
+        <div className="space-y-4 mt-3">
+          {Object.entries(landUseChangeB).map(([key, value]) => (
+            <Fragment key={key}>
+              {renderInput(
+                value.keterangan,
+                key,
+                value.satuan,
+                value.disabled,
+                value.type,
+                value.placeholder
               )}
             </Fragment>
           ))}
