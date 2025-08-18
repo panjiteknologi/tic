@@ -55,6 +55,17 @@ export const useCarbonCalculationData = () => {
     otherCaseQuery.isLoading ||
     auditQuery.isLoading;
 
+  const refetchAll = async () => {
+    await Promise.all([
+      verificationsQuery.refetch(),
+      calculationsQuery.refetch(),
+      processQuery.refetch(),
+      additionalQuery.refetch(),
+      otherCaseQuery.refetch(),
+      auditQuery.refetch(),
+    ]);
+  };
+
   return {
     isLoading,
     verifications: verificationsQuery.data,
@@ -63,5 +74,6 @@ export const useCarbonCalculationData = () => {
     additional: additionalQuery.data,
     otherCase: otherCaseQuery.data,
     audit: auditQuery.data,
+    refetchAll,
   };
 };

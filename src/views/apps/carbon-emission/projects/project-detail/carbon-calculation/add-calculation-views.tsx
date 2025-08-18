@@ -42,11 +42,20 @@ export default function AddCalculationViews({
     const sourceName = (name + "Source") as keyof typeof form;
 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      handleChange(name, value);
+      handleChange(name, e.target.value);
     };
 
     const labelClass = `text-sm ${labelColor || ""} ${bold ? "font-bold" : ""}`;
+
+    const formatCurrency = (value: string | number): string => {
+      if (value === null || value === undefined || value === "") return "";
+
+      const strValue = value.toString().replace(/\s+/g, "").replace(/\./g, "");
+      const parts = strValue.split(",");
+
+      const intPart = parts[0] ? Number(parts[0]).toLocaleString("id-ID") : "0";
+      return parts.length > 1 ? `${intPart},${parts[1]}` : intPart;
+    };
 
     return (
       <div className="flex flex-col gap-2 sm:grid sm:grid-cols-12 sm:gap-4 w-full">
@@ -73,12 +82,32 @@ export default function AddCalculationViews({
                 disabled ? "bg-gray-100 cursor-not-allowed" : ""
               }`}
             />
+          ) : type === "number" ? (
+            <Input
+              type="text"
+              value={formatCurrency(form[name])}
+              placeholder="0"
+              onChange={(e) => {
+                // Hanya izinkan angka, koma, titik
+                const raw = e.target.value;
+                const filtered = raw.replace(/[^0-9.,]/g, "");
+                handleChange(name, filtered);
+              }}
+              disabled={disabled}
+              required={!disabled}
+              className={`w-full ${
+                disabled ? "bg-gray-100 cursor-not-allowed" : ""
+              }`}
+            />
           ) : (
             <Input
               type={type}
               value={form[name]}
-              placeholder={type === "number" ? "0" : inputPlaceholder}
-              onChange={(e) => handleChange(name, e.target.value)}
+              placeholder={inputPlaceholder}
+              onChange={(e) => {
+                const rawValue = e.target.value;
+                handleChange(name, rawValue);
+              }}
               disabled={disabled}
               required={!disabled}
               className={`w-full ${
@@ -99,7 +128,6 @@ export default function AddCalculationViews({
             placeholder="Source"
             onChange={(e) => handleChange(sourceName, e.target.value)}
             disabled={disabled}
-            required={!disabled}
             className={`w-full ${
               disabled ? "bg-gray-100 cursor-not-allowed" : ""
             }`}
@@ -114,71 +142,43 @@ export default function AddCalculationViews({
       case "step1":
         return (
           <FormGHGVerification
-            handleSubmit={handleSubmit}
-            form={form}
-            handleChange={handleChange}
-            renderInput={renderInput}
-            isSubmitting={isSubmitting}
+            {...{ handleSubmit, form, handleChange, renderInput, isSubmitting }}
           />
         );
       case "step2":
         return (
           <FormGHGCalculation
-            handleSubmit={handleSubmit}
-            form={form}
-            handleChange={handleChange}
-            renderInput={renderInput}
-            isSubmitting={isSubmitting}
+            {...{ handleSubmit, form, handleChange, renderInput, isSubmitting }}
           />
         );
       case "step3":
         return (
           <FormGHGCalculationProcess
-            handleSubmit={handleSubmit}
-            form={form}
-            handleChange={handleChange}
-            renderInput={renderInput}
-            isSubmitting={isSubmitting}
+            {...{ handleSubmit, form, handleChange, renderInput, isSubmitting }}
           />
         );
       case "step4":
         return (
           <FormAddViews
-            handleSubmit={handleSubmit}
-            form={form}
-            handleChange={handleChange}
-            renderInput={renderInput}
-            isSubmitting={isSubmitting}
+            {...{ handleSubmit, form, handleChange, renderInput, isSubmitting }}
           />
         );
       case "step5":
         return (
           <FormOtherCaseCalculation
-            handleSubmit={handleSubmit}
-            form={form}
-            handleChange={handleChange}
-            renderInput={renderInput}
-            isSubmitting={isSubmitting}
+            {...{ handleSubmit, form, handleChange, renderInput, isSubmitting }}
           />
         );
       case "step6":
         return (
           <FormGHGAuditCalculation
-            handleSubmit={handleSubmit}
-            form={form}
-            handleChange={handleChange}
-            renderInput={renderInput}
-            isSubmitting={isSubmitting}
+            {...{ handleSubmit, form, handleChange, renderInput, isSubmitting }}
           />
         );
       default:
         return (
           <FormGHGVerification
-            handleSubmit={handleSubmit}
-            form={form}
-            handleChange={handleChange}
-            renderInput={renderInput}
-            isSubmitting={isSubmitting}
+            {...{ handleSubmit, form, handleChange, renderInput, isSubmitting }}
           />
         );
     }

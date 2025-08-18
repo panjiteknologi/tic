@@ -21,7 +21,7 @@ const herbicides = {
     keterangan: "CO₂eq emissions herbicides/pesticides",
     satuan: "kgCO₂eq/ha/yr",
     type: "number",
-    disabled: false,
+    disabled: true,
     placeholder: "",
     labelColor: "text-black",
     bold: true,
