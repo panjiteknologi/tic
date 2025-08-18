@@ -19,7 +19,7 @@ import { useCalculationOtherCase } from "@/hooks/use-calculation-other-case";
 import { useCalculationGHGAudit } from "@/hooks/use-calculation-ghg-audit";
 
 type StepField = {
-  type: "text" | "number";
+  type: "text" | "number" | string;
   satuan: string;
   keterangan?: string;
   [key: string]: any;
@@ -32,6 +32,26 @@ const stepConstants = {
   step4,
   step5,
   step6,
+};
+
+// 🔑 Helper untuk normalisasi angka
+const parseNumber = (val: any): number => {
+  if (typeof val !== "string") return Number(val) || 0;
+
+  let raw = val.trim();
+
+  if (raw === "") return 0;
+
+  if (raw.includes(",")) {
+    // ada koma → anggap desimal
+    raw = raw.replace(/\./g, ""); // hapus pemisah ribuan
+    raw = raw.replace(/,/g, "."); // ubah koma jadi titik
+    return isNaN(Number(raw)) ? 0 : Number(raw);
+  }
+
+  // tidak ada koma → anggap integer
+  raw = raw.replace(/\./g, ""); // hapus titik ribuan
+  return isNaN(Number(raw)) ? 0 : Number(raw);
 };
 
 export default function AddCalculation() {
@@ -97,11 +117,11 @@ export default function AddCalculation() {
 
     return Object.entries(allFields).map(([key, val]) => {
       const field = val as StepField;
+      const rawValue = form[key];
 
       return {
         keterangan: field.keterangan?.trim() || key,
-        nilaiInt:
-          field.type === "text" ? 0 : isNaN(+form[key]) ? 0 : +form[key],
+        nilaiInt: field.type === "text" ? 0 : parseNumber(rawValue),
         nilaiString: field.type === "text" ? form[key] : "",
         satuan: field.satuan,
         source: form[key + "Source"],
