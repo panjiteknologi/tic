@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, integer, numeric } from "drizzle-orm/pg-core";
 import { tenant } from "./tenant-schema";
 
 // Carbon Project
@@ -23,7 +23,7 @@ export const stepSatuGhgVerification = pgTable("step_satu_ghg_verification", {
     .notNull()
     .references(() => carbonProject.id, { onDelete: "cascade" }),
   keterangan: text("keterangan").notNull(),
-  nilaiInt: integer("nilai_int"),
+  nilaiInt: numeric("nilai_int"),
   nilaiString: text("nilai_string"),
   satuan: text("satuan"),
   source: text("source"),
@@ -36,7 +36,7 @@ export const stepDuaGhgCalculation = pgTable("step_dua_ghg_calculation", {
     .notNull()
     .references(() => carbonProject.id, { onDelete: "cascade" }),
   keterangan: text("keterangan").notNull(),
-  nilaiInt: integer("nilai_int"),
+  nilaiInt: numeric("nilai_int"),
   nilaiString: text("nilai_string"),
   satuan: text("satuan"),
   source: text("source"),
@@ -51,7 +51,7 @@ export const stepTigaGhgCalculationProcess = pgTable(
       .notNull()
       .references(() => carbonProject.id, { onDelete: "cascade" }),
     keterangan: text("keterangan").notNull(),
-    nilaiInt: integer("nilai_int"),
+    nilaiInt: numeric("nilai_int"),
     nilaiString: text("nilai_string"),
     satuan: text("satuan"),
     source: text("source"),
@@ -65,7 +65,7 @@ export const stepTigaAdditional = pgTable("step_tiga_additional", {
     .notNull()
     .references(() => carbonProject.id, { onDelete: "cascade" }),
   keterangan: text("keterangan").notNull(),
-  nilaiInt: integer("nilai_int"),
+  nilaiInt: numeric("nilai_int"),
   nilaiString: text("nilai_string"),
   satuan: text("satuan"),
   source: text("source"),
@@ -78,7 +78,7 @@ export const stepTigaOtherCase = pgTable("step_tiga_other_case", {
     .notNull()
     .references(() => carbonProject.id, { onDelete: "cascade" }),
   keterangan: text("keterangan").notNull(),
-  nilaiInt: integer("nilai_int"),
+  nilaiInt: numeric("nilai_int"),
   nilaiString: text("nilai_string"),
   satuan: text("satuan"),
   source: text("source"),
@@ -91,7 +91,7 @@ export const stepEmpatGhgAudit = pgTable("step_empat_ghg_audit", {
     .notNull()
     .references(() => carbonProject.id, { onDelete: "cascade" }),
   keterangan: text("keterangan").notNull(),
-  nilaiInt: integer("nilai_int"),
+  nilaiInt: numeric("nilai_int"),
   nilaiString: text("nilai_string"),
   satuan: text("satuan"),
   source: text("source"),
