@@ -94,7 +94,7 @@ export default function AddCalculationViews({
                 handleChange(name, filtered);
               }}
               disabled={disabled}
-              required={!disabled}
+              // required={!disabled}
               className={`w-full ${
                 disabled ? "bg-gray-100 cursor-not-allowed" : ""
               }`}
@@ -109,7 +109,7 @@ export default function AddCalculationViews({
                 handleChange(name, rawValue);
               }}
               disabled={disabled}
-              required={!disabled}
+              // required={!disabled}
               className={`w-full ${
                 disabled ? "bg-gray-100 cursor-not-allowed" : ""
               }`}

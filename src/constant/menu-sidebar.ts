@@ -1,11 +1,4 @@
-import {
-  BadgeCheck,
-  Gauge,
-  FolderOpenDot,
-  Droplets,
-  List,
-  FormInputIcon,
-} from "lucide-react";
+import { BadgeCheck, Gauge, FolderOpenDot, Droplets, List } from "lucide-react";
 
 export const AuditStatusMenu = {
   user: {
@@ -68,12 +61,6 @@ export const getCarbonCalculationMenu = (projectId: string) => ({
           title: "List Calculation",
           url: `/apps/carbon-emission/iscc/projects/${projectId}`,
           icon: List,
-        },
-        {
-          id: "add-emission",
-          title: "Form Calculation",
-          url: `/apps/carbon-emission/iscc/projects/${projectId}/add-calculation`,
-          icon: FormInputIcon,
         },
       ],
     },

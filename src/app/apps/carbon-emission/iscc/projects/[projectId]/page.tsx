@@ -26,6 +26,25 @@ type payloadType = {
   source: string;
 };
 
+// 🔑 Helper normalisasi angka (sama seperti di AddCalculation)
+const parseNumber = (val: any): number => {
+  if (typeof val !== "string") return Number(val) || 0;
+
+  let raw = val.trim();
+  if (raw === "") return 0;
+
+  if (raw.includes(",")) {
+    // ada koma → desimal
+    raw = raw.replace(/\./g, ""); // hapus ribuan
+    raw = raw.replace(/,/g, "."); // ganti koma jadi titik
+    return isNaN(Number(raw)) ? 0 : Number(raw);
+  }
+
+  // tidak ada koma → integer
+  raw = raw.replace(/\./g, ""); // hapus ribuan
+  return isNaN(Number(raw)) ? 0 : Number(raw);
+};
+
 export default function CalculationListPage() {
   const router = useRouter();
   const utils = trpc.useUtils();
@@ -157,7 +176,8 @@ export default function CalculationListPage() {
         id: Number(updated.id),
         carbonProjectId,
         keterangan: updated.keterangan ?? "",
-        nilaiInt: updated.nilaiInt !== undefined ? Number(updated.nilaiInt) : 0,
+        nilaiInt:
+          updated.nilaiInt !== undefined ? parseNumber(updated.nilaiInt) : 0,
         nilaiString: updated.nilaiString ?? "",
         satuan: updated.satuan ?? "",
         source: updated.source ?? "",
