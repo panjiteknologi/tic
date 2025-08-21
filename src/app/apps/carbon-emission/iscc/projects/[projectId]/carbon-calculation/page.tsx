@@ -74,11 +74,16 @@ const flattenStepFields = (
   return { allFields, labelToKey };
 };
 
-type CarbonCalculationProps = { data: EmissionsTypes[]; activeStep: StepKey };
+type CarbonCalculationProps = {
+  data: EmissionsTypes[];
+  activeStep: StepKey;
+  onRefresh?: () => void;
+};
 
 export default function CarbonCalculation({
   activeStep,
   data,
+  onRefresh,
 }: CarbonCalculationProps) {
   const { projectId } = useParams();
   const { data: userProfile } = trpc.user.getUserProfile.useQuery();
@@ -93,6 +98,7 @@ export default function CarbonCalculation({
   );
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // ✅ hooks form harus dipanggil semua, lalu dipilih pakai useMemo
   const formHookStep1to4 = useCalculationGHGVerification();
@@ -154,20 +160,32 @@ export default function CarbonCalculation({
       {}
     );
 
-    // idMap untuk update: keterangan (trim) -> id
-    const idMap: Record<string, string> =
+    // idMap untuk update: keterangan (trim) -> id (NUMBER)
+    const idMap: Record<string, number> =
       existing?.reduce((acc, item) => {
-        if (item.keterangan)
-          acc[item.keterangan.trim()] = String(item.id ?? "");
+        if (!item.keterangan) return acc;
+
+        // pastikan number, abaikan kalau NaN / nullish
+        const num = item.id == null ? NaN : Number(item.id);
+        if (Number.isFinite(num)) {
+          acc[item.keterangan.trim()] = num; // simpan sebagai number
+        }
         return acc;
-      }, {} as Record<string, string>) ?? {};
+      }, {} as Record<string, number>) ?? {};
 
     return Object.entries(allFields).map(([key, val]) => {
       const field = val as StepField;
       const rawValue = formState[key];
-      const label = field.keterangan?.trim() || key;
+      const label = (field.keterangan?.trim() || key).trim();
+
+      const maybeId = idMap[label];
+      const idAsNumber =
+        typeof maybeId === "number" && Number.isFinite(maybeId)
+          ? maybeId
+          : undefined;
+
       return {
-        id: idMap[label] || undefined, // ikutkan saat update; biarkan undefined saat create
+        id: idAsNumber, // <-- number | undefined
         keterangan: label,
         nilaiInt: field.type === "text" ? 0 : parseNumber(rawValue),
         nilaiString: field.type === "text" ? formState[key] ?? "" : "",
@@ -209,9 +227,6 @@ export default function CarbonCalculation({
       const values = mapStepToValues(stepConstants[activeStep], form, data);
       const payload = { tenantId, carbonProjectId, items: values };
 
-      // 👉 cek data yang akan di-update
-      console.log("Update payload:", payload);
-
       await update[activeStep].mutateAsync(payload);
       await invalidateByStep(activeStep, carbonProjectId);
 
@@ -248,6 +263,9 @@ export default function CarbonCalculation({
           handleChange={handleChange}
           isSubmitting={isSubmitting}
           activeStep={activeStep}
+          onRefresh={onRefresh}
+          isRefreshing={isRefreshing}
+          setIsRefreshing={setIsRefreshing}
         />
       )}
 

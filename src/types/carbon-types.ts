@@ -110,6 +110,9 @@ export interface FormCalculationTypes {
   defaultValues?: any;
   data?: EmissionsTypes[];
   activeStep?: string;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
+  setIsRefreshing?: Dispatch<SetStateAction<boolean>> | any;
 }
 
 export interface CarbonCalculationViewProps {

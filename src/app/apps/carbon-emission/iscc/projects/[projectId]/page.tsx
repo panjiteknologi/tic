@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
@@ -9,58 +8,15 @@ import { getCarbonCalculationMenu } from "@/constant/menu-sidebar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/shadcn-io/spinner";
-import ConfirmDialog from "@/components/ui/confirm-dialog";
-import { DialogInfo } from "@/components/ui/dialog-info";
-import { useCarbonCalculationData } from "@/hooks";
-import { trpc } from "@/trpc/react";
-import { EmissionsTypes } from "@/types/carbon-types";
+import { StepKey, useCarbonCalculationData } from "@/hooks";
 import CarbonCalaculation from "./carbon-calculation/page";
-
-type payloadType = {
-  id: number;
-  carbonProjectId: string;
-  keterangan: string;
-  nilaiInt: number | string;
-  nilaiString: string;
-  satuan: string;
-  source: string;
-};
-
-// 🔑 Helper normalisasi angka (sama seperti di AddCalculation)
-const parseNumber = (val: any): number => {
-  if (typeof val !== "string") return Number(val) || 0;
-
-  let raw = val.trim();
-  if (raw === "") return 0;
-
-  if (raw.includes(",")) {
-    // ada koma → desimal
-    raw = raw.replace(/\./g, ""); // hapus ribuan
-    raw = raw.replace(/,/g, "."); // ganti koma jadi titik
-    return isNaN(Number(raw)) ? 0 : Number(raw);
-  }
-
-  // tidak ada koma → integer
-  raw = raw.replace(/\./g, ""); // hapus ribuan
-  return isNaN(Number(raw)) ? 0 : Number(raw);
-};
 
 export default function CalculationListPage() {
   const router = useRouter();
-  const utils = trpc.useUtils();
   const { projectId } = useParams();
   const carbonProjectId = String(projectId);
 
   const [activeStep, setActiveStep] = useState("step1");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [infoDialogOpen, setInfoDialogOpen] = useState(false);
-  const [infoDialogTitle, setInfoDialogTitle] = useState("");
-  const [infoDialogDesc, setInfoDialogDesc] = useState("");
-  const [infoVariant, setInfoVariant] = useState<"success" | "error" | "info">(
-    "info"
-  );
 
   const {
     isLoading,
@@ -105,142 +61,6 @@ export default function CalculationListPage() {
       data: audit?.stepEmpatGhgAudits ?? [],
     },
   ];
-
-  const mutations = {
-    update: {
-      step1: trpc.stepOneGhgVerification.update.useMutation(),
-      step2: trpc.stepTwoGhgCalculation.update.useMutation(),
-      step3: trpc.stepThreeGhgProcess.update.useMutation(),
-      step4: trpc.stepThreeGhgAdditional.update.useMutation(),
-      step5: trpc.stepThreeGhgOtherCase.update.useMutation(),
-      step6: trpc.stepFourGhgAudit.update.useMutation(),
-    },
-    delete: {
-      step1: trpc.stepOneGhgVerification.delete.useMutation(),
-      step2: trpc.stepTwoGhgCalculation.delete.useMutation(),
-      step3: trpc.stepThreeGhgProcess.delete.useMutation(),
-      step4: trpc.stepThreeGhgAdditional.delete.useMutation(),
-      step5: trpc.stepThreeGhgOtherCase.delete.useMutation(),
-      step6: trpc.stepFourGhgAudit.delete.useMutation(),
-    },
-  };
-
-  const invalidateCacheByStep = async (
-    activeStep: string,
-    carbonProjectId: string
-  ) => {
-    const stepInvalidationMap: Record<string, () => Promise<void>> = {
-      step1: async () => {
-        await utils.stepOneGhgVerification.getByCarbonProjectId.invalidate({
-          carbonProjectId,
-        });
-      },
-      step2: async () => {
-        await utils.stepTwoGhgCalculation.getByCarbonProjectId.invalidate({
-          carbonProjectId,
-        });
-      },
-      step3: async () => {
-        await utils.stepThreeGhgProcess.getByCarbonProjectId.invalidate({
-          carbonProjectId,
-        });
-      },
-      step4: async () => {
-        await utils.stepThreeGhgAdditional.getByCarbonProjectId.invalidate({
-          carbonProjectId,
-        });
-      },
-      step5: async () => {
-        await utils.stepThreeGhgOtherCase.getByCarbonProjectId.invalidate({
-          carbonProjectId,
-        });
-      },
-      step6: async () => {
-        await utils.stepFourGhgAudit.getByCarbonProjectId.invalidate({
-          carbonProjectId,
-        });
-      },
-    };
-
-    const invalidate = stepInvalidationMap[activeStep];
-    if (invalidate) {
-      await invalidate();
-    } else {
-      console.error(`Invalid step: ${activeStep}`);
-    }
-  };
-
-  const handleEdit = async (updated: EmissionsTypes) => {
-    try {
-      const payload: payloadType = {
-        id: Number(updated.id),
-        carbonProjectId,
-        keterangan: updated.keterangan ?? "",
-        nilaiInt:
-          updated.nilaiInt !== undefined ? parseNumber(updated.nilaiInt) : 0,
-        nilaiString: updated.nilaiString ?? "",
-        satuan: updated.satuan ?? "",
-        source: updated.source ?? "",
-      };
-
-      const mutation =
-        mutations.update[activeStep as keyof typeof mutations.update];
-      if (!mutation) throw new Error("Unknown step");
-
-      await mutation.mutateAsync(payload as any);
-      await invalidateCacheByStep(activeStep, carbonProjectId);
-
-      setInfoVariant("success");
-      setInfoDialogTitle("Data berhasil diperbarui");
-      setInfoDialogDesc(`Data berhasil diperbarui.`);
-      setInfoDialogOpen(true);
-    } catch (error: any) {
-      setInfoVariant("error");
-      setInfoDialogTitle("Gagal mengedit project");
-      setInfoDialogDesc(
-        error.message ?? "Terjadi kesalahan saat menyimpan data."
-      );
-      setInfoDialogOpen(true);
-    }
-  };
-
-  const onDelete = (id: string) => {
-    setSelectedId(id);
-    setDeleteDialogOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!selectedId) return;
-
-    try {
-      setIsDeleting(true);
-
-      const mutation =
-        mutations.delete[activeStep as keyof typeof mutations.delete];
-      if (!mutation) throw new Error("Unknown step");
-
-      await mutation.mutateAsync({ id: selectedId as any });
-      await invalidateCacheByStep(activeStep, carbonProjectId);
-
-      setInfoVariant("success");
-      setInfoDialogTitle("Data berhasil dihapus");
-      setInfoDialogDesc("Data ini berhasil dihapus.");
-      setDeleteDialogOpen(false);
-    } catch (error: any) {
-      setIsDeleting(false);
-      setInfoVariant("error");
-      setDeleteDialogOpen(false);
-      setInfoDialogTitle("Gagal menghapus data");
-      setInfoDialogDesc(
-        error?.message || "Terjadi kesalahan saat menghapus data."
-      );
-    } finally {
-      setIsDeleting(false);
-      setDeleteDialogOpen(false);
-      setInfoDialogOpen(true);
-      setSelectedId(null);
-    }
-  };
 
   return (
     <DashboardLayout
@@ -290,31 +110,16 @@ export default function CalculationListPage() {
           <Fragment>
             {tabs.map(({ value, data }) => (
               <TabsContent key={value} value={value}>
-                <CarbonCalaculation data={data ?? []} activeStep={activeStep} />
+                <CarbonCalaculation
+                  data={data ?? []}
+                  activeStep={activeStep as StepKey}
+                  onRefresh={refetchAll}
+                />
               </TabsContent>
             ))}
           </Fragment>
         )}
       </Tabs>
-
-      <ConfirmDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        title="Hapus Data"
-        description="Apakah kamu yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan."
-        onConfirm={confirmDelete}
-        isDelete={isDeleting}
-        cancelText="Batal"
-      />
-
-      <DialogInfo
-        open={infoDialogOpen}
-        onOpenChange={setInfoDialogOpen}
-        title={infoDialogTitle}
-        description={infoDialogDesc}
-        variant={infoVariant}
-        onClose={() => setInfoDialogOpen(false)}
-      />
     </DashboardLayout>
   );
 }

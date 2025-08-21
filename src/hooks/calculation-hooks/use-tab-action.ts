@@ -27,12 +27,12 @@ export const useTabActions = () => {
   } as Record<StepKey, MutationAny>;
 
   const update = {
-    step1: asMutationAny(trpc.stepOneGhgVerification.update.useMutation()),
-    step2: asMutationAny(trpc.stepTwoGhgCalculation.update.useMutation()),
-    step3: asMutationAny(trpc.stepThreeGhgProcess.update.useMutation()),
-    step4: asMutationAny(trpc.stepThreeGhgAdditional.update.useMutation()),
-    step5: asMutationAny(trpc.stepThreeGhgOtherCase.update.useMutation()),
-    step6: asMutationAny(trpc.stepFourGhgAudit.update.useMutation()),
+    step1: asMutationAny(trpc.stepOneGhgVerification.bulkUpdate.useMutation()),
+    step2: asMutationAny(trpc.stepTwoGhgCalculation.bulkUpdate.useMutation()),
+    step3: asMutationAny(trpc.stepThreeGhgProcess.bulkUpdate.useMutation()),
+    step4: asMutationAny(trpc.stepThreeGhgAdditional.bulkUpdate.useMutation()),
+    step5: asMutationAny(trpc.stepThreeGhgOtherCase.bulkUpdate.useMutation()),
+    step6: asMutationAny(trpc.stepFourGhgAudit.bulkUpdate.useMutation()),
   } as Record<StepKey, MutationAny>;
 
   const del = {

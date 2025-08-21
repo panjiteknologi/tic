@@ -13,6 +13,7 @@ import FormGHGVerification from "./form-ghg-verification";
 import FormGHGCalculation from "./form-ghg-calculation";
 import { Button } from "@/components/ui/button";
 import { StepKey } from "@/hooks";
+import { Spinner } from "@/components/ui/shadcn-io/spinner";
 
 // 🔑 mapping step -> form component
 const stepForms: Record<StepKey, React.FC<any>> = {
@@ -31,6 +32,9 @@ export default function EditCalculationViews({
   isSubmitting,
   data,
   activeStep,
+  onRefresh,
+  isRefreshing,
+  setIsRefreshing,
 }: FormCalculationTypes) {
   const renderInput = (
     label: string,
@@ -159,15 +163,39 @@ export default function EditCalculationViews({
   return (
     <div className="w-full">
       <div className="mt-4">
-        <div className="flex justify-end sticky top-0 z-20 bg-white p-2">
+        {onRefresh && (
           <Button
-            form="carbon-form"
-            type="submit"
-            className="text-white font-semibold"
-            disabled={isSubmitting}
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              if (onRefresh) {
+                setIsRefreshing(true);
+                try {
+                  await onRefresh();
+                } finally {
+                  setIsRefreshing(false);
+                }
+              }
+            }}
+            disabled={isRefreshing}
+            className="flex items-center gap-1 cursor-pointer"
           >
-            {isSubmitting ? "Updating..." : "Update Calculation"}
+            {isRefreshing ? <Spinner className="w-4 h-4" /> : "🔄"}
+            <span className="text-sm ml-1">Refresh</span>
           </Button>
+        )}
+        <div className="flex items-center justify-between">
+          <h2 className="text-black text-lg font-bold">Carbon Calculation</h2>
+          <div className="flex justify-end sticky top-0 z-20 bg-white p-2">
+            <Button
+              form="carbon-form"
+              type="submit"
+              className="text-white font-semibold"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Updating..." : "Update Calculation"}
+            </Button>
+          </div>
         </div>
         {renderForm()}
       </div>
