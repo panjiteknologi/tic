@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormCalculationTypes } from "@/types/carbon-types";
 import { Fragment } from "react";
@@ -15,7 +14,6 @@ export default function FormGHGAuditCalculation({
   form,
   handleChange,
   renderInput,
-  isSubmitting,
 }: FormCalculationTypes) {
   const sections = [
     {
@@ -50,17 +48,6 @@ export default function FormGHGAuditCalculation({
 
   return (
     <Fragment>
-      <div className="flex justify-end sticky top-0 z-20 py-3 bg-white">
-        <Button
-          form="carbon-form"
-          type="submit"
-          className="text-white font-semibold"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Saving..." : "Save Calculation"}
-        </Button>
-      </div>
-
       <div className="w-full py-6 mx-auto">
         <form id="carbon-form" onSubmit={handleSubmit} className="space-y-6">
           {sections.map(({ title, Component }, idx) => (

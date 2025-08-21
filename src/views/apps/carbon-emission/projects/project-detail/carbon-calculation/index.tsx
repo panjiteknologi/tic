@@ -103,13 +103,13 @@ export function CarbonCalculationView({
           />
         </div>
 
-        {/* {data?.length === 0 && ( */}
-        <div className="flex justify-end">
-          <Button className="cursor-pointer" onClick={goAddCalculation}>
-            + Add Calculation
-          </Button>
-        </div>
-        {/* )} */}
+        {data?.length === 0 && (
+          <div className="flex justify-end">
+            <Button className="cursor-pointer" onClick={goAddCalculation}>
+              + Add Calculation
+            </Button>
+          </div>
+        )}
 
         <div
           className={

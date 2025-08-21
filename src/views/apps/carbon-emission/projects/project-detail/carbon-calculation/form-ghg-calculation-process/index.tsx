@@ -1,5 +1,4 @@
 import { Fragment } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormCalculationTypes } from "@/types/carbon-types";
 import ProductInputCalculation from "./product-input-calculation";
@@ -13,7 +12,6 @@ export default function FormGHGCalculationProcess({
   form,
   handleChange,
   renderInput,
-  isSubmitting,
 }: FormCalculationTypes) {
   const sections = [
     {
@@ -41,17 +39,6 @@ export default function FormGHGCalculationProcess({
 
   return (
     <Fragment>
-      <div className="flex justify-end sticky top-0 z-20 py-3">
-        <Button
-          form="carbon-form"
-          type="submit"
-          className="text-white font-semiboldtransition"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Saving..." : "Save Calculation"}
-        </Button>
-      </div>
-
       <div className="w-full py-6 mx-auto">
         <form id="carbon-form" onSubmit={handleSubmit} className="space-y-6">
           {sections.map(({ title, Component }, idx) => (

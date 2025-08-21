@@ -6,15 +6,15 @@ import { Fragment, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import DashboardLayout from "@/layout/dashboard-layout";
 import { getCarbonCalculationMenu } from "@/constant/menu-sidebar";
-import { CarbonCalculationView } from "@/views/apps/carbon-emission/projects/project-detail/carbon-calculation";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/shadcn-io/spinner";
-import { EmissionsTypes } from "@/types/carbon-types";
-import { trpc } from "@/trpc/react";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
 import { DialogInfo } from "@/components/ui/dialog-info";
-import { useCarbonCalculationData } from "@/hooks/use-carbon-calculation-data";
+import { useCarbonCalculationData } from "@/hooks";
+import { trpc } from "@/trpc/react";
+import { EmissionsTypes } from "@/types/carbon-types";
+import CarbonCalaculation from "./carbon-calculation/page";
 
 type payloadType = {
   id: number;
@@ -290,14 +290,7 @@ export default function CalculationListPage() {
           <Fragment>
             {tabs.map(({ value, data }) => (
               <TabsContent key={value} value={value}>
-                <CarbonCalculationView
-                  projectId={carbonProjectId}
-                  onEdit={handleEdit}
-                  onDelete={onDelete}
-                  activeStep={activeStep}
-                  data={data as []}
-                  onRefresh={refetchAll}
-                />
+                <CarbonCalaculation data={data ?? []} activeStep={activeStep} />
               </TabsContent>
             ))}
           </Fragment>

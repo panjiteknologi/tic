@@ -1,5 +1,4 @@
 import { Fragment } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormCalculationTypes } from "@/types/carbon-types";
 import FactorInputCalculation from "./factor-input-calculation";
@@ -13,7 +12,6 @@ export default function FormAddViews({
   form,
   handleChange,
   renderInput,
-  isSubmitting,
 }: FormCalculationTypes) {
   const sections = [
     { title: "Input Factor", Component: FactorInputCalculation },
@@ -28,17 +26,6 @@ export default function FormAddViews({
 
   return (
     <Fragment>
-      <div className="flex justify-end sticky top-0 z-20 py-3 bg-white">
-        <Button
-          form="carbon-form"
-          type="submit"
-          className="text-white font-semibold"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Saving..." : "Save Calculation"}
-        </Button>
-      </div>
-
       <div className="w-full py-6 mx-auto">
         <form id="carbon-form" onSubmit={handleSubmit} className="space-y-6">
           {sections.map(({ title, Component }, idx) => (

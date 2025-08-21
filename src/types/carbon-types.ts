@@ -107,6 +107,9 @@ export interface FormCalculationTypes {
   goBack?: () => void | any;
   renderInput?: any;
   isSubmitting?: boolean;
+  defaultValues?: any;
+  data?: EmissionsTypes[];
+  activeStep?: string;
 }
 
 export interface CarbonCalculationViewProps {
@@ -119,14 +122,11 @@ export interface CarbonCalculationViewProps {
 }
 
 export type EmissionsTypes = {
-  nilaiString: string;
-  keterangan: string;
-  nilaiInt: string;
-  satuan: string;
-  id: string;
+  id: number;
   carbonProjectId: string;
-  type: string;
-  amount: number;
-  unitts: string;
-  source?: string;
+  keterangan: string;
+  nilaiInt: number | string | null;
+  nilaiString: string | null;
+  satuan: string | null;
+  source?: string | null;
 };
