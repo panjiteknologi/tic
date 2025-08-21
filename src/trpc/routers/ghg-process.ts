@@ -42,6 +42,21 @@ const bulkAddStepTigaGhgCalculationProcessSchema = z.object({
     .min(1, "At least one item is required"),
 });
 
+const bulkUpdateStepTigaGhgCalculationProcessSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        id: z.number(),
+        keterangan: z.string().optional(),
+        nilaiInt: z.number().optional(),
+        nilaiString: z.string().optional(),
+        satuan: z.string().optional(),
+        source: z.string().optional(),
+      })
+    )
+    .min(1, "At least one item is required"),
+});
+
 export const ghgProcessRouter = createTRPCRouter({
   // Bulk add step tiga ghg calculation processes
   bulkAdd: protectedProcedure
@@ -113,6 +128,91 @@ export const ghgProcessRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to bulk create step tiga ghg calculation processes",
+        });
+      }
+    }),
+
+  // Bulk update step tiga ghg calculation processes
+  bulkUpdate: protectedProcedure
+    .input(bulkUpdateStepTigaGhgCalculationProcessSchema)
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const updatedItems = [];
+        
+        for (const item of input.items) {
+          // Get the step tiga ghg calculation process to check carbon project ownership
+          const process = await db
+            .select({
+              id: stepTigaGhgCalculationProcess.id,
+              carbonProjectId: stepTigaGhgCalculationProcess.carbonProjectId,
+              tenantId: carbonProject.tenantId,
+            })
+            .from(stepTigaGhgCalculationProcess)
+            .innerJoin(
+              carbonProject,
+              eq(stepTigaGhgCalculationProcess.carbonProjectId, carbonProject.id)
+            )
+            .where(eq(stepTigaGhgCalculationProcess.id, item.id))
+            .limit(1);
+
+          if (process.length === 0) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: `Step tiga ghg calculation process with id ${item.id} not found`,
+            });
+          }
+
+          // Check if user is member of this tenant
+          const userTenant = await db
+            .select()
+            .from(tenantUser)
+            .where(
+              and(
+                eq(tenantUser.tenantId, process[0].tenantId),
+                eq(tenantUser.userId, ctx.user.id),
+                eq(tenantUser.isActive, true)
+              )
+            )
+            .limit(1);
+
+          if (userTenant.length === 0) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "Access denied to this tenant",
+            });
+          }
+
+          // Update step tiga ghg calculation process
+          const [updatedItem] = await db
+            .update(stepTigaGhgCalculationProcess)
+            .set({
+              keterangan: item.keterangan,
+              nilaiInt:
+                item.nilaiInt !== undefined && item.nilaiInt !== null
+                  ? String(item.nilaiInt)
+                  : undefined,
+              nilaiString: item.nilaiString,
+              satuan: item.satuan,
+              source: item.source,
+            })
+            .where(eq(stepTigaGhgCalculationProcess.id, item.id))
+            .returning();
+
+          updatedItems.push(updatedItem);
+        }
+
+        return {
+          success: true,
+          stepTigaGhgCalculationProcesses: updatedItems,
+          count: updatedItems.length,
+        };
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to bulk update step tiga ghg calculation processes",
         });
       }
     }),

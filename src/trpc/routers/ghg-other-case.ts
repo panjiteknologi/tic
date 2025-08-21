@@ -42,6 +42,21 @@ const bulkAddStepTigaOtherCaseSchema = z.object({
     .min(1, "At least one item is required"),
 });
 
+const bulkUpdateStepTigaOtherCaseSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        id: z.number(),
+        keterangan: z.string().optional(),
+        nilaiInt: z.number().optional(),
+        nilaiString: z.string().optional(),
+        satuan: z.string().optional(),
+        source: z.string().optional(),
+      })
+    )
+    .min(1, "At least one item is required"),
+});
+
 export const ghgOtherCaseRouter = createTRPCRouter({
   // Bulk add step tiga other cases
   bulkAdd: protectedProcedure
@@ -113,6 +128,91 @@ export const ghgOtherCaseRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to bulk create step tiga other cases",
+        });
+      }
+    }),
+
+  // Bulk update step tiga other cases
+  bulkUpdate: protectedProcedure
+    .input(bulkUpdateStepTigaOtherCaseSchema)
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const updatedItems = [];
+        
+        for (const item of input.items) {
+          // Get the step tiga other case to check carbon project ownership
+          const otherCase = await db
+            .select({
+              id: stepTigaOtherCase.id,
+              carbonProjectId: stepTigaOtherCase.carbonProjectId,
+              tenantId: carbonProject.tenantId,
+            })
+            .from(stepTigaOtherCase)
+            .innerJoin(
+              carbonProject,
+              eq(stepTigaOtherCase.carbonProjectId, carbonProject.id)
+            )
+            .where(eq(stepTigaOtherCase.id, item.id))
+            .limit(1);
+
+          if (otherCase.length === 0) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: `Step tiga other case with id ${item.id} not found`,
+            });
+          }
+
+          // Check if user is member of this tenant
+          const userTenant = await db
+            .select()
+            .from(tenantUser)
+            .where(
+              and(
+                eq(tenantUser.tenantId, otherCase[0].tenantId),
+                eq(tenantUser.userId, ctx.user.id),
+                eq(tenantUser.isActive, true)
+              )
+            )
+            .limit(1);
+
+          if (userTenant.length === 0) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "Access denied to this tenant",
+            });
+          }
+
+          // Update step tiga other case
+          const [updatedItem] = await db
+            .update(stepTigaOtherCase)
+            .set({
+              keterangan: item.keterangan,
+              nilaiInt:
+                item.nilaiInt !== undefined && item.nilaiInt !== null
+                  ? String(item.nilaiInt)
+                  : undefined,
+              nilaiString: item.nilaiString,
+              satuan: item.satuan,
+              source: item.source,
+            })
+            .where(eq(stepTigaOtherCase.id, item.id))
+            .returning();
+
+          updatedItems.push(updatedItem);
+        }
+
+        return {
+          success: true,
+          stepTigaOtherCases: updatedItems,
+          count: updatedItems.length,
+        };
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to bulk update step tiga other cases",
         });
       }
     }),

@@ -42,6 +42,21 @@ const bulkAddStepEmpatGhgAuditSchema = z.object({
     .min(1, "At least one item is required"),
 });
 
+const bulkUpdateStepEmpatGhgAuditSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        id: z.number(),
+        keterangan: z.string().optional(),
+        nilaiInt: z.number().optional(),
+        nilaiString: z.string().optional(),
+        satuan: z.string().optional(),
+        source: z.string().optional(),
+      })
+    )
+    .min(1, "At least one item is required"),
+});
+
 export const ghgAuditRouter = createTRPCRouter({
   // Bulk add step empat ghg audits
   bulkAdd: protectedProcedure
@@ -113,6 +128,91 @@ export const ghgAuditRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to bulk create step empat ghg audits",
+        });
+      }
+    }),
+
+  // Bulk update step empat ghg audits
+  bulkUpdate: protectedProcedure
+    .input(bulkUpdateStepEmpatGhgAuditSchema)
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const updatedItems = [];
+        
+        for (const item of input.items) {
+          // Get the step empat ghg audit to check carbon project ownership
+          const audit = await db
+            .select({
+              id: stepEmpatGhgAudit.id,
+              carbonProjectId: stepEmpatGhgAudit.carbonProjectId,
+              tenantId: carbonProject.tenantId,
+            })
+            .from(stepEmpatGhgAudit)
+            .innerJoin(
+              carbonProject,
+              eq(stepEmpatGhgAudit.carbonProjectId, carbonProject.id)
+            )
+            .where(eq(stepEmpatGhgAudit.id, item.id))
+            .limit(1);
+
+          if (audit.length === 0) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: `Step empat ghg audit with id ${item.id} not found`,
+            });
+          }
+
+          // Check if user is member of this tenant
+          const userTenant = await db
+            .select()
+            .from(tenantUser)
+            .where(
+              and(
+                eq(tenantUser.tenantId, audit[0].tenantId),
+                eq(tenantUser.userId, ctx.user.id),
+                eq(tenantUser.isActive, true)
+              )
+            )
+            .limit(1);
+
+          if (userTenant.length === 0) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "Access denied to this tenant",
+            });
+          }
+
+          // Update step empat ghg audit
+          const [updatedItem] = await db
+            .update(stepEmpatGhgAudit)
+            .set({
+              keterangan: item.keterangan,
+              nilaiInt:
+                item.nilaiInt !== undefined && item.nilaiInt !== null
+                  ? String(item.nilaiInt)
+                  : undefined,
+              nilaiString: item.nilaiString,
+              satuan: item.satuan,
+              source: item.source,
+            })
+            .where(eq(stepEmpatGhgAudit.id, item.id))
+            .returning();
+
+          updatedItems.push(updatedItem);
+        }
+
+        return {
+          success: true,
+          stepEmpatGhgAudits: updatedItems,
+          count: updatedItems.length,
+        };
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to bulk update step empat ghg audits",
         });
       }
     }),

@@ -42,6 +42,21 @@ const bulkAddStepSatuGhgVerificationSchema = z.object({
     .min(1, "At least one item is required"),
 });
 
+const bulkUpdateStepSatuGhgVerificationSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        id: z.number(),
+        keterangan: z.string().optional(),
+        nilaiInt: z.number().optional(),
+        nilaiString: z.string().optional(),
+        satuan: z.string().optional(),
+        source: z.string().optional(),
+      })
+    )
+    .min(1, "At least one item is required"),
+});
+
 export const ghgVerificationRouter = createTRPCRouter({
   // Bulk add step satu ghg verifications
   bulkAdd: protectedProcedure
@@ -113,6 +128,91 @@ export const ghgVerificationRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to bulk create step satu ghg verifications",
+        });
+      }
+    }),
+
+  // Bulk update step satu ghg verifications
+  bulkUpdate: protectedProcedure
+    .input(bulkUpdateStepSatuGhgVerificationSchema)
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const updatedItems = [];
+        
+        for (const item of input.items) {
+          // Get the step satu ghg verification to check carbon project ownership
+          const verification = await db
+            .select({
+              id: stepSatuGhgVerification.id,
+              carbonProjectId: stepSatuGhgVerification.carbonProjectId,
+              tenantId: carbonProject.tenantId,
+            })
+            .from(stepSatuGhgVerification)
+            .innerJoin(
+              carbonProject,
+              eq(stepSatuGhgVerification.carbonProjectId, carbonProject.id)
+            )
+            .where(eq(stepSatuGhgVerification.id, item.id))
+            .limit(1);
+
+          if (verification.length === 0) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: `Step satu ghg verification with id ${item.id} not found`,
+            });
+          }
+
+          // Check if user is member of this tenant
+          const userTenant = await db
+            .select()
+            .from(tenantUser)
+            .where(
+              and(
+                eq(tenantUser.tenantId, verification[0].tenantId),
+                eq(tenantUser.userId, ctx.user.id),
+                eq(tenantUser.isActive, true)
+              )
+            )
+            .limit(1);
+
+          if (userTenant.length === 0) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "Access denied to this tenant",
+            });
+          }
+
+          // Update step satu ghg verification
+          const [updatedItem] = await db
+            .update(stepSatuGhgVerification)
+            .set({
+              keterangan: item.keterangan,
+              nilaiInt:
+                item.nilaiInt !== undefined && item.nilaiInt !== null
+                  ? String(item.nilaiInt)
+                  : undefined,
+              nilaiString: item.nilaiString,
+              satuan: item.satuan,
+              source: item.source,
+            })
+            .where(eq(stepSatuGhgVerification.id, item.id))
+            .returning();
+
+          updatedItems.push(updatedItem);
+        }
+
+        return {
+          success: true,
+          stepSatuGhgVerifications: updatedItems,
+          count: updatedItems.length,
+        };
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to bulk update step satu ghg verifications",
         });
       }
     }),
