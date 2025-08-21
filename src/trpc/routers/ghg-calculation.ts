@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, and } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
 import { protectedProcedure, createTRPCRouter } from "../init";
 import { db } from "@/db";
 import {
@@ -86,7 +86,10 @@ export const ghgCalculationRouter = createTRPCRouter({
         const insertData = input.items.map((item) => ({
           carbonProjectId: input.carbonProjectId,
           keterangan: item.keterangan,
-          nilaiInt: item.nilaiInt,
+          nilaiInt:
+            item.nilaiInt !== undefined && item.nilaiInt !== null
+              ? String(item.nilaiInt)
+              : null,
           nilaiString: item.nilaiString,
           satuan: item.satuan,
           source: item.source,
@@ -159,7 +162,10 @@ export const ghgCalculationRouter = createTRPCRouter({
           .values({
             carbonProjectId: input.carbonProjectId,
             keterangan: input.keterangan,
-            nilaiInt: input.nilaiInt,
+            nilaiInt:
+              input.nilaiInt !== undefined && input.nilaiInt !== null
+                ? String(input.nilaiInt)
+                : null,
             nilaiString: input.nilaiString,
             satuan: input.satuan,
             source: input.source,
@@ -233,7 +239,10 @@ export const ghgCalculationRouter = createTRPCRouter({
           .update(stepDuaGhgCalculation)
           .set({
             keterangan: input.keterangan,
-            nilaiInt: input.nilaiInt,
+            nilaiInt:
+              input.nilaiInt !== undefined && input.nilaiInt !== null
+                ? String(input.nilaiInt)
+                : null,
             nilaiString: input.nilaiString,
             satuan: input.satuan,
             source: input.source,
@@ -439,7 +448,8 @@ export const ghgCalculationRouter = createTRPCRouter({
         .from(stepDuaGhgCalculation)
         .where(
           eq(stepDuaGhgCalculation.carbonProjectId, input.carbonProjectId)
-        );
+        )
+        .orderBy(asc(stepDuaGhgCalculation.keterangan));
 
       return { stepDuaGhgCalculations: projectCalculations };
     }),

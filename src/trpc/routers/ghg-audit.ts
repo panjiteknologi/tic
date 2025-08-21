@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, and } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
 import { protectedProcedure, createTRPCRouter } from "../init";
 import { db } from "@/db";
 import {
@@ -86,7 +86,10 @@ export const ghgAuditRouter = createTRPCRouter({
         const insertData = input.items.map((item) => ({
           carbonProjectId: input.carbonProjectId,
           keterangan: item.keterangan,
-          nilaiInt: item.nilaiInt,
+          nilaiInt:
+            item.nilaiInt !== undefined && item.nilaiInt !== null
+              ? String(item.nilaiInt)
+              : null,
           nilaiString: item.nilaiString,
           satuan: item.satuan,
           source: item.source,
@@ -159,7 +162,10 @@ export const ghgAuditRouter = createTRPCRouter({
           .values({
             carbonProjectId: input.carbonProjectId,
             keterangan: input.keterangan,
-            nilaiInt: input.nilaiInt,
+            nilaiInt:
+              input.nilaiInt !== undefined && input.nilaiInt !== null
+                ? String(input.nilaiInt)
+                : null,
             nilaiString: input.nilaiString,
             satuan: input.satuan,
             source: input.source,
@@ -233,7 +239,10 @@ export const ghgAuditRouter = createTRPCRouter({
           .update(stepEmpatGhgAudit)
           .set({
             keterangan: input.keterangan,
-            nilaiInt: input.nilaiInt,
+            nilaiInt:
+              input.nilaiInt !== undefined && input.nilaiInt !== null
+                ? String(input.nilaiInt)
+                : null,
             nilaiString: input.nilaiString,
             satuan: input.satuan,
             source: input.source,
@@ -437,7 +446,8 @@ export const ghgAuditRouter = createTRPCRouter({
           source: stepEmpatGhgAudit.source,
         })
         .from(stepEmpatGhgAudit)
-        .where(eq(stepEmpatGhgAudit.carbonProjectId, input.carbonProjectId));
+        .where(eq(stepEmpatGhgAudit.carbonProjectId, input.carbonProjectId))
+        .orderBy(asc(stepEmpatGhgAudit.keterangan));
 
       return { stepEmpatGhgAudits: projectAudits };
     }),
