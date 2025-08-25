@@ -91,6 +91,8 @@ export default function EditCalculationViews({
       return formatThousandsID(digitsOnly);
     };
 
+    const disabledAll = disabled || isSubmitting || isRefreshing;
+
     return (
       <div className="flex flex-col gap-2 sm:grid sm:grid-cols-12 sm:gap-4 w-full">
         <div className="sm:col-span-3">
@@ -112,10 +114,10 @@ export default function EditCalculationViews({
                   : ""
               }
               onChange={handleDateChange}
-              disabled={disabled || isSubmitting}
+              disabled={disabledAll}
               required={!disabled}
               className={`w-full ${
-                disabled || isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+                disabledAll ? "bg-gray-100 cursor-not-allowed" : ""
               }`}
             />
           ) : type === "number" ? (
@@ -128,10 +130,10 @@ export default function EditCalculationViews({
                 const filtered = raw.replace(/[^0-9.,]/g, "");
                 handleChange(name, filtered);
               }}
-              disabled={disabled || isSubmitting}
+              disabled={disabledAll}
               required={!disabled}
               className={`w-full ${
-                disabled || isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+                disabledAll ? "bg-gray-100 cursor-not-allowed" : ""
               }`}
             />
           ) : (
@@ -143,10 +145,10 @@ export default function EditCalculationViews({
                 const rawValue = e.target.value;
                 handleChange(name, rawValue);
               }}
-              disabled={disabled || isSubmitting}
+              disabled={disabledAll}
               required={!disabled}
               className={`w-full ${
-                disabled || isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+                disabledAll ? "bg-gray-100 cursor-not-allowed" : ""
               }`}
             />
           )}
@@ -164,7 +166,9 @@ export default function EditCalculationViews({
             onChange={(e) => handleChange(sourceName, e.target.value)}
             disabled={isSubmitting}
             className={`w-full ${
-              isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
+              isSubmitting || isRefreshing
+                ? "bg-gray-100 cursor-not-allowed"
+                : ""
             }`}
           />
         </div>
@@ -212,7 +216,7 @@ export default function EditCalculationViews({
                   }
                 }}
               >
-                {isSubmitting ? (
+                {isRefreshing ? (
                   <span className="inline-flex items-center gap-2">
                     <Spinner className="w-4 h-4" />
                   </span>
