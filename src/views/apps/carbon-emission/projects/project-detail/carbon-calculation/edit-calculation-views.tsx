@@ -54,12 +54,40 @@ export default function EditCalculationViews({
 
     const labelClass = `text-sm ${labelColor || ""} ${bold ? "font-bold" : ""}`;
 
+    // helper pemisah ribuan format Indonesia
+    const formatThousandsID = (digits: string) =>
+      digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
     const formatCurrency = (value: string | number): string => {
-      if (value === null || value === undefined || value === "") return "";
-      const strValue = value.toString().replace(/\s+/g, "").replace(/\./g, "");
-      const parts = strValue.split(",");
-      const intPart = parts[0] ? Number(parts[0]).toLocaleString("id-ID") : "0";
-      return parts.length > 1 ? `${intPart},${parts[1]}` : intPart;
+      if (value === null || value === undefined) return "";
+
+      const raw = value.toString().trim();
+
+      // izinkan input hanya koma
+      if (raw === ",") return ",";
+
+      // 1) Jika ada koma → desimal Indonesia (int,dec)
+      if (raw.includes(",")) {
+        const [intRaw, decRaw = ""] = raw.split(",", 2);
+        const intDigits = intRaw.replace(/\D/g, "");
+        const intPart = intDigits ? formatThousandsID(intDigits) : "0";
+        const decDigits = decRaw.replace(/\D/g, "");
+        // pertahankan koma saat user baru mengetik koma
+        return decRaw === "" ? `${intPart},` : `${intPart},${decDigits}`;
+      }
+
+      // 2) Desimal bertitik (API "13.4" → "13,4")
+      //    BATASI hanya 1–3 digit setelah titik agar "1.222222..." tidak dianggap desimal
+      const dotDecimalMatch = raw.match(/^(\d+)\.(\d{1,3})$/);
+      if (dotDecimalMatch) {
+        const intPart = formatThousandsID(dotDecimalMatch[1]);
+        return `${intPart},${dotDecimalMatch[2]}`;
+      }
+
+      // 3) Angka bulat / titik sebagai pemisah ribuan → format ribuan
+      const digitsOnly = raw.replace(/\D/g, "");
+      if (!digitsOnly) return "";
+      return formatThousandsID(digitsOnly);
     };
 
     return (
@@ -83,10 +111,10 @@ export default function EditCalculationViews({
                   : ""
               }
               onChange={handleDateChange}
-              disabled={disabled}
-              required={!disabled}
+              disabled={disabled || isSubmitting}
+              // required={!disabled}
               className={`w-full ${
-                disabled ? "bg-gray-100 cursor-not-allowed" : ""
+                disabled || isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
               }`}
             />
           ) : type === "number" ? (
@@ -99,10 +127,10 @@ export default function EditCalculationViews({
                 const filtered = raw.replace(/[^0-9.,]/g, "");
                 handleChange(name, filtered);
               }}
-              disabled={disabled}
-              required={!disabled}
+              disabled={disabled || isSubmitting}
+              // required={!disabled}
               className={`w-full ${
-                disabled ? "bg-gray-100 cursor-not-allowed" : ""
+                disabled || isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
               }`}
             />
           ) : (
@@ -114,10 +142,10 @@ export default function EditCalculationViews({
                 const rawValue = e.target.value;
                 handleChange(name, rawValue);
               }}
-              disabled={disabled}
-              required={!disabled}
+              disabled={disabled || isSubmitting}
+              // required={!disabled}
               className={`w-full ${
-                disabled ? "bg-gray-100 cursor-not-allowed" : ""
+                disabled || isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
               }`}
             />
           )}
@@ -133,9 +161,9 @@ export default function EditCalculationViews({
             value={(form[sourceName] as any) || ""}
             placeholder="Source"
             onChange={(e) => handleChange(sourceName, e.target.value)}
-            disabled={disabled}
+            disabled={isSubmitting}
             className={`w-full ${
-              disabled ? "bg-gray-100 cursor-not-allowed" : ""
+              isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
             }`}
           />
         </div>
