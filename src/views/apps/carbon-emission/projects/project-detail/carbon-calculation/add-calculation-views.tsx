@@ -78,10 +78,10 @@ export default function AddCalculationViews({
                 form[name] ? format(new Date(form[name]), "yyyy-MM-dd") : ""
               }
               onChange={handleDateChange}
-              disabled={disabled}
+              disabled={disabled || isSubmitting}
               required={!disabled}
               className={`w-full ${
-                disabled ? "bg-gray-100 cursor-not-allowed" : ""
+                disabled || isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
               }`}
             />
           ) : type === "number" ? (
@@ -94,10 +94,10 @@ export default function AddCalculationViews({
                 const filtered = raw.replace(/[^0-9.,]/g, "");
                 handleChange(name, filtered);
               }}
-              disabled={disabled}
+              disabled={disabled || isSubmitting}
               required={!disabled}
               className={`w-full ${
-                disabled ? "bg-gray-100 cursor-not-allowed" : ""
+                disabled || isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
               }`}
             />
           ) : (
@@ -109,10 +109,10 @@ export default function AddCalculationViews({
                 const rawValue = e.target.value;
                 handleChange(name, rawValue);
               }}
-              disabled={disabled}
+              disabled={disabled || isSubmitting}
               required={!disabled}
               className={`w-full ${
-                disabled ? "bg-gray-100 cursor-not-allowed" : ""
+                disabled || isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
               }`}
             />
           )}
@@ -125,12 +125,12 @@ export default function AddCalculationViews({
         <div className="sm:col-span-4">
           <Input
             type="text"
-            value={form[sourceName] || ""}
+            value={(form[sourceName] as any) || ""}
             placeholder="Source"
             onChange={(e) => handleChange(sourceName, e.target.value)}
-            disabled={disabled}
+            disabled={isSubmitting}
             className={`w-full ${
-              disabled ? "bg-gray-100 cursor-not-allowed" : ""
+              isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
             }`}
           />
         </div>

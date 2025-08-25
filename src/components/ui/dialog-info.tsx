@@ -48,13 +48,13 @@ export function DialogInfo({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm space-y-4 text-center flex flex-col items-center justify-center">
+      <DialogContent className="max-w-sm space-y-4 text-center flex flex-col items-center justify-center max-h-[80vh] overflow-y-auto">
         {iconMap[variant]}
         <DialogHeader className="text-center">
           <DialogTitle className="text-xl font-semibold text-center">
             {title}
           </DialogTitle>
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-sm text-muted-foreground text-center whitespace-pre-line">
             {description}
           </p>
         </DialogHeader>
