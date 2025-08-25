@@ -13,6 +13,8 @@ import FormOtherCaseCalculation from "./form-other-case";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { StepKey } from "@/hooks";
+import { Spinner } from "@/components/ui/shadcn-io/spinner";
+import { Save } from "lucide-react";
 
 // 🔑 mapping step -> form component
 const stepForms: Record<StepKey, React.FC<any>> = {
@@ -150,19 +152,32 @@ export default function AddCalculationViews({
 
   return (
     <div className="w-full">
-      <div className="mt-4">
-        <div className="flex justify-end sticky top-0 z-20 bg-white">
+      <div className="space-y-4 mt-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-black text-lg font-bold">Carbon Calculation</h2>
           <Button
             form="carbon-form"
             type="submit"
             className="text-white font-semibold"
             disabled={isSubmitting}
+            aria-label="Save calculation"
           >
-            {isSubmitting ? "Saving..." : "Save Calculation"}
+            {isSubmitting ? (
+              <span className="inline-flex items-center gap-2">
+                <Spinner className="w-4 h-4" />
+                Saving...
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-2">
+                <Save className="w-4 h-4" />
+                Save
+              </span>
+            )}
           </Button>
         </div>
-        {renderForm()}
+        <div className="sticky top-0 z-20 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b" />
       </div>
+      {renderForm()}
     </div>
   );
 }

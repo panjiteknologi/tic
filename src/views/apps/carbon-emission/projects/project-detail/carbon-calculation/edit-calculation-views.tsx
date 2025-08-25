@@ -14,6 +14,7 @@ import FormGHGCalculation from "./form-ghg-calculation";
 import { Button } from "@/components/ui/button";
 import { StepKey } from "@/hooks";
 import { Spinner } from "@/components/ui/shadcn-io/spinner";
+import { RefreshCw, Save } from "lucide-react";
 
 // 🔑 mapping step -> form component
 const stepForms: Record<StepKey, React.FC<any>> = {
@@ -112,7 +113,7 @@ export default function EditCalculationViews({
               }
               onChange={handleDateChange}
               disabled={disabled || isSubmitting}
-              // required={!disabled}
+              required={!disabled}
               className={`w-full ${
                 disabled || isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
               }`}
@@ -128,7 +129,7 @@ export default function EditCalculationViews({
                 handleChange(name, filtered);
               }}
               disabled={disabled || isSubmitting}
-              // required={!disabled}
+              required={!disabled}
               className={`w-full ${
                 disabled || isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
               }`}
@@ -143,7 +144,7 @@ export default function EditCalculationViews({
                 handleChange(name, rawValue);
               }}
               disabled={disabled || isSubmitting}
-              // required={!disabled}
+              required={!disabled}
               className={`w-full ${
                 disabled || isSubmitting ? "bg-gray-100 cursor-not-allowed" : ""
               }`}
@@ -190,43 +191,64 @@ export default function EditCalculationViews({
 
   return (
     <div className="w-full">
-      <div className="mt-4">
-        {onRefresh && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={async () => {
-              if (onRefresh) {
-                setIsRefreshing(true);
-                try {
-                  await onRefresh();
-                } finally {
-                  setIsRefreshing(false);
-                }
-              }
-            }}
-            disabled={isRefreshing}
-            className="flex items-center gap-1 cursor-pointer"
-          >
-            {isRefreshing ? <Spinner className="w-4 h-4" /> : "🔄"}
-            <span className="text-sm ml-1">Refresh</span>
-          </Button>
-        )}
+      <div className="space-y-4 mt-4">
         <div className="flex items-center justify-between">
           <h2 className="text-black text-lg font-bold">Carbon Calculation</h2>
-          <div className="flex justify-end sticky top-0 z-20 bg-white p-2">
+          <div className="flex items-center gap-2">
+            {onRefresh && (
+              <Button
+                form="carbon-form"
+                type="submit"
+                className="text-white font-semibold bg-sky-700 hover:bg-sky-800"
+                disabled={isRefreshing}
+                aria-label="Refresh data"
+                onClick={async () => {
+                  if (!onRefresh) return;
+                  setIsRefreshing(true);
+                  try {
+                    await onRefresh();
+                  } finally {
+                    setIsRefreshing(false);
+                  }
+                }}
+              >
+                {isSubmitting ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Spinner className="w-4 h-4" />
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-2">
+                    <RefreshCw className="w-4 h-4" />
+                    Refresh
+                  </span>
+                )}
+              </Button>
+            )}
+
             <Button
               form="carbon-form"
               type="submit"
-              className="text-white font-semibold"
+              className="text-white font-semibold bg-black hover:bg-gray-700"
               disabled={isSubmitting}
+              aria-label="Update calculation"
             >
-              {isSubmitting ? "Updating..." : "Update Calculation"}
+              {isSubmitting ? (
+                <span className="inline-flex items-center gap-2">
+                  <Spinner className="w-4 h-4" />
+                  Updating…
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-2">
+                  <Save className="w-4 h-4" />
+                  Update
+                </span>
+              )}
             </Button>
           </div>
         </div>
-        {renderForm()}
+        <div className="sticky top-0 z-20 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b" />
       </div>
+      {renderForm()}
     </div>
   );
 }
