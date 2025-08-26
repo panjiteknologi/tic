@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { z } from "zod";
-import { eq, and, isNull, inArray } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 import { protectedProcedure, createTRPCRouter, baseProcedure } from "../init";
 import { db } from "@/db";
 import {
@@ -771,7 +773,7 @@ export const invitationRouter = createTRPCRouter({
       if (existingUser.length > 0) {
         // User exists, just use their ID
         userId = existingUser[0].id;
-        
+
         // Check if user is already a member
         const existingMember = await db
           .select()

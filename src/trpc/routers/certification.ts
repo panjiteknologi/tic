@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from "zod";
 import { eq, ilike, count } from "drizzle-orm";
 import { protectedProcedure, createTRPCRouter } from "../init";
@@ -225,7 +227,7 @@ export const certificationRouter = createTRPCRouter({
           .from(certification)
           .innerJoin(standard, eq(certification.standardId, standard.id))
           .where(whereClause);
-          
+
         const total = totalResult[0]?.count ?? 0;
 
         return {

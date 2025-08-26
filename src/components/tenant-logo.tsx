@@ -1,88 +1,86 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { trpc } from "@/trpc/react";
 import { cn } from "@/lib/utils";
 
-interface TenantLogoProps {
-  tenantId?: string;
-  size?: "small" | "large";
+type TenantLogoSize = "small" | "large";
+
+type TenantLogoProps = {
+  tenantId: string; // wajib, supaya gak perlu non-null assertion
+  size?: TenantLogoSize;
   className?: string;
   alt?: string;
-}
+} & Omit<
+  React.ComponentProps<typeof Image>,
+  "src" | "alt" | "width" | "height"
+>;
 
-export function TenantLogo({ 
-  tenantId, 
-  size = "small", 
-  className, 
-  alt 
+export function TenantLogo({
+  tenantId,
+  size = "small",
+  className,
+  alt,
+  priority,
+  ...imgProps
 }: TenantLogoProps) {
   const [logoUrl, setLogoUrl] = useState<string>("/images/dms-logo.png");
   const [isLoading, setIsLoading] = useState(false);
   const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
 
-  // Get tenant data to check if logo exists
-  const { data: tenantData, isLoading: tenantLoading } = trpc.tenant.getById.useQuery(
-    { tenantId: tenantId! },
-    {
-      enabled: !!tenantId,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-    }
-  );
+  // Query tenant (aman karena tenantId wajib)
+  const { data: tenantData, isLoading: tenantLoading } =
+    trpc.tenant.getById.useQuery(
+      { tenantId },
+      {
+        enabled: !!tenantId,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+      }
+    );
 
-  // Generate presigned URL for logo download if tenant has logo
+  // Mutation: generate presigned URL
   const generateDownloadUrl = trpc.tenant.generateLogoDownloadUrl.useMutation();
 
   const fetchLogoUrl = useCallback(async () => {
-    if (!tenantData?.tenant?.logo || !tenantId || hasAttemptedFetch) {
-      return;
-    }
+    if (!tenantData?.tenant?.logo || hasAttemptedFetch) return;
 
     try {
       setIsLoading(true);
       setHasAttemptedFetch(true);
-      
-      console.log("Tenant logo from DB:", tenantData.tenant.logo);
-      
-      // First, try to use the direct URL from database
-      if (tenantData.tenant.logo.startsWith('http')) {
-        console.log("Trying direct URL:", tenantData.tenant.logo);
-        
-        // Test if the direct URL works first
+
+      // 1) coba pakai URL langsung dari DB jika http(s)
+      if (tenantData.tenant.logo.startsWith("http")) {
         try {
-          const testResponse = await fetch(tenantData.tenant.logo, { method: 'HEAD' });
-          if (testResponse.ok) {
-            console.log("Direct URL works, using it");
+          const head = await fetch(tenantData.tenant.logo, { method: "HEAD" });
+          if (head.ok) {
             setLogoUrl(tenantData.tenant.logo);
             return;
           }
-        } catch (directUrlError) {
-          console.log("Direct URL failed, trying presigned URL");
+        } catch {
+          // lanjut ke presigned
         }
       }
 
-      // If direct URL doesn't work, generate presigned URL for download
-      console.log("Generating presigned URL for tenant:", tenantId);
-      const result = await generateDownloadUrl.mutateAsync({
-        tenantId,
-      });
-
-      console.log("Presigned URL result:", result);
-
-      if (result.success && result.presignedUrl) {
-        console.log("Using presigned URL:", result.presignedUrl);
+      // 2) kalau gagal, generate presigned URL dari server
+      const result = await generateDownloadUrl.mutateAsync({ tenantId });
+      if (result?.success && result.presignedUrl) {
         setLogoUrl(result.presignedUrl);
       } else {
-        console.warn("Failed to get presigned URL, using fallback");
+        // keep fallback
       }
-    } catch (err) {
-      console.error("Failed to fetch tenant logo:", err);
-      // Keep fallback logo
+    } catch {
+      // keep fallback
     } finally {
       setIsLoading(false);
     }
-  }, [tenantData?.tenant?.logo, tenantId, hasAttemptedFetch, generateDownloadUrl.mutateAsync]);
+  }, [
+    tenantData?.tenant?.logo,
+    tenantId,
+    hasAttemptedFetch,
+    generateDownloadUrl,
+  ]);
 
   useEffect(() => {
     if (tenantData?.tenant && !tenantLoading) {
@@ -90,30 +88,40 @@ export function TenantLogo({
     }
   }, [tenantData?.tenant, tenantLoading, fetchLogoUrl]);
 
-  // Size classes
-  const sizeClasses = {
-    small: "h-8 w-8",
-    large: "h-16 w-16",
+  // Ukuran px untuk Next/Image
+  const sizePx: Record<TenantLogoSize, number> = {
+    small: 32,
+    large: 64,
   };
 
-  const finalAlt = alt || (tenantData?.tenant?.name ? `${tenantData.tenant.name} Logo` : "Logo");
+  const finalAlt =
+    alt ??
+    (tenantData?.tenant?.name ? `${tenantData.tenant.name} Logo` : "Logo");
+
+  // Jika URL eksternal/presigned, biar aman tanpa remotePatterns:
+  const isExternal = /^https?:\/\//.test(logoUrl);
 
   return (
-    <img
+    <Image
       src={logoUrl}
       alt={finalAlt}
+      width={sizePx[size]}
+      height={sizePx[size]}
       className={cn(
-        sizeClasses[size],
         "object-contain",
+        // untuk konsistensi ukuran di UI (opsional)
+        size === "small" ? "h-8 w-8" : "h-16 w-16",
         isLoading && "opacity-75",
         className
       )}
-      onError={(e) => {
-        console.error("Image load error for:", logoUrl);
+      onError={() => {
         if (logoUrl !== "/images/dms-logo.png") {
           setLogoUrl("/images/dms-logo.png");
         }
       }}
+      unoptimized={isExternal}
+      priority={priority ?? size === "small"}
+      {...imgProps}
     />
   );
 }

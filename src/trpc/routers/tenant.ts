@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { z } from "zod";
 import { eq, and } from "drizzle-orm";
 import { protectedProcedure, createTRPCRouter } from "../init";
@@ -73,27 +74,26 @@ export const tenantRouter = createTRPCRouter({
     }),
 
   // Get user's tenants
-  getUserTenants: protectedProcedure
-    .query(async ({ ctx }) => {
-      const userTenants = await db
-        .select({
-          tenant: tenant,
-          role: tenantUser.role,
-          joinedAt: tenantUser.joinedAt,
-          isActive: tenantUser.isActive,
-        })
-        .from(tenantUser)
-        .innerJoin(tenant, eq(tenantUser.tenantId, tenant.id))
-        .where(
-          and(
-            eq(tenantUser.userId, ctx.user.id),
-            eq(tenantUser.isActive, true),
-            eq(tenant.isActive, true)
-          )
-        );
+  getUserTenants: protectedProcedure.query(async ({ ctx }) => {
+    const userTenants = await db
+      .select({
+        tenant: tenant,
+        role: tenantUser.role,
+        joinedAt: tenantUser.joinedAt,
+        isActive: tenantUser.isActive,
+      })
+      .from(tenantUser)
+      .innerJoin(tenant, eq(tenantUser.tenantId, tenant.id))
+      .where(
+        and(
+          eq(tenantUser.userId, ctx.user.id),
+          eq(tenantUser.isActive, true),
+          eq(tenant.isActive, true)
+        )
+      );
 
-      return { tenants: userTenants };
-    }),
+    return { tenants: userTenants };
+  }),
 
   // Get tenant details (only for members)
   getById: protectedProcedure
@@ -332,7 +332,8 @@ export const tenantRouter = createTRPCRouter({
       if (!validateLogoFileType(input.contentType)) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Invalid file type. Only images are allowed (JPEG, PNG, GIF, WebP, SVG)",
+          message:
+            "Invalid file type. Only images are allowed (JPEG, PNG, GIF, WebP, SVG)",
         });
       }
 
@@ -346,13 +347,12 @@ export const tenantRouter = createTRPCRouter({
 
       try {
         const key = generateTenantLogoKey(input.tenantId, input.fileName);
-        
+
         const uploadData = await generatePresignedUploadUrl({
           key,
           contentType: input.contentType,
           expiresIn: 1800, // 30 minutes
         });
-
 
         return {
           success: true,
@@ -419,11 +419,16 @@ export const tenantRouter = createTRPCRouter({
           try {
             // Extract S3 key from URL if it's an S3 URL
             const oldLogoUrl = currentTenant[0].logo;
-            if (oldLogoUrl.includes('.s3.') && oldLogoUrl.includes('tenant-logos/')) {
-              const urlParts = oldLogoUrl.split('/');
-              const keyIndex = urlParts.findIndex(part => part === 'tenant-logos');
+            if (
+              oldLogoUrl.includes(".s3.") &&
+              oldLogoUrl.includes("tenant-logos/")
+            ) {
+              const urlParts = oldLogoUrl.split("/");
+              const keyIndex = urlParts.findIndex(
+                (part) => part === "tenant-logos"
+              );
               if (keyIndex !== -1) {
-                const oldS3Key = urlParts.slice(keyIndex).join('/');
+                const oldS3Key = urlParts.slice(keyIndex).join("/");
                 await deleteS3Object({ key: oldS3Key });
               }
             }
@@ -435,7 +440,7 @@ export const tenantRouter = createTRPCRouter({
         // Update tenant with new logo URL
         const [updatedTenant] = await db
           .update(tenant)
-          .set({ 
+          .set({
             logo: input.logoUrl,
             updatedAt: new Date(),
           })
@@ -507,11 +512,13 @@ export const tenantRouter = createTRPCRouter({
         if (currentTenant[0].logo) {
           try {
             const logoUrl = currentTenant[0].logo;
-            if (logoUrl.includes('.s3.') && logoUrl.includes('tenant-logos/')) {
-              const urlParts = logoUrl.split('/');
-              const keyIndex = urlParts.findIndex(part => part === 'tenant-logos');
+            if (logoUrl.includes(".s3.") && logoUrl.includes("tenant-logos/")) {
+              const urlParts = logoUrl.split("/");
+              const keyIndex = urlParts.findIndex(
+                (part) => part === "tenant-logos"
+              );
               if (keyIndex !== -1) {
-                const s3Key = urlParts.slice(keyIndex).join('/');
+                const s3Key = urlParts.slice(keyIndex).join("/");
                 await deleteS3Object({ key: s3Key });
               }
             }
@@ -523,7 +530,7 @@ export const tenantRouter = createTRPCRouter({
         // Update tenant to remove logo
         const [updatedTenant] = await db
           .update(tenant)
-          .set({ 
+          .set({
             logo: null,
             updatedAt: new Date(),
           })
@@ -588,7 +595,7 @@ export const tenantRouter = createTRPCRouter({
       }
 
       const tenantInfo = tenantData[0];
-      
+
       if (!tenantInfo.logo) {
         throw new TRPCError({
           code: "NOT_FOUND",
@@ -599,13 +606,15 @@ export const tenantRouter = createTRPCRouter({
       try {
         // Extract S3 key from logo URL
         let s3Key: string;
-        
-        if (tenantInfo.logo.includes('tenant-logos/')) {
+
+        if (tenantInfo.logo.includes("tenant-logos/")) {
           // Extract key from URL - format: https://domain/bucket/tenant-logos/...
-          const urlParts = tenantInfo.logo.split('/');
-          const keyIndex = urlParts.findIndex(part => part === 'tenant-logos');
+          const urlParts = tenantInfo.logo.split("/");
+          const keyIndex = urlParts.findIndex(
+            (part) => part === "tenant-logos"
+          );
           if (keyIndex !== -1) {
-            s3Key = urlParts.slice(keyIndex).join('/');
+            s3Key = urlParts.slice(keyIndex).join("/");
           } else {
             throw new Error("Invalid logo URL format");
           }

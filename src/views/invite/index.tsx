@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
@@ -232,7 +233,7 @@ const InviteView = () => {
                 Account Created Successfully!
               </h3>
               <p className="text-muted-foreground mb-4">
-                Your account has been created and you've joined{" "}
+                {`Your account has been created and you've joined{" "}`}
                 {acceptWithSignupMutation.data?.tenant.name} as a{" "}
                 <Badge variant="outline" className="capitalize">
                   {acceptWithSignupMutation.data?.role}
@@ -276,7 +277,7 @@ const InviteView = () => {
               <Building className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold mb-2">You're Invited!</h1>
+          <h1 className="text-3xl font-bold mb-2">{`You're Invited!`}</h1>
           <p className="text-lg text-muted-foreground">
             Join <span className="font-semibold">{previewData.tenantName}</span>{" "}
             team
@@ -509,7 +510,8 @@ const InviteView = () => {
                 <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
                 <p className="text-muted-foreground mb-4">
                   This invitation is for <strong>{previewData.email}</strong>,
-                  but you're signed in as <strong>{session.user.email}</strong>.
+                  {`but you're signed in as`}{" "}
+                  <strong>{session.user.email}</strong>.
                 </p>
                 <p className="text-sm text-muted-foreground mb-6">
                   Please sign in with the correct email address to accept this

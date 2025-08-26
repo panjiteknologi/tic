@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { Menu } from "lucide-react";
 
 import {

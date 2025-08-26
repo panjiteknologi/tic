@@ -4,7 +4,7 @@ import { useDateCustomerQuery } from "@/hooks/use-date-customer";
 import React from "react";
 
 const DashboardView = () => {
-  const { data, isLoading, error, isError } = useDateCustomerQuery(
+  const { isLoading } = useDateCustomerQuery(
     { staleTime: 5 * 60 * 1000 } // 5 menit
   );
 

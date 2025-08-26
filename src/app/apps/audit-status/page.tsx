@@ -3,7 +3,6 @@ import { authClient } from "@/lib/auth-client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/layout/dashboard-layout";
-import { useDateCustomerQuery } from "@/hooks/use-date-customer";
 import { AppSidebarTypes } from "@/types/sidebar-types";
 import { AuditStatusMenu } from "@/constant/menu-sidebar";
 

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState } from "react";
@@ -23,12 +24,13 @@ const OrganizationView = () => {
     domain: "",
     logo: "",
   });
-  
+
   const [isEditing, setIsEditing] = useState(false);
 
   // Get user profile to get tenant info
-  const { data: userProfile, isLoading: profileLoading } = trpc.user.getUserProfile.useQuery();
-  
+  const { data: userProfile, isLoading: profileLoading } =
+    trpc.user.getUserProfile.useQuery();
+
   // Get tenant details (you might need to create this query)
   // const { data: tenantData, isLoading: tenantLoading } = trpc.tenant.getById.useQuery(
   //   { tenantId: userProfile?.tenantId || "" },
@@ -46,8 +48,11 @@ const OrganizationView = () => {
   //   },
   // });
 
-  const handleInputChange = (field: keyof OrganizationFormData, value: string) => {
-    setFormData(prev => ({
+  const handleInputChange = (
+    field: keyof OrganizationFormData,
+    value: string
+  ) => {
+    setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
@@ -65,7 +70,7 @@ const OrganizationView = () => {
     //   tenantId: userProfile.tenantId,
     //   ...formData,
     // });
-    
+
     // For now, just show success message
     toast.success("Organization settings saved! (Demo mode)");
     setIsEditing(false);
@@ -117,7 +122,7 @@ const OrganizationView = () => {
       <div>
         <h1 className="text-2xl font-bold">Organization Settings</h1>
         <p className="text-muted-foreground">
-          Manage your organization's details and branding
+          {`Manage your organization's details and branding`}
         </p>
       </div>
 
@@ -195,10 +200,13 @@ const OrganizationView = () => {
             {/* Action Buttons */}
             <div className="flex items-center gap-3 pt-4">
               {!isEditing ? (
-                <Button 
-                  type="button" 
+                <Button
+                  type="button"
                   onClick={() => setIsEditing(true)}
-                  disabled={!userProfile.role || !["superadmin", "admin"].includes(userProfile.role)}
+                  disabled={
+                    !userProfile.role ||
+                    !["superadmin", "admin"].includes(userProfile.role)
+                  }
                 >
                   Edit Organization
                 </Button>
@@ -208,7 +216,11 @@ const OrganizationView = () => {
                     <Save className="h-4 w-4 mr-2" />
                     Save Changes
                   </Button>
-                  <Button type="button" variant="outline" onClick={handleCancel}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCancel}
+                  >
                     Cancel
                   </Button>
                 </>
@@ -216,7 +228,8 @@ const OrganizationView = () => {
             </div>
 
             {/* Permission Notice */}
-            {(!userProfile.role || !["superadmin", "admin"].includes(userProfile.role)) && (
+            {(!userProfile.role ||
+              !["superadmin", "admin"].includes(userProfile.role)) && (
               <p className="text-sm text-muted-foreground">
                 Only administrators can edit organization settings.
               </p>

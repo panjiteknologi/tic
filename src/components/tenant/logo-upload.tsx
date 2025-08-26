@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -13,12 +15,14 @@ interface TenantLogoUploadProps {
   onLogoUpdated?: (logoUrl: string | null) => void;
 }
 
-const TenantLogoUpload = ({ 
-  tenantId, 
-  currentLogoUrl, 
-  onLogoUpdated 
+const TenantLogoUpload = ({
+  tenantId,
+  currentLogoUrl,
+  onLogoUpdated,
 }: TenantLogoUploadProps) => {
-  const [logoPreview, setLogoPreview] = useState<string | null>(currentLogoUrl || null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(
+    currentLogoUrl || null
+  );
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [removingLogo, setRemovingLogo] = useState(false);
@@ -32,15 +36,21 @@ const TenantLogoUpload = ({
     const file = event.target.files?.[0];
     if (file) {
       // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+        "image/svg+xml",
+      ];
       if (!allowedTypes.includes(file.type)) {
-        toast.error('Only image files (JPEG, PNG, GIF, WebP, SVG) are allowed');
+        toast.error("Only image files (JPEG, PNG, GIF, WebP, SVG) are allowed");
         return;
       }
 
       // Validate file size (5MB max)
       if (file.size > 5 * 1024 * 1024) {
-        toast.error('File size must be less than 5MB');
+        toast.error("File size must be less than 5MB");
         return;
       }
 
@@ -57,9 +67,11 @@ const TenantLogoUpload = ({
     setLogoFile(null);
     setLogoPreview(currentLogoUrl || null);
     // Reset file input
-    const fileInput = document.getElementById('logo-upload') as HTMLInputElement;
+    const fileInput = document.getElementById(
+      "logo-upload"
+    ) as HTMLInputElement;
     if (fileInput) {
-      fileInput.value = '';
+      fileInput.value = "";
     }
   };
 
@@ -68,7 +80,7 @@ const TenantLogoUpload = ({
 
     try {
       setUploadingLogo(true);
-      
+
       // Generate presigned upload URL
       const uploadData = await generateUploadUrl.mutateAsync({
         tenantId,
@@ -78,20 +90,20 @@ const TenantLogoUpload = ({
       });
 
       if (!uploadData.success) {
-        throw new Error('Failed to generate upload URL');
+        throw new Error("Failed to generate upload URL");
       }
 
       // Upload file to S3
       const uploadResponse = await fetch(uploadData.uploadData.presignedUrl, {
-        method: 'PUT',
+        method: "PUT",
         body: logoFile,
         headers: {
-          'Content-Type': logoFile.type,
+          "Content-Type": logoFile.type,
         },
       });
 
       if (!uploadResponse.ok) {
-        throw new Error('Failed to upload file to S3');
+        throw new Error("Failed to upload file to S3");
       }
 
       // Update tenant with logo
@@ -102,21 +114,23 @@ const TenantLogoUpload = ({
       });
 
       if (updateResult.success) {
-        toast.success('Logo updated successfully!');
+        toast.success("Logo updated successfully!");
         setLogoFile(null);
         onLogoUpdated?.(uploadData.uploadData.publicUrl);
-        
+
         // Reset file input
-        const fileInput = document.getElementById('logo-upload') as HTMLInputElement;
+        const fileInput = document.getElementById(
+          "logo-upload"
+        ) as HTMLInputElement;
         if (fileInput) {
-          fileInput.value = '';
+          fileInput.value = "";
         }
       } else {
-        throw new Error('Failed to update tenant with logo');
+        throw new Error("Failed to update tenant with logo");
       }
-    } catch (error: any) {
-      console.error('Logo upload error:', error);
-      toast.error(error.message || 'Failed to upload logo');
+    } catch (error) {
+      console.error("Logo upload error:", error);
+      toast.error((error as any).message || "Failed to upload logo");
       handleCancelUpload();
     } finally {
       setUploadingLogo(false);
@@ -128,24 +142,26 @@ const TenantLogoUpload = ({
 
     try {
       setRemovingLogo(true);
-      
+
       const result = await removeLogo.mutateAsync({ tenantId });
-      
+
       if (result.success) {
-        toast.success('Logo removed successfully!');
+        toast.success("Logo removed successfully!");
         setLogoPreview(null);
         setLogoFile(null);
         onLogoUpdated?.(null);
-        
+
         // Reset file input
-        const fileInput = document.getElementById('logo-upload') as HTMLInputElement;
+        const fileInput = document.getElementById(
+          "logo-upload"
+        ) as HTMLInputElement;
         if (fileInput) {
-          fileInput.value = '';
+          fileInput.value = "";
         }
       }
     } catch (error: any) {
-      console.error('Logo removal error:', error);
-      toast.error(error.message || 'Failed to remove logo');
+      console.error("Logo removal error:", error);
+      toast.error(error.message || "Failed to remove logo");
     } finally {
       setRemovingLogo(false);
     }
@@ -210,14 +226,14 @@ const TenantLogoUpload = ({
         <div className="flex gap-2 justify-center">
           {hasChanges && (
             <>
-              <Button 
+              <Button
                 onClick={handleSaveLogo}
                 disabled={uploadingLogo || removingLogo}
                 size="sm"
               >
                 Save Logo
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 onClick={handleCancelUpload}
                 disabled={uploadingLogo || removingLogo}
@@ -228,9 +244,9 @@ const TenantLogoUpload = ({
               </Button>
             </>
           )}
-          
+
           {currentLogoUrl && !hasChanges && (
-            <Button 
+            <Button
               variant="destructive"
               onClick={handleRemoveLogo}
               disabled={uploadingLogo || removingLogo}
@@ -243,10 +259,9 @@ const TenantLogoUpload = ({
         </div>
 
         <p className="text-xs text-gray-500 text-center">
-          {hasChanges 
-            ? "Click 'Save Logo' to upload your new logo" 
-            : "Click to upload or drag and drop your logo file"
-          }
+          {hasChanges
+            ? "Click 'Save Logo' to upload your new logo"
+            : "Click to upload or drag and drop your logo file"}
         </p>
       </CardContent>
     </Card>

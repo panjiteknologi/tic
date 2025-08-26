@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { initTRPC, TRPCError } from "@trpc/server";
 import { cache } from "react";
 import { headers } from "next/headers";

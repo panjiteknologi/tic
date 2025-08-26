@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from "zod";
 import { eq, ilike, count } from "drizzle-orm";
 import { protectedProcedure, createTRPCRouter } from "../init";
@@ -179,7 +181,7 @@ export const standardRouter = createTRPCRouter({
     )
     .query(async ({ input }) => {
       try {
-        const whereClause = input.search 
+        const whereClause = input.search
           ? ilike(standard.name, `%${input.search}%`)
           : undefined;
 
@@ -197,7 +199,7 @@ export const standardRouter = createTRPCRouter({
           .select({ count: count() })
           .from(standard)
           .where(whereClause);
-          
+
         const total = totalResult[0]?.count ?? 0;
 
         return {

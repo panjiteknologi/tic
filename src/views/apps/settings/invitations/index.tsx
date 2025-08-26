@@ -47,11 +47,31 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
+//
+// 🔑 Types
+//
 interface FilterState {
   status: "all" | "pending" | "accepted" | "expired";
   search: string;
 }
 
+interface Invitation {
+  id: string;
+  email: string;
+  role: string;
+  token: string;
+  invitedBy: {
+    name: string;
+    email: string;
+  };
+  createdAt: string | Date;
+  acceptedAt?: string | Date | null;
+  expiresAt: string | Date;
+}
+
+//
+// 🔑 Component
+//
 const InvitationsView = () => {
   const [filter, setFilter] = useState<FilterState>({
     status: "all",
@@ -59,7 +79,7 @@ const InvitationsView = () => {
   });
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
-  // Get user profile to determine current tenant
+  // Get user profile
   const { data: userProfile } = trpc.user.getUserProfile.useQuery();
   const currentTenantId = userProfile?.tenantId || "";
 
@@ -79,7 +99,7 @@ const InvitationsView = () => {
     { enabled: !!currentTenantId }
   );
 
-  // Resend invitation mutation
+  // Mutations
   const resendInviteMutation = trpc.invitation.resend.useMutation({
     onSuccess: (data) => {
       toast.success(`Invitation resent to ${data.invitation.email}!`);
@@ -90,7 +110,6 @@ const InvitationsView = () => {
     },
   });
 
-  // Cancel invitation mutation
   const cancelInviteMutation = trpc.invitation.cancel.useMutation({
     onSuccess: () => {
       toast.success("Invitation cancelled successfully!");
@@ -101,6 +120,9 @@ const InvitationsView = () => {
     },
   });
 
+  //
+  // 🔧 Helpers
+  //
   const handleResendInvitation = (invitationId: string) => {
     resendInviteMutation.mutate({ invitationId });
   };
@@ -117,12 +139,12 @@ const InvitationsView = () => {
       toast.success("Invitation URL copied to clipboard!");
       setCopiedUrl(email);
       setTimeout(() => setCopiedUrl(null), 2000);
-    } catch (err) {
+    } catch {
       toast.error("Failed to copy URL");
     }
   };
 
-  const getInvitationStatus = (invitation: any) => {
+  const getInvitationStatus = (invitation: Invitation) => {
     const now = new Date();
     if (invitation.acceptedAt) {
       return { status: "accepted", label: "Accepted", color: "bg-green-500" };
@@ -144,9 +166,11 @@ const InvitationsView = () => {
     }
   };
 
-  // Filter invitations
-  const filteredInvitations =
-    invitationsData?.invitations.filter((invitation) => {
+  //
+  // 🔎 Filtering
+  //
+  const filteredInvitations: Invitation[] =
+    invitationsData?.invitations.filter((invitation: Invitation) => {
       const inviteStatus = getInvitationStatus(invitation);
       const matchesStatus =
         filter.status === "all" || inviteStatus.status === filter.status;
@@ -158,6 +182,9 @@ const InvitationsView = () => {
       return matchesStatus && matchesSearch;
     }) || [];
 
+  //
+  // 🔒 Tenant guard
+  //
   if (!userProfile?.tenantId) {
     return (
       <div className="container mx-auto py-8">
@@ -205,6 +232,9 @@ const InvitationsView = () => {
     );
   }
 
+  //
+  // 🖼️ Render
+  //
   return (
     <div className="container mx-auto py-8 space-y-6">
       {/* Header */}
@@ -222,7 +252,7 @@ const InvitationsView = () => {
             </p>
           </div>
         </div>
-        <Button asChild variant={"origin"}>
+        <Button asChild variant="origin">
           <Link href="/apps/settings/members/invite">
             <UserPlus className="h-4 w-4 mr-2" />
             Send Invitation
@@ -230,119 +260,95 @@ const InvitationsView = () => {
         </Button>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats */}
       {inviteStats && (
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <Card>
-            <CardContent className="py-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Sent</p>
-                  <p className="text-2xl font-bold">{inviteStats.total}</p>
-                </div>
-                <Mail className="h-8 w-8 text-blue-500" />
+            <CardContent className="py-4 flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Sent</p>
+                <p className="text-2xl font-bold">{inviteStats.total}</p>
               </div>
+              <Mail className="h-8 w-8 text-blue-500" />
             </CardContent>
           </Card>
-
           <Card>
-            <CardContent className="py-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold">{inviteStats.pending}</p>
-                </div>
-                <Clock className="h-8 w-8 text-yellow-500" />
+            <CardContent className="py-4 flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Pending</p>
+                <p className="text-2xl font-bold">{inviteStats.pending}</p>
               </div>
+              <Clock className="h-8 w-8 text-yellow-500" />
             </CardContent>
           </Card>
-
           <Card>
-            <CardContent className="py-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Accepted</p>
-                  <p className="text-2xl font-bold">{inviteStats.accepted}</p>
-                </div>
-                <CheckCircle className="h-8 w-8 text-green-500" />
+            <CardContent className="py-4 flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Accepted</p>
+                <p className="text-2xl font-bold">{inviteStats.accepted}</p>
               </div>
+              <CheckCircle className="h-8 w-8 text-green-500" />
             </CardContent>
           </Card>
-
           <Card>
-            <CardContent className="py-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Expired</p>
-                  <p className="text-2xl font-bold">{inviteStats.expired}</p>
-                </div>
-                <XCircle className="h-8 w-8 text-red-500" />
+            <CardContent className="py-4 flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Expired</p>
+                <p className="text-2xl font-bold">{inviteStats.expired}</p>
               </div>
+              <XCircle className="h-8 w-8 text-red-500" />
             </CardContent>
           </Card>
         </div>
       )}
 
-      {/* Filters and Search */}
+      {/* Filters */}
       <Card>
-        <CardContent className="py-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by email or inviter name..."
-                  value={filter.search}
-                  onChange={(e) =>
-                    setFilter({ ...filter, search: e.target.value })
-                  }
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
-                    <Filter className="h-4 w-4 mr-2" />
-                    {filter.status === "all"
-                      ? "All Status"
-                      : filter.status.charAt(0).toUpperCase() +
-                        filter.status.slice(1)}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
+        <CardContent className="py-4 flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by email or inviter name..."
+              value={filter.search}
+              onChange={(e) => setFilter({ ...filter, search: e.target.value })}
+              className="pl-10"
+            />
+          </div>
+          <div className="flex gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <Filter className="h-4 w-4 mr-2" />
+                  {filter.status === "all"
+                    ? "All Status"
+                    : filter.status.charAt(0).toUpperCase() +
+                      filter.status.slice(1)}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                {["all", "pending", "accepted", "expired"].map((s) => (
                   <DropdownMenuItem
-                    onClick={() => setFilter({ ...filter, status: "all" })}
+                    key={s}
+                    onClick={() =>
+                      setFilter({
+                        ...filter,
+                        status: s as FilterState["status"],
+                      })
+                    }
                   >
-                    All Status
+                    {s.charAt(0).toUpperCase() + s.slice(1)}
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setFilter({ ...filter, status: "pending" })}
-                  >
-                    Pending
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setFilter({ ...filter, status: "accepted" })}
-                  >
-                    Accepted
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setFilter({ ...filter, status: "expired" })}
-                  >
-                    Expired
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <Button variant="outline" onClick={() => refetch()}>
-                <RefreshCw className="h-4 w-4" />
-              </Button>
-            </div>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" onClick={() => refetch()}>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Invitations Table */}
+      {/* Table */}
       <Card>
         <CardHeader>
           <CardTitle>Invitations ({filteredInvitations.length})</CardTitle>
@@ -367,15 +373,14 @@ const InvitationsView = () => {
                   ? "No invitations match your current filters."
                   : "You haven't sent any invitations yet."}
               </p>
-              {(!filter.status || filter.status === "all") &&
-                !filter.search && (
-                  <Button asChild>
-                    <Link href="/apps/settings/members/invite">
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Send First Invitation
-                    </Link>
-                  </Button>
-                )}
+              {filter.status === "all" && !filter.search && (
+                <Button asChild>
+                  <Link href="/apps/settings/members/invite">
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Send First Invitation
+                  </Link>
+                </Button>
+              )}
             </div>
           ) : (
             <Table>
@@ -394,7 +399,6 @@ const InvitationsView = () => {
                 {filteredInvitations.map((invitation) => {
                   const status = getInvitationStatus(invitation);
                   const invitationUrl = `${window.location.origin}/invite?token=${invitation.token}`;
-
                   return (
                     <TableRow key={invitation.id}>
                       <TableCell className="font-medium">

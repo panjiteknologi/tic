@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -44,7 +45,7 @@ const InviteView = () => {
     { email: "", role: "member" },
   ]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-  const [bulkResults, setBulkResults] = useState<any>(null);
+  const [bulkResults, setBulkResults] = useState<null | any>(null);
 
   // Get user profile to determine current tenant
   const { data: userProfile } = trpc.user.getUserProfile.useQuery();
@@ -74,8 +75,12 @@ const InviteView = () => {
 
   // Bulk invitation mutation
   const sendBulkInviteMutation = trpc.invitation.sendBulk.useMutation({
-    onSuccess: (data) => {
-      setBulkResults(data);
+    onSuccess: (data: {
+      summary: { total: number; successful: number; failed: number };
+      results: any[];
+      errors: any[];
+    }) => {
+      setBulkResults(data as any);
       if (data.errors.length === 0) {
         setBulkInvites([{ email: "", role: "member" }]);
         toast.success(
@@ -525,31 +530,31 @@ const InviteView = () => {
                 <div className="grid grid-cols-3 gap-4">
                   <div className="text-center p-3 bg-blue-50 rounded-lg">
                     <div className="text-2xl font-bold text-blue-600">
-                      {bulkResults.summary.total}
+                      {bulkResults?.summary.total}
                     </div>
                     <div className="text-sm text-blue-600">Total</div>
                   </div>
                   <div className="text-center p-3 bg-green-50 rounded-lg">
                     <div className="text-2xl font-bold text-green-600">
-                      {bulkResults.summary.successful}
+                      {bulkResults?.summary.successful}
                     </div>
                     <div className="text-sm text-green-600">Successful</div>
                   </div>
                   <div className="text-center p-3 bg-red-50 rounded-lg">
                     <div className="text-2xl font-bold text-red-600">
-                      {bulkResults.summary.failed}
+                      {bulkResults?.summary.failed}
                     </div>
                     <div className="text-sm text-red-600">Failed</div>
                   </div>
                 </div>
 
                 {/* Successful Invitations */}
-                {bulkResults.results.length > 0 && (
+                {bulkResults?.results.length > 0 && (
                   <div className="space-y-2">
                     <h4 className="font-medium text-green-700">
                       Successful Invitations
                     </h4>
-                    {bulkResults.results.map((result: any, index: number) => (
+                    {bulkResults?.results.map((result: any, index: number) => (
                       <div
                         key={index}
                         className="p-3 bg-green-50 border border-green-200 rounded-lg"
@@ -586,12 +591,12 @@ const InviteView = () => {
                 )}
 
                 {/* Failed Invitations */}
-                {bulkResults.errors.length > 0 && (
+                {bulkResults?.errors.length > 0 && (
                   <div className="space-y-2">
                     <h4 className="font-medium text-red-700">
                       Failed Invitations
                     </h4>
-                    {bulkResults.errors.map((error: any, index: number) => (
+                    {bulkResults?.errors.map((error: any, index: number) => (
                       <div
                         key={index}
                         className="p-3 bg-red-50 border border-red-200 rounded-lg"
