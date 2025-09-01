@@ -8,7 +8,7 @@ import { getCarbonCalculationMenu } from "@/constant/menu-sidebar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/shadcn-io/spinner";
-import { StepKey, useCarbonCalculationData } from "@/hooks";
+import { useCarbonCalculationData } from "@/hooks";
 import CarbonCalaculation from "./carbon-calculation/page";
 
 export default function CalculationListPage() {
@@ -26,7 +26,6 @@ export default function CalculationListPage() {
     additional,
     otherCase,
     audit,
-    refetchAll,
   } = useCarbonCalculationData();
 
   const tabs = [
@@ -108,13 +107,9 @@ export default function CalculationListPage() {
           </div>
         ) : (
           <Fragment>
-            {tabs.map(({ value, data }) => (
+            {tabs.map(({ value }) => (
               <TabsContent key={value} value={value}>
-                <CarbonCalaculation
-                  data={data ?? []}
-                  activeStep={activeStep as StepKey}
-                  onRefresh={refetchAll}
-                />
+                <CarbonCalaculation />
               </TabsContent>
             ))}
           </Fragment>

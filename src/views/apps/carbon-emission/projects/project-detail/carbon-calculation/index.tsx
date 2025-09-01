@@ -10,7 +10,7 @@ interface CarbonCalculationViewProps {
   projectId: string;
   data: EmissionsTypes[];
   onEdit?: (updated: EmissionsTypes) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: number) => void;
   onRefresh?: () => void; // 🔄 tambahin ini
   activeStep: string;
 }

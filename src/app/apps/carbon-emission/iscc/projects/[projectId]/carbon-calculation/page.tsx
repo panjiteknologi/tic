@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { Fragment, useMemo, useRef, useEffect, useState } from "react";
 import AddCalculationViews from "@/views/apps/carbon-emission/projects/project-detail/carbon-calculation/add-calculation-views";
 import EditCalculationViews from "@/views/apps/carbon-emission/projects/project-detail/carbon-calculation/edit-calculation-views";
@@ -21,6 +21,7 @@ import {
   useCalculationOtherCase,
   useInvalidateCacheByStep,
   useTabActions,
+  useCarbonCalculationData,
 } from "@/hooks";
 
 type StepField = {
@@ -74,22 +75,49 @@ const flattenStepFields = (
   return { allFields, labelToKey };
 };
 
-type CarbonCalculationProps = {
-  data: EmissionsTypes[];
-  activeStep: StepKey;
-  onRefresh?: () => void;
-};
-
-export default function CarbonCalculation({
-  activeStep,
-  data,
-  onRefresh,
-}: CarbonCalculationProps) {
+export default function CarbonCalculation() {
   const { projectId } = useParams();
+  const searchParams = useSearchParams();
   const { data: userProfile } = trpc.user.getUserProfile.useQuery();
 
   const tenantId = userProfile?.tenantId ?? "";
   const carbonProjectId = String(projectId);
+
+  // Get active step from URL params or default to step1
+  const activeStep = (searchParams.get("step") as StepKey) || "step1";
+
+  // Fetch carbon calculation data
+  const {
+    verifications,
+    calculations,
+    process,
+    additional,
+    otherCase,
+    audit,
+    refetchAll,
+  } = useCarbonCalculationData();
+
+  // Get data for current step
+  const data = useMemo(() => {
+    switch (activeStep) {
+      case "step1":
+        return verifications?.stepSatuGhgVerifications ?? [];
+      case "step2":
+        return calculations?.stepDuaGhgCalculations ?? [];
+      case "step3":
+        return process?.stepTigaGhgCalculationProcesses ?? [];
+      case "step4":
+        return additional?.stepTigaAdditionals ?? [];
+      case "step5":
+        return otherCase?.stepTigaOtherCases ?? [];
+      case "step6":
+        return audit?.stepEmpatGhgAudits ?? [];
+      default:
+        return [];
+    }
+  }, [activeStep, verifications, calculations, process, additional, otherCase, audit]);
+  
+  const onRefresh = refetchAll;
 
   const [infoDialogTitle, setInfoDialogTitle] = useState("");
   const [infoDialogDesc, setInfoDialogDesc] = useState("");

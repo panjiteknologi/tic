@@ -70,7 +70,7 @@ export function NavbarApps() {
       <div className="container mx-auto py-3 flex justify-between items-center">
         <Link href="/dashboard" className="flex items-center gap-2">
           <TenantLogo
-            tenantId={currentTenant?.id}
+            tenantId={currentTenant?.id ?? ""}
             size="small"
             alt={`${currentTenant?.name || "DMS"} Logo`}
           />

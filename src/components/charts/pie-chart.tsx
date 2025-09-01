@@ -135,7 +135,6 @@ export function PieCharts() {
               nameKey="month"
               innerRadius={60}
               strokeWidth={5}
-              activeIndex={activeIndex}
               activeShape={({
                 outerRadius = 0,
                 ...props

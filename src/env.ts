@@ -16,6 +16,7 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_BETTER_AUTH_URL: z.string().url(),
     NEXT_PUBLIC_URL: z.string().url(),
+    NEXT_PUBLIC_ENDPOINT_URL: z.string().url(),
     // Client-side environment variables (if any) go here
   },
 
@@ -25,6 +26,7 @@ export const env = createEnv({
     NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     NEXT_PUBLIC_BETTER_AUTH_URL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
+    NEXT_PUBLIC_ENDPOINT_URL: process.env.NEXT_PUBLIC_ENDPOINT_URL,
     DATABASE_URL: process.env.DATABASE_URL,
     AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,

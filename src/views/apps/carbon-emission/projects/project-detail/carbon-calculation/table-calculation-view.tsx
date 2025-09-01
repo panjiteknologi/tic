@@ -18,7 +18,7 @@ import { Spinner } from "@/components/ui/shadcn-io/spinner";
 type TableCalculationViewProps = {
   data: EmissionsTypes[];
   onEdit?: (id: EmissionsTypes) => void;
-  onDelete?: (id: string) => void;
+  onDelete?: (id: number) => void;
   isEmpty?: boolean;
   totalPages?: number;
   currentPage?: number;
@@ -41,7 +41,7 @@ export function TableCalculationView({
   isRefreshing,
 }: TableCalculationViewProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [editingRowId, setEditingRowId] = useState<string | null>(null);
+  const [editingRowId, setEditingRowId] = useState<number | null>(null);
   const [editedData, setEditedData] = useState<Partial<EmissionsTypes>>({});
 
   const itemsPerPage = 10;
