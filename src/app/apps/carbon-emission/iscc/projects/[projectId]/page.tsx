@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Fragment, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import DashboardLayout from "@/layout/dashboard-layout";
@@ -14,9 +14,17 @@ import CarbonCalaculation from "./carbon-calculation/page";
 export default function CalculationListPage() {
   const router = useRouter();
   const { projectId } = useParams();
+  const searchParams = useSearchParams();
   const carbonProjectId = String(projectId);
 
-  const [activeStep, setActiveStep] = useState("step1");
+  // Get active step from URL or default to step1
+  const activeStep = (searchParams.get("step") as string) || "step1";
+
+  const handleStepChange = (step: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("step", step);
+    router.push(`?${params.toString()}`);
+  };
 
   const {
     isLoading,
@@ -81,7 +89,7 @@ export default function CalculationListPage() {
 
       <Tabs
         value={activeStep}
-        onValueChange={setActiveStep}
+        onValueChange={handleStepChange}
         defaultValue="step1"
         className="w-full p-2"
       >

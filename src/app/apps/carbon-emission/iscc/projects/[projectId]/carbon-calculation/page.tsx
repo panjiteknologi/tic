@@ -17,9 +17,6 @@ import {
   StepKey,
   useCalculationGHGAudit,
   useCalculationGHGVerification,
-  useCalculationGHGCalculation,
-  useCalculationGHGProcess,
-  useCalculationAdd,
   useCalculationOtherCase,
   useInvalidateCacheByStep,
   useTabActions,
@@ -138,40 +135,25 @@ export default function CarbonCalculation() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // ✅ Generic form hook for steps 2, 3, 4
+  const [genericForm, setGenericForm] = useState<Record<string, string>>({});
+  const handleGenericChange = (key: string, val: string) => {
+    setGenericForm((prev) => ({ ...prev, [key]: val }));
+  };
+
   // ✅ hooks form harus dipanggil semua, lalu dipilih pakai useMemo
   const formHookStep1 = useCalculationGHGVerification();
-  const formHookStep2 = useCalculationGHGCalculation();
-  const formHookStep3 = useCalculationGHGProcess();
-  const formHookStep4 = useCalculationAdd();
   const formHookStep5 = useCalculationOtherCase();
   const formHookStep6 = useCalculationGHGAudit();
 
   const { form, handleChange } = useMemo(() => {
-    switch (activeStep) {
-      case "step1":
-        return formHookStep1;
-      case "step2":
-        return formHookStep2;
-      case "step3":
-        return formHookStep3;
-      case "step4":
-        return formHookStep4;
-      case "step5":
-        return formHookStep5;
-      case "step6":
-        return formHookStep6;
-      default:
-        return formHookStep1;
+    if (activeStep === "step5") return formHookStep5;
+    if (activeStep === "step6") return formHookStep6;
+    if (activeStep === "step2" || activeStep === "step3" || activeStep === "step4") {
+      return { form: genericForm, handleChange: handleGenericChange };
     }
-  }, [
-    activeStep,
-    formHookStep1,
-    formHookStep2,
-    formHookStep3,
-    formHookStep4,
-    formHookStep5,
-    formHookStep6,
-  ]);
+    return formHookStep1;
+  }, [activeStep, formHookStep1, formHookStep5, formHookStep6, genericForm]);
 
   // ✅ pakai hook actions (bulk / update / delete)
   const { bulk, update } = useTabActions();
@@ -186,6 +168,10 @@ export default function CarbonCalculation() {
   useEffect(() => {
     // reset flag saat pindah step supaya re-hydrate sesuai step aktif
     hydratedRef.current = false;
+    // reset generic form when step changes
+    if (activeStep === "step2" || activeStep === "step3" || activeStep === "step4") {
+      setGenericForm({});
+    }
   }, [activeStep]);
 
   useEffect(() => {
