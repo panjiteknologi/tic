@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useParams, useSearchParams } from "next/navigation";
@@ -18,6 +17,9 @@ import {
   StepKey,
   useCalculationGHGAudit,
   useCalculationGHGVerification,
+  useCalculationGHGCalculation,
+  useCalculationGHGProcess,
+  useCalculationAdd,
   useCalculationOtherCase,
   useInvalidateCacheByStep,
   useTabActions,
@@ -115,8 +117,16 @@ export default function CarbonCalculation() {
       default:
         return [];
     }
-  }, [activeStep, verifications, calculations, process, additional, otherCase, audit]);
-  
+  }, [
+    activeStep,
+    verifications,
+    calculations,
+    process,
+    additional,
+    otherCase,
+    audit,
+  ]);
+
   const onRefresh = refetchAll;
 
   const [infoDialogTitle, setInfoDialogTitle] = useState("");
@@ -129,15 +139,39 @@ export default function CarbonCalculation() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // ✅ hooks form harus dipanggil semua, lalu dipilih pakai useMemo
-  const formHookStep1to4 = useCalculationGHGVerification();
+  const formHookStep1 = useCalculationGHGVerification();
+  const formHookStep2 = useCalculationGHGCalculation();
+  const formHookStep3 = useCalculationGHGProcess();
+  const formHookStep4 = useCalculationAdd();
   const formHookStep5 = useCalculationOtherCase();
   const formHookStep6 = useCalculationGHGAudit();
 
   const { form, handleChange } = useMemo(() => {
-    if (activeStep === "step5") return formHookStep5;
-    if (activeStep === "step6") return formHookStep6;
-    return formHookStep1to4;
-  }, [activeStep, formHookStep1to4, formHookStep5, formHookStep6]);
+    switch (activeStep) {
+      case "step1":
+        return formHookStep1;
+      case "step2":
+        return formHookStep2;
+      case "step3":
+        return formHookStep3;
+      case "step4":
+        return formHookStep4;
+      case "step5":
+        return formHookStep5;
+      case "step6":
+        return formHookStep6;
+      default:
+        return formHookStep1;
+    }
+  }, [
+    activeStep,
+    formHookStep1,
+    formHookStep2,
+    formHookStep3,
+    formHookStep4,
+    formHookStep5,
+    formHookStep6,
+  ]);
 
   // ✅ pakai hook actions (bulk / update / delete)
   const { bulk, update } = useTabActions();
