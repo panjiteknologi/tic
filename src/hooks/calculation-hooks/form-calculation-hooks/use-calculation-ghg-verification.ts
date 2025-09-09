@@ -168,6 +168,7 @@ export function useCalculationGHGVerification() {
     );
     const co2eqEmissionsNitrogenFertilizersHaYr =
       ammoniumNitrate * emissionFactorAmmoniumNitrate + urea;
+
     const co2eqEmissionsNitrogenFertilizersFieldN20HaYr =
       directN2OEmissions +
       indirectN2OEmissionsNH3NOx +
@@ -251,7 +252,7 @@ export function useCalculationGHGVerification() {
 
     setForm((prev) => ({
       ...prev,
-      cornDry: formatNumber(cornDry),
+      cornDry: formatNumber(cornDry, 1, "none"),
       co2eqEmissionsRawMaterialInputHaYr: formatNumber(
         co2eqEmissionsRawMaterialInputHaYr,
         0,
@@ -275,7 +276,7 @@ export function useCalculationGHGVerification() {
       ),
       indirectN2OEmissionsNLeachingRunoff: formatNumber(
         indirectN2OEmissionsNLeachingRunoff,
-        1,
+        2,
         "none"
       ),
       co2eqEmissionsNitrogenFertilizersHaYr: formatNumber(
@@ -286,7 +287,7 @@ export function useCalculationGHGVerification() {
       co2eqEmissionsNitrogenFertilizersFieldN20HaYr: formatNumber(
         co2eqEmissionsNitrogenFertilizersFieldN20HaYr,
         1,
-        "none"
+        "floor"
       ),
       co2eqEmissionsNitrogenFertilizersFieldN20TFFB: formatNumber(
         co2eqEmissionsNitrogenFertilizersFieldN20TFFB,
@@ -314,7 +315,11 @@ export function useCalculationGHGVerification() {
         "none"
       ),
       co2eEmissionsDieselYr: formatNumber(co2eEmissionsDieselYr, 2, "none"),
-      co2eEmissionsDieselTFFB: formatNumber(co2eEmissionsDieselTFFB, 2, "none"),
+      co2eEmissionsDieselTFFB: formatNumber(
+        co2eEmissionsDieselTFFB,
+        2,
+        "round"
+      ),
       ghgEmissionsEnergy: formatNumber(ghgEmissionsEnergy, 2, "none"),
       totalEmissionsCorn: formatNumber(totalEmissionsCorn, 1, "none"),
       soilOrganicCarbonActual: formatNumber(soilOrganicCarbonActual, 1, "none"),

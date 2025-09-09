@@ -13,8 +13,6 @@ import FormOtherCaseCalculation from "./form-other-case";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { StepKey } from "@/hooks";
-import { Spinner } from "@/components/ui/shadcn-io/spinner";
-import { Save } from "lucide-react";
 
 // 🔑 mapping step -> form component
 const stepForms: Record<StepKey, React.FC<any>> = {
@@ -51,14 +49,43 @@ export default function AddCalculationViews({
 
     const labelClass = `text-sm ${labelColor || ""} ${bold ? "font-bold" : ""}`;
 
+    // helper pemisah ribuan format Indonesia
+    const formatThousandsID = (digits: string) =>
+      digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+    // ✅ formatter yang mempertahankan tanda negatif
     const formatCurrency = (value: string | number): string => {
-      if (value === null || value === undefined || value === "") return "";
+      if (value === null || value === undefined) return "";
 
-      const strValue = value.toString().replace(/\s+/g, "").replace(/\./g, "");
-      const parts = strValue.split(",");
+      const raw = value.toString().trim();
+      const isNeg = raw.startsWith("-"); // cek tanda
+      const body = isNeg ? raw.slice(1) : raw; // buang tanda untuk proses
+      if (body === "") return isNeg ? "-" : ""; // biarkan user ketik "-" dulu
+      if (body === ",") return isNeg ? "-," : ",";
 
-      const intPart = parts[0] ? Number(parts[0]).toLocaleString("id-ID") : "0";
-      return parts.length > 1 ? `${intPart},${parts[1]}` : intPart;
+      // 1) Jika pakai koma → desimal Indonesia
+      if (body.includes(",")) {
+        const [intRaw, decRaw = ""] = body.split(",", 2);
+        const intDigits = intRaw.replace(/\D/g, "");
+        const intPart = intDigits ? formatThousandsID(intDigits) : "0";
+        const decDigits = decRaw.replace(/\D/g, "");
+        const out = decRaw === "" ? `${intPart},` : `${intPart},${decDigits}`;
+        return isNeg ? `-${out}` : out;
+      }
+
+      // 2) Desimal bertitik "123.45" → tampilkan "123,45"
+      const dotDecimalMatch = body.match(/^(\d+)\.(\d{1,3})$/);
+      if (dotDecimalMatch) {
+        const intPart = formatThousandsID(dotDecimalMatch[1]);
+        const out = `${intPart},${dotDecimalMatch[2]}`;
+        return isNeg ? `-${out}` : out;
+      }
+
+      // 3) Angka bulat / titik sebagai ribuan
+      const digitsOnly = body.replace(/\D/g, "");
+      if (!digitsOnly) return isNeg ? "-" : "";
+      const out = formatThousandsID(digitsOnly);
+      return isNeg ? `-${out}` : out;
     };
 
     return (
@@ -152,32 +179,19 @@ export default function AddCalculationViews({
 
   return (
     <div className="w-full">
-      <div className="space-y-4 mt-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-black text-lg font-bold">Carbon Calculation</h2>
+      <div className="mt-4">
+        <div className="flex justify-end sticky top-0 z-20 bg-white">
           <Button
             form="carbon-form"
             type="submit"
             className="text-white font-semibold"
             disabled={isSubmitting}
-            aria-label="Save calculation"
           >
-            {isSubmitting ? (
-              <span className="inline-flex items-center gap-2">
-                <Spinner className="w-4 h-4" />
-                Saving...
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-2">
-                <Save className="w-4 h-4" />
-                Save
-              </span>
-            )}
+            {isSubmitting ? "Saving..." : "Save Calculation"}
           </Button>
         </div>
-        <div className="sticky top-0 z-20 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b" />
+        {renderForm()}
       </div>
-      {renderForm()}
     </div>
   );
 }

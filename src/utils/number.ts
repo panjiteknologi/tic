@@ -38,34 +38,36 @@ export const parseNumber = (value: string | number): number => {
 type FormatMode = "round" | "floor" | "ceil" | "none";
 
 export const formatNumber = (
-  value: number,
+  raw: number | string,
   decimals = 0,
   mode: FormatMode = "none"
 ): string => {
-  if (isNaN(value)) return "0";
+  const n = typeof raw === "string" ? Number(raw) : raw;
+  if (!Number.isFinite(n)) return "0";
 
-  let processed = value;
+  const d = Math.max(0, decimals);
+  const factor = Math.pow(10, d);
 
+  let processed = n;
   switch (mode) {
     case "floor":
-      processed = Math.floor(value);
+      processed = Math.floor(n * factor) / factor;
       break;
     case "ceil":
-      processed = Math.ceil(value);
+      processed = Math.ceil(n * factor) / factor;
       break;
     case "round":
-      processed = Math.round(value);
+      processed = Math.round((n + Number.EPSILON) * factor) / factor;
       break;
     case "none":
     default:
-      processed = value; // biar tetap apa adanya
+      processed = n; // biarkan toLocale yang membulatkan saat render
       break;
   }
 
-  // Pastikan nilai negatif tetap tampil
   return processed.toLocaleString("id-ID", {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
+    minimumFractionDigits: d,
+    maximumFractionDigits: d,
     useGrouping: true,
   });
 };
