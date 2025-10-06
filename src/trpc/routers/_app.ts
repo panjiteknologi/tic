@@ -13,6 +13,9 @@ import { ghgOtherCaseRouter } from "./ghg-other-case";
 import { ghgAuditRouter } from "./ghg-audit";
 import { standardRouter } from "./standard";
 import { certificationRouter } from "./certification";
+import { ipccProjectsRouter } from "./ipcc/ipcc-projects";
+import { ipccActivityDataRouter } from "./ipcc/ipcc-activity-data";
+import { ipccEmissionCalculationsRouter } from "./ipcc/ipcc-emission-calculations";
 
 export const appRouter = createTRPCRouter({
   hello: baseProcedure
@@ -39,6 +42,9 @@ export const appRouter = createTRPCRouter({
   user: userRouter,
   standard: standardRouter,
   certification: certificationRouter,
+  ipccProjects: ipccProjectsRouter,
+  ipccActivityData: ipccActivityDataRouter,
+  ipccEmissionCalculations: ipccEmissionCalculationsRouter,
 });
 
 // export type definition of API
