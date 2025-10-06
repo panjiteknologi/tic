@@ -16,6 +16,11 @@ import { certificationRouter } from "./certification";
 import { ipccProjectsRouter } from "./ipcc/ipcc-projects";
 import { ipccActivityDataRouter } from "./ipcc/ipcc-activity-data";
 import { ipccEmissionCalculationsRouter } from "./ipcc/ipcc-emission-calculations";
+import { ipccProjectSummariesRouter } from "./ipcc/ipcc-project-summaries";
+import { ipccEmissionCategoriesRouter } from "./ipcc/ipcc-emission-categories";
+import { ipccEmissionFactorsRouter } from "./ipcc/ipcc-emission-factors";
+import { ipccGwpValuesRouter } from "./ipcc/ipcc-gwp-values";
+import { ipccDashboardRouter } from "./ipcc/ipcc-dashboard";
 
 export const appRouter = createTRPCRouter({
   hello: baseProcedure
@@ -45,6 +50,11 @@ export const appRouter = createTRPCRouter({
   ipccProjects: ipccProjectsRouter,
   ipccActivityData: ipccActivityDataRouter,
   ipccEmissionCalculations: ipccEmissionCalculationsRouter,
+  ipccProjectSummaries: ipccProjectSummariesRouter,
+  ipccEmissionCategories: ipccEmissionCategoriesRouter,
+  ipccEmissionFactors: ipccEmissionFactorsRouter,
+  ipccGwpValues: ipccGwpValuesRouter,
+  ipccDashboard: ipccDashboardRouter,
 });
 
 // export type definition of API
