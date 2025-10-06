@@ -59,36 +59,39 @@ export default function EditCalculationViews({
     const formatThousandsID = (digits: string) =>
       digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
+    // ✅ formatter yang mempertahankan tanda negatif
     const formatCurrency = (value: string | number): string => {
       if (value === null || value === undefined) return "";
 
       const raw = value.toString().trim();
+      const isNeg = raw.startsWith("-"); // cek tanda
+      const body = isNeg ? raw.slice(1) : raw; // buang tanda untuk proses
+      if (body === "") return isNeg ? "-" : ""; // biarkan user ketik "-" dulu
+      if (body === ",") return isNeg ? "-," : ",";
 
-      // izinkan input hanya koma
-      if (raw === ",") return ",";
-
-      // 1) Jika ada koma → desimal Indonesia (int,dec)
-      if (raw.includes(",")) {
-        const [intRaw, decRaw = ""] = raw.split(",", 2);
+      // 1) Jika pakai koma → desimal Indonesia
+      if (body.includes(",")) {
+        const [intRaw, decRaw = ""] = body.split(",", 2);
         const intDigits = intRaw.replace(/\D/g, "");
         const intPart = intDigits ? formatThousandsID(intDigits) : "0";
         const decDigits = decRaw.replace(/\D/g, "");
-        // pertahankan koma saat user baru mengetik koma
-        return decRaw === "" ? `${intPart},` : `${intPart},${decDigits}`;
+        const out = decRaw === "" ? `${intPart},` : `${intPart},${decDigits}`;
+        return isNeg ? `-${out}` : out;
       }
 
-      // 2) Desimal bertitik (API "13.4" → "13,4")
-      //    BATASI hanya 1–3 digit setelah titik agar "1.222222..." tidak dianggap desimal
-      const dotDecimalMatch = raw.match(/^(\d+)\.(\d{1,3})$/);
+      // 2) Desimal bertitik "123.45" → tampilkan "123,45"
+      const dotDecimalMatch = body.match(/^(\d+)\.(\d{1,3})$/);
       if (dotDecimalMatch) {
         const intPart = formatThousandsID(dotDecimalMatch[1]);
-        return `${intPart},${dotDecimalMatch[2]}`;
+        const out = `${intPart},${dotDecimalMatch[2]}`;
+        return isNeg ? `-${out}` : out;
       }
 
-      // 3) Angka bulat / titik sebagai pemisah ribuan → format ribuan
-      const digitsOnly = raw.replace(/\D/g, "");
-      if (!digitsOnly) return "";
-      return formatThousandsID(digitsOnly);
+      // 3) Angka bulat / titik sebagai ribuan
+      const digitsOnly = body.replace(/\D/g, "");
+      if (!digitsOnly) return isNeg ? "-" : "";
+      const out = formatThousandsID(digitsOnly);
+      return isNeg ? `-${out}` : out;
     };
 
     const disabledAll = disabled || isSubmitting || isRefreshing;
