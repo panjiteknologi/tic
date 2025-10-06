@@ -2,50 +2,83 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Leaf, ShieldCheck, Zap } from "lucide-react";
+import {
+  BadgeCheck,
+  BarChart3,
+  Database,
+  FileText,
+  Globe2,
+  Landmark,
+  Leaf,
+  Shield,
+  ShieldCheck,
+  Zap,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/ui/footer";
 import { useRouter } from "next/navigation";
 
 const features = [
   {
-    value: "step1",
+    key: "iscc",
     icon: <Leaf className="w-8 h-8 text-green-500" />,
     title: "GHG ISCC Calculation",
     desc: "Green house gas",
+    href: "/apps/carbon-emission/iscc/dashboard",
   },
   {
-    value: "step2",
+    key: "carbon",
     icon: <Zap className="w-8 h-8 text-blue-500" />,
     title: "Gas Karbon",
     desc: "Perhitungan emisi gas karbon",
+    href: "/apps/carbon-emission/carbon/dashboard",
   },
   {
-    value: "step3",
-    icon: <ShieldCheck className="w-8 h-8 text-yellow-500" />,
-    title: "Other",
-    desc: "Kasus Lainnya",
+    key: "ipcc",
+    icon: <Globe2 className="w-8 h-8 text-sky-600" />,
+    title: "IPCC",
+    desc: "Pedoman inventaris gas rumah kaca global dari IPCC.",
+  },
+  {
+    key: "defra",
+    icon: <Landmark className="w-8 h-8 text-emerald-600" />,
+    title: "DEFRA",
+    desc: "Faktor emisi resmi Department for Environment, Food & Rural Affairs UK.",
+  },
+  {
+    key: "ghg-protocol",
+    icon: <BarChart3 className="w-8 h-8 text-indigo-600" />,
+    title: "GHG Protocol",
+    desc: "Standar akuntansi gas rumah kaca yang diakui internasional.",
+  },
+  {
+    key: "iso-14064-1-2018",
+    icon: <BadgeCheck className="w-8 h-8 text-violet-600" />,
+    title: "ISO 14064 1-2018",
+    desc: "Kerangka verifikasi emisi gas rumah kaca untuk organisasi.",
+  },
+  {
+    key: "pas-2050",
+    icon: <FileText className="w-8 h-8 text-orange-500" />,
+    title: "PAS 2050",
+    desc: "Metodologi penilaian jejak karbon produk dan layanan.",
+  },
+  {
+    key: "usepa",
+    icon: <Shield className="w-8 h-8 text-cyan-600" />,
+    title: "USEPA",
+    desc: "Data faktor emisi dari United States Environmental Protection Agency.",
+  },
+  {
+    key: "ecolnven",
+    icon: <Database className="w-8 h-8 text-teal-600" />,
+    title: "Ecolnven",
+    desc: "Database inventaris siklus hidup Ecolnven untuk analisis emisi.",
   },
 ];
 
 const Welcome = () => {
   const router = useRouter();
-
-  const goDashboard = (value: string) => {
-    switch (value) {
-      case "step1":
-        router.push("/apps/carbon-emission/iscc/dashboard");
-        break;
-      case "step2":
-        router.push("/apps/carbon-emission/carbon/dashboard");
-        break;
-      case "step3":
-        router.push("/apps/carbon-emission/other/dashboard");
-        break;
-      default:
-        router.push("/apps");
-    }
-  };
 
   return (
     <motion.section
@@ -68,24 +101,37 @@ const Welcome = () => {
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
-              {features.map((item) => (
-                <motion.div
-                  key={item.value}
-                  whileHover={{ scale: 1.03 }}
-                  transition={{ type: "spring", stiffness: 180 }}
-                >
-                  <Card
-                    className="cursor-pointer rounded-3xl shadow-md hover:shadow-2xl transition-all bg-white border border-gray-200"
-                    onClick={() => goDashboard(item.value)}
+              {features.map((item) => {
+                const clickable = Boolean(item.href);
+                return (
+                  <motion.div
+                    key={item.key}
+                    whileHover={{ scale: 1.03 }}
+                    transition={{ type: "spring", stiffness: 180 }}
                   >
-                    <div className="flex justify-center my-4">{item.icon}</div>
-                    <h2 className="text-xl font-semibold text-gray-800">
-                      {item.title}
-                    </h2>
-                    <p className="text-gray-600 text-sm mb-4">{item.desc}</p>
-                  </Card>
-                </motion.div>
-              ))}
+                    <Card
+                      className={`rounded-3xl px-2 shadow-md transition-all bg-white border border-gray-200 ${
+                        clickable
+                          ? "cursor-pointer hover:shadow-2xl"
+                          : "cursor-default"
+                      }`}
+                      onClick={() => {
+                        if (item.href) {
+                          router.push(item.href);
+                        }
+                      }}
+                    >
+                      <div className="flex justify-center my-4">
+                        {item.icon}
+                      </div>
+                      <h2 className="text-xl font-semibold text-gray-800">
+                        {item.title}
+                      </h2>
+                      <p className="text-gray-600 text-sm mb-4">{item.desc}</p>
+                    </Card>
+                  </motion.div>
+                );
+              })}
             </div>
           </section>
         </main>
