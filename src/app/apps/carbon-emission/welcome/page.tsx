@@ -38,6 +38,7 @@ const features = [
     icon: <Globe2 className="w-8 h-8 text-sky-600" />,
     title: "IPCC",
     desc: "Pedoman inventaris gas rumah kaca global dari IPCC.",
+    href: "/apps/carbon-emission/ipcc/dashboard",
   },
   {
     key: "defra",

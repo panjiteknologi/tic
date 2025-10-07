@@ -11,21 +11,21 @@ import { TRPCError } from "@trpc/server";
 
 const createIpccProjectSchema = z.object({
   name: z.string().min(1, "Project name is required"),
-  description: z.string().optional(),
+  description: z.string().nullable().optional().transform(val => val === "" ? null : val),
   year: z.number().int().min(1900).max(2100),
   status: z.enum(["DRAFT", "ACTIVE", "COMPLETED", "ARCHIVED"]).default("DRAFT"),
-  organizationName: z.string().optional(),
-  location: z.string().optional(),
+  organizationName: z.string().nullable().optional().transform(val => val === "" ? null : val),
+  location: z.string().nullable().optional().transform(val => val === "" ? null : val),
 });
 
 const updateIpccProjectSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1, "Project name is required").optional(),
-  description: z.string().optional(),
+  description: z.string().nullable().optional().transform(val => val === "" ? null : val),
   year: z.number().int().min(1900).max(2100).optional(),
   status: z.enum(["DRAFT", "ACTIVE", "COMPLETED", "ARCHIVED"]).optional(),
-  organizationName: z.string().optional(),
-  location: z.string().optional(),
+  organizationName: z.string().nullable().optional().transform(val => val === "" ? null : val),
+  location: z.string().nullable().optional().transform(val => val === "" ? null : val),
 });
 
 export const ipccProjectsRouter = createTRPCRouter({
@@ -34,16 +34,20 @@ export const ipccProjectsRouter = createTRPCRouter({
     .input(createIpccProjectSchema)
     .mutation(async ({ ctx, input }) => {
       try {
+        const userId = ctx.user?.id;
+        const createdBy =
+          userId && z.string().uuid().safeParse(userId).success ? userId : null;
+
         const [newProject] = await db
           .insert(ipccProjects)
           .values({
             name: input.name,
             description: input.description,
             year: input.year,
-            status: input.status,
+            status: input.status || "DRAFT",
             organizationName: input.organizationName,
             location: input.location,
-            createdBy: ctx.user.id,
+            createdBy,
           })
           .returning();
 
@@ -52,9 +56,11 @@ export const ipccProjectsRouter = createTRPCRouter({
           project: newProject,
         };
       } catch (error) {
+        console.error("Error creating IPCC project:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to create IPCC project",
+          cause: error,
         });
       }
     }),

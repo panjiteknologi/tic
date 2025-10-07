@@ -42,6 +42,30 @@ export const CarbonProjectISCCMenu = {
   projects: [],
 };
 
+export const CarbonProjectIPCCMenu = {
+  user: {
+    name: "shadcn",
+    email: "m@example.com",
+    avatar: "",
+  },
+  navMain: [
+    {
+      title: "Dashboard",
+      url: "/apps/carbon-emission/ipcc/dashboard",
+      icon: Gauge,
+      isActive: false,
+    },
+    {
+      title: "All Projects",
+      url: "/apps/carbon-emission/ipcc/projects",
+      icon: FolderOpenDot,
+      isActive: false,
+    },
+  ],
+  navSecondary: [],
+  projects: [],
+};
+
 export const getCarbonCalculationMenu = (projectId: string) => ({
   user: {
     name: "shadcn",
