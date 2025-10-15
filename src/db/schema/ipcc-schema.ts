@@ -68,9 +68,6 @@ export const emissionCategories = pgTable("ipcc_emission_categories", {
   code: varchar("code", { length: 50 }).notNull(), // e.g., "1.A.1" (IPCC code)
   name: varchar("name", { length: 255 }).notNull(),
   sector: sectorEnum("sector").notNull(),
-  ipccProjectId: uuid("ipcc_project_id")
-    .notNull()
-    .references(() => ipccProjects.id),
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -79,9 +76,6 @@ export const emissionCategories = pgTable("ipcc_emission_categories", {
 export const emissionFactors = pgTable("ipcc_emission_factors", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
-  categoryId: uuid("category_id")
-    .notNull()
-    .references(() => emissionCategories.id),
 
   gasType: gasTypeEnum("gas_type").notNull(),
   tier: tierEnum("tier").notNull(),
@@ -195,6 +189,18 @@ export const projectSummaries = pgTable("ipcc_project_summaries", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Tambah junction table untuk project-category relationship
+export const projectCategories = pgTable("ipcc_project_categories", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  projectId: uuid("project_id")
+    .notNull()
+    .references(() => ipccProjects.id, { onDelete: "cascade" }),
+  categoryId: uuid("category_id")
+    .notNull()
+    .references(() => emissionCategories.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // ============================================
 // RELATIONS
 // ============================================
@@ -203,28 +209,20 @@ export const ipccProjectsRelations = relations(ipccProjects, ({ many }) => ({
   activityData: many(activityData),
   calculations: many(emissionCalculations),
   summaries: many(projectSummaries),
+  projectCategories: many(projectCategories),
 }));
 
 export const emissionCategoriesRelations = relations(
   emissionCategories,
-  ({ one, many }) => ({
-    parent: one(emissionCategories, {
-      fields: [emissionCategories.ipccProjectId],
-      references: [emissionCategories.id],
-    }),
-    children: many(emissionCategories),
-    emissionFactors: many(emissionFactors),
+  ({ many }) => ({
     activityData: many(activityData),
+    projectCategories: many(projectCategories),
   })
 );
 
 export const emissionFactorsRelations = relations(
   emissionFactors,
-  ({ one, many }) => ({
-    category: one(emissionCategories, {
-      fields: [emissionFactors.categoryId],
-      references: [emissionCategories.id],
-    }),
+  ({ many }) => ({
     calculations: many(emissionCalculations),
   })
 );
@@ -268,6 +266,20 @@ export const projectSummariesRelations = relations(
     project: one(ipccProjects, {
       fields: [projectSummaries.projectId],
       references: [ipccProjects.id],
+    }),
+  })
+);
+
+export const projectCategoriesRelations = relations(
+  projectCategories,
+  ({ one }) => ({
+    project: one(ipccProjects, {
+      fields: [projectCategories.projectId],
+      references: [ipccProjects.id],
+    }),
+    category: one(emissionCategories, {
+      fields: [projectCategories.categoryId],
+      references: [emissionCategories.id],
     }),
   })
 );

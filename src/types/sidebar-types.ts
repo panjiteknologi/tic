@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { LucideIcon } from "lucide-react";
 
 export interface SidebarChildItem {
   id?: string;
   title: string;
   url: string;
-  icon: LucideIcon;
+  icon: string;
 }
 
 export interface SidebarItem extends SidebarChildItem {

@@ -4,13 +4,11 @@ import { protectedProcedure, createTRPCRouter } from "../../init";
 import { db } from "@/db";
 import {
   emissionFactors,
-  emissionCategories,
 } from "@/db/schema/ipcc-schema";
 import { TRPCError } from "@trpc/server";
 
 const createEmissionFactorSchema = z.object({
   name: z.string().min(1, "Emission factor name is required"),
-  categoryId: z.string().uuid(),
   gasType: z.enum(["CO2", "CH4", "N2O", "HFCs", "PFCs", "SF6", "NF3"]),
   tier: z.enum(["TIER_1", "TIER_2", "TIER_3"]),
   value: z.string().min(1, "Value is required"),
@@ -34,25 +32,10 @@ export const ipccEmissionFactorsRouter = createTRPCRouter({
     .input(createEmissionFactorSchema)
     .mutation(async ({ input }) => {
       try {
-        // Check if category exists
-        const category = await db
-          .select()
-          .from(emissionCategories)
-          .where(eq(emissionCategories.id, input.categoryId))
-          .limit(1);
-
-        if (category.length === 0) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Emission category not found",
-          });
-        }
-
         const [newEmissionFactor] = await db
           .insert(emissionFactors)
           .values({
             name: input.name,
-            categoryId: input.categoryId,
             gasType: input.gasType,
             tier: input.tier,
             value: input.value,
@@ -93,17 +76,9 @@ export const ipccEmissionFactorsRouter = createTRPCRouter({
           value: emissionFactors.value,
           unit: emissionFactors.unit,
           source: emissionFactors.source,
-          categoryId: emissionFactors.categoryId,
           createdAt: emissionFactors.createdAt,
-          categoryName: emissionCategories.name,
-          categoryCode: emissionCategories.code,
-          categorySector: emissionCategories.sector,
         })
         .from(emissionFactors)
-        .leftJoin(
-          emissionCategories,
-          eq(emissionFactors.categoryId, emissionCategories.id)
-        )
         .where(eq(emissionFactors.id, input.id))
         .limit(1);
 
@@ -121,10 +96,8 @@ export const ipccEmissionFactorsRouter = createTRPCRouter({
   getAll: protectedProcedure
     .input(
       z.object({
-        categoryId: z.string().uuid().optional(),
         gasType: z.enum(["CO2", "CH4", "N2O", "HFCs", "PFCs", "SF6", "NF3"]).optional(),
         tier: z.enum(["TIER_1", "TIER_2", "TIER_3"]).optional(),
-        sector: z.enum(["ENERGY", "IPPU", "AFOLU", "WASTE", "OTHER"]).optional(),
         search: z.string().optional(),
         limit: z.number().min(1).max(100).default(50),
         offset: z.number().min(0).default(0),
@@ -133,20 +106,12 @@ export const ipccEmissionFactorsRouter = createTRPCRouter({
     .query(async ({ input }) => {
       let whereConditions = [];
 
-      if (input.categoryId) {
-        whereConditions.push(eq(emissionFactors.categoryId, input.categoryId));
-      }
-
       if (input.gasType) {
         whereConditions.push(eq(emissionFactors.gasType, input.gasType));
       }
 
       if (input.tier) {
         whereConditions.push(eq(emissionFactors.tier, input.tier));
-      }
-
-      if (input.sector) {
-        whereConditions.push(eq(emissionCategories.sector, input.sector));
       }
 
       if (input.search) {
@@ -172,17 +137,9 @@ export const ipccEmissionFactorsRouter = createTRPCRouter({
           value: emissionFactors.value,
           unit: emissionFactors.unit,
           source: emissionFactors.source,
-          categoryId: emissionFactors.categoryId,
           createdAt: emissionFactors.createdAt,
-          categoryName: emissionCategories.name,
-          categoryCode: emissionCategories.code,
-          categorySector: emissionCategories.sector,
         })
         .from(emissionFactors)
-        .leftJoin(
-          emissionCategories,
-          eq(emissionFactors.categoryId, emissionCategories.id)
-        )
         .where(whereCondition)
         .limit(input.limit)
         .offset(input.offset)
@@ -192,10 +149,6 @@ export const ipccEmissionFactorsRouter = createTRPCRouter({
       const totalCount = await db
         .select({ count: emissionFactors.id })
         .from(emissionFactors)
-        .leftJoin(
-          emissionCategories,
-          eq(emissionFactors.categoryId, emissionCategories.id)
-        )
         .where(whereCondition);
 
       return {
@@ -209,63 +162,6 @@ export const ipccEmissionFactorsRouter = createTRPCRouter({
       };
     }),
 
-  // Get emission factors for a category
-  getByCategory: protectedProcedure
-    .input(
-      z.object({
-        categoryId: z.string().uuid(),
-        gasType: z.enum(["CO2", "CH4", "N2O", "HFCs", "PFCs", "SF6", "NF3"]).optional(),
-        tier: z.enum(["TIER_1", "TIER_2", "TIER_3"]).optional(),
-      })
-    )
-    .query(async ({ input }) => {
-      // Check if category exists
-      const category = await db
-        .select()
-        .from(emissionCategories)
-        .where(eq(emissionCategories.id, input.categoryId))
-        .limit(1);
-
-      if (category.length === 0) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Emission category not found",
-        });
-      }
-
-      let whereConditions = [eq(emissionFactors.categoryId, input.categoryId)];
-
-      if (input.gasType) {
-        whereConditions.push(eq(emissionFactors.gasType, input.gasType));
-      }
-
-      if (input.tier) {
-        whereConditions.push(eq(emissionFactors.tier, input.tier));
-      }
-
-      const whereCondition = and(...whereConditions);
-
-      const emissionFactorsList = await db
-        .select({
-          id: emissionFactors.id,
-          name: emissionFactors.name,
-          gasType: emissionFactors.gasType,
-          tier: emissionFactors.tier,
-          value: emissionFactors.value,
-          unit: emissionFactors.unit,
-          source: emissionFactors.source,
-          categoryId: emissionFactors.categoryId,
-          createdAt: emissionFactors.createdAt,
-        })
-        .from(emissionFactors)
-        .where(whereCondition)
-        .orderBy(emissionFactors.tier, emissionFactors.gasType);
-
-      return {
-        category: category[0],
-        emissionFactors: emissionFactorsList,
-      };
-    }),
 
   // Get emission factors by tier
   getByTier: protectedProcedure
@@ -273,7 +169,6 @@ export const ipccEmissionFactorsRouter = createTRPCRouter({
       z.object({
         tier: z.enum(["TIER_1", "TIER_2", "TIER_3"]),
         gasType: z.enum(["CO2", "CH4", "N2O", "HFCs", "PFCs", "SF6", "NF3"]).optional(),
-        sector: z.enum(["ENERGY", "IPPU", "AFOLU", "WASTE", "OTHER"]).optional(),
       })
     )
     .query(async ({ input }) => {
@@ -283,10 +178,6 @@ export const ipccEmissionFactorsRouter = createTRPCRouter({
         whereConditions.push(eq(emissionFactors.gasType, input.gasType));
       }
 
-      if (input.sector) {
-        whereConditions.push(eq(emissionCategories.sector, input.sector));
-      }
-
       const whereCondition = and(...whereConditions);
 
       const emissionFactorsList = await db
@@ -298,19 +189,11 @@ export const ipccEmissionFactorsRouter = createTRPCRouter({
           value: emissionFactors.value,
           unit: emissionFactors.unit,
           source: emissionFactors.source,
-          categoryId: emissionFactors.categoryId,
           createdAt: emissionFactors.createdAt,
-          categoryName: emissionCategories.name,
-          categoryCode: emissionCategories.code,
-          categorySector: emissionCategories.sector,
         })
         .from(emissionFactors)
-        .leftJoin(
-          emissionCategories,
-          eq(emissionFactors.categoryId, emissionCategories.id)
-        )
         .where(whereCondition)
-        .orderBy(emissionCategories.sector, emissionFactors.gasType);
+        .orderBy(emissionFactors.gasType);
 
       return {
         tier: input.tier,

@@ -20,6 +20,7 @@ import { ipccProjectSummariesRouter } from "./ipcc/ipcc-project-summaries";
 import { ipccEmissionCategoriesRouter } from "./ipcc/ipcc-emission-categories";
 import { ipccEmissionFactorsRouter } from "./ipcc/ipcc-emission-factors";
 import { ipccGwpValuesRouter } from "./ipcc/ipcc-gwp-values";
+import { ipccProjectCategoriesRouter } from "./ipcc/ipcc-project-categories";
 import { ipccDashboardRouter } from "./ipcc/ipcc-dashboard";
 
 export const appRouter = createTRPCRouter({
@@ -54,6 +55,7 @@ export const appRouter = createTRPCRouter({
   ipccEmissionCategories: ipccEmissionCategoriesRouter,
   ipccEmissionFactors: ipccEmissionFactorsRouter,
   ipccGwpValues: ipccGwpValuesRouter,
+  ipccProjectCategories: ipccProjectCategoriesRouter,
   ipccDashboard: ipccDashboardRouter,
 });
 

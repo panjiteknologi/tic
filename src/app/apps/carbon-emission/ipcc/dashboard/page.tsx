@@ -12,9 +12,6 @@ import {
   PieChart,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import DashboardLayout from "@/layout/dashboard-layout";
-import { CarbonProjectIPCCMenu } from "@/constant/menu-sidebar";
-import { AppSidebarTypes } from "@/types/sidebar-types";
 import { LineCharts } from "@/components/charts/line-chart";
 import { trpc } from "@/trpc/react";
 
@@ -357,55 +354,48 @@ export default function IPCCDashboardPage() {
   ];
 
   return (
-    <DashboardLayout
-      href="/apps/carbon-emission/ipcc/dashboard"
-      titleHeader="IPCC Carbon Emission"
-      subTitleHeader="Dashboard"
-      menuSidebar={CarbonProjectIPCCMenu as AppSidebarTypes}
-    >
-      <div className="flex-1 overflow-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          {stats.map((s) => (
-            <DashboardCard key={s.title} {...s} />
-          ))}
-        </div>
-
-        <Tabs defaultValue="overview" className="mt-8 w-full h-50">
-          <TabsList className="w-full bg-muted rounded-xl p-1 flex gap-2 shadow-inner">
-            <TabsTrigger
-              value="overview"
-              className="flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-medium rounded-lg data-[state=active]:bg-white data-[state=active]:text-primary transition-all"
-            >
-              <Boxes className="w-5 h-5" />
-              Overview
-            </TabsTrigger>
-            <TabsTrigger
-              value="sectors"
-              className="flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-medium rounded-lg data-[state=active]:bg-white data-[state=active]:text-primary transition-all"
-            >
-              <PieChart className="w-5 h-5" />
-              Sektor
-            </TabsTrigger>
-            <TabsTrigger
-              value="trends"
-              className="flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-medium rounded-lg data-[state=active]:bg-white data-[state=active]:text-primary transition-all"
-            >
-              <LineChart className="w-5 h-5" />
-              Tren
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview">
-            <OverviewTab />
-          </TabsContent>
-          <TabsContent value="sectors">
-            <SectorsTab />
-          </TabsContent>
-          <TabsContent value="trends">
-            <TrendsTab />
-          </TabsContent>
-        </Tabs>
+    <div className="flex-1 overflow-auto">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        {stats.map((s) => (
+          <DashboardCard key={s.title} {...s} />
+        ))}
       </div>
-    </DashboardLayout>
+
+      <Tabs defaultValue="overview" className="mt-8 w-full h-50">
+        <TabsList className="w-full bg-muted rounded-xl p-1 flex gap-2 shadow-inner">
+          <TabsTrigger
+            value="overview"
+            className="flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-medium rounded-lg data-[state=active]:bg-white data-[state=active]:text-primary transition-all"
+          >
+            <Boxes className="w-5 h-5" />
+            Overview
+          </TabsTrigger>
+          <TabsTrigger
+            value="sectors"
+            className="flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-medium rounded-lg data-[state=active]:bg-white data-[state=active]:text-primary transition-all"
+          >
+            <PieChart className="w-5 h-5" />
+            Sektor
+          </TabsTrigger>
+          <TabsTrigger
+            value="trends"
+            className="flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-medium rounded-lg data-[state=active]:bg-white data-[state=active]:text-primary transition-all"
+          >
+            <LineChart className="w-5 h-5" />
+            Tren
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview">
+          <OverviewTab />
+        </TabsContent>
+        <TabsContent value="sectors">
+          <SectorsTab />
+        </TabsContent>
+        <TabsContent value="trends">
+          <TrendsTab />
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }

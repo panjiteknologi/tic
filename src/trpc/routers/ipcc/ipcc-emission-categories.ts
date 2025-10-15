@@ -1,15 +1,14 @@
 import { z } from "zod";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { protectedProcedure, createTRPCRouter } from "../../init";
 import { db } from "@/db";
-import { emissionCategories, ipccProjects } from "@/db/schema/ipcc-schema";
+import { emissionCategories } from "@/db/schema/ipcc-schema";
 import { TRPCError } from "@trpc/server";
 
 const createEmissionCategorySchema = z.object({
   code: z.string().min(1, "Category code is required"),
   name: z.string().min(1, "Category name is required"),
   sector: z.enum(["ENERGY", "IPPU", "AFOLU", "WASTE", "OTHER"]),
-  ipccProjectId: z.string().uuid(),
 });
 
 const updateEmissionCategorySchema = z.object({
@@ -25,36 +24,17 @@ export const ipccEmissionCategoriesRouter = createTRPCRouter({
     .input(createEmissionCategorySchema)
     .mutation(async ({ input }) => {
       try {
-        // Check if project exists
-        const project = await db
-          .select()
-          .from(ipccProjects)
-          .where(eq(ipccProjects.id, input.ipccProjectId))
-          .limit(1);
-
-        if (project.length === 0) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "IPCC project not found",
-          });
-        }
-
-        // Check if category code already exists for this project
+        // Check if category code already exists
         const existingCategory = await db
           .select()
           .from(emissionCategories)
-          .where(
-            and(
-              eq(emissionCategories.code, input.code),
-              eq(emissionCategories.ipccProjectId, input.ipccProjectId)
-            )
-          )
+          .where(eq(emissionCategories.code, input.code))
           .limit(1);
 
         if (existingCategory.length > 0) {
           throw new TRPCError({
             code: "CONFLICT",
-            message: "Category code already exists for this project",
+            message: "Category code already exists",
           });
         }
 
@@ -64,7 +44,6 @@ export const ipccEmissionCategoriesRouter = createTRPCRouter({
             code: input.code,
             name: input.name,
             sector: input.sector,
-            ipccProjectId: input.ipccProjectId,
           })
           .returning();
 
@@ -97,15 +76,9 @@ export const ipccEmissionCategoriesRouter = createTRPCRouter({
           code: emissionCategories.code,
           name: emissionCategories.name,
           sector: emissionCategories.sector,
-          ipccProjectId: emissionCategories.ipccProjectId,
           createdAt: emissionCategories.createdAt,
-          projectName: ipccProjects.name,
         })
         .from(emissionCategories)
-        .leftJoin(
-          ipccProjects,
-          eq(emissionCategories.ipccProjectId, ipccProjects.id)
-        )
         .where(eq(emissionCategories.id, input.id))
         .limit(1);
 
@@ -120,33 +93,17 @@ export const ipccEmissionCategoriesRouter = createTRPCRouter({
     }),
 
   // Get all categories (hierarchical tree structure)
-  getAll: protectedProcedure
-    .input(
-      z.object({
-        ipccProjectId: z.string().uuid().optional(),
-      })
-    )
-    .query(async ({ input }) => {
-      const whereCondition = input.ipccProjectId
-        ? eq(emissionCategories.ipccProjectId, input.ipccProjectId)
-        : undefined;
-
+  getAll: protectedProcedure.query(async () => {
       const categories = await db
         .select({
           id: emissionCategories.id,
           code: emissionCategories.code,
           name: emissionCategories.name,
           sector: emissionCategories.sector,
-          ipccProjectId: emissionCategories.ipccProjectId,
           createdAt: emissionCategories.createdAt,
-          projectName: ipccProjects.name,
         })
         .from(emissionCategories)
-        .leftJoin(
-          ipccProjects,
-          eq(emissionCategories.ipccProjectId, ipccProjects.id)
-        )
-        .where(whereCondition);
+        .orderBy(emissionCategories.code);
 
       // Group categories by sector for hierarchical structure
       const categoryTree = categories.reduce((acc, category) => {
@@ -174,36 +131,19 @@ export const ipccEmissionCategoriesRouter = createTRPCRouter({
     .input(
       z.object({
         sector: z.enum(["ENERGY", "IPPU", "AFOLU", "WASTE", "OTHER"]),
-        ipccProjectId: z.string().uuid().optional(),
       })
     )
     .query(async ({ input }) => {
-      let whereCondition: ReturnType<typeof eq> | ReturnType<typeof and>;
-      if (input.ipccProjectId) {
-        whereCondition = and(
-          eq(emissionCategories.sector, input.sector),
-          eq(emissionCategories.ipccProjectId, input.ipccProjectId)
-        );
-      } else {
-        whereCondition = eq(emissionCategories.sector, input.sector);
-      }
-
       const categories = await db
         .select({
           id: emissionCategories.id,
           code: emissionCategories.code,
           name: emissionCategories.name,
           sector: emissionCategories.sector,
-          ipccProjectId: emissionCategories.ipccProjectId,
           createdAt: emissionCategories.createdAt,
-          projectName: ipccProjects.name,
         })
         .from(emissionCategories)
-        .leftJoin(
-          ipccProjects,
-          eq(emissionCategories.ipccProjectId, ipccProjects.id)
-        )
-        .where(whereCondition)
+        .where(eq(emissionCategories.sector, input.sector))
         .orderBy(emissionCategories.code);
 
       return {
@@ -236,21 +176,13 @@ export const ipccEmissionCategoriesRouter = createTRPCRouter({
           const codeConflict = await db
             .select()
             .from(emissionCategories)
-            .where(
-              and(
-                eq(emissionCategories.code, input.code),
-                eq(
-                  emissionCategories.ipccProjectId,
-                  existingCategory[0].ipccProjectId
-                )
-              )
-            )
+            .where(eq(emissionCategories.code, input.code))
             .limit(1);
 
           if (codeConflict.length > 0 && codeConflict[0].id !== input.id) {
             throw new TRPCError({
               code: "CONFLICT",
-              message: "Category code already exists for this project",
+              message: "Category code already exists",
             });
           }
         }

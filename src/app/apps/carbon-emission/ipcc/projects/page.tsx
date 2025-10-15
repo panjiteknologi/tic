@@ -1,12 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/layout/dashboard-layout";
-import { AppSidebarTypes } from "@/types/sidebar-types";
 import { trpc } from "@/trpc/react";
 import { DialogInfo } from "@/components/ui/dialog-info";
 import ConfirmDialog from "@/components/ui/confirm-dialog";
-import { CarbonProjectIPCCMenu } from "@/constant/menu-sidebar";
 import { IPCCProjectsView } from "@/views/apps/carbon-emission/ipcc/projects/ipcc-projects-view";
 
 export default function IPCCProjectsPage() {
@@ -147,12 +144,7 @@ export default function IPCCProjectsPage() {
   };
 
   return (
-    <DashboardLayout
-      href="/apps/carbon-emission/ipcc/projects"
-      titleHeader="IPCC Projects"
-      subTitleHeader="All IPCC Projects"
-      menuSidebar={CarbonProjectIPCCMenu as AppSidebarTypes}
-    >
+    <>
       <IPCCProjectsView
         search={search}
         setSearch={setSearch}
@@ -189,6 +181,6 @@ export default function IPCCProjectsPage() {
         variant={infoVariant}
         onClose={() => setInfoDialogOpen(false)}
       />
-    </DashboardLayout>
+    </>
   );
 }
