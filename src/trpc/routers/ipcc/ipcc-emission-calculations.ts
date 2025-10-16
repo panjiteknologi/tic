@@ -1,14 +1,14 @@
 import { z } from "zod";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { protectedProcedure, createTRPCRouter } from "../../init";
 import { db } from "@/db";
-import { 
+import {
   emissionCalculations,
   activityData,
   emissionFactors,
   emissionCategories,
   ipccProjects,
-  gwpValues
+  gwpValues,
 } from "@/db/schema/ipcc-schema";
 import { TRPCError } from "@trpc/server";
 
@@ -40,10 +40,13 @@ export const ipccEmissionCalculationsRouter = createTRPCRouter({
             unit: activityData.unit,
             category: {
               sector: emissionCategories.sector,
-            }
+            },
           })
           .from(activityData)
-          .leftJoin(emissionCategories, eq(activityData.categoryId, emissionCategories.id))
+          .leftJoin(
+            emissionCategories,
+            eq(activityData.categoryId, emissionCategories.id)
+          )
           .where(eq(activityData.id, input.activityDataId))
           .limit(1);
 
@@ -62,13 +65,12 @@ export const ipccEmissionCalculationsRouter = createTRPCRouter({
           const availableFactors = await db
             .select()
             .from(emissionFactors)
-            .where(eq(emissionFactors.categoryId, activityRecord.categoryId))
             .orderBy(emissionFactors.tier); // Prefer higher tier
 
           if (availableFactors.length === 0) {
             throw new TRPCError({
               code: "NOT_FOUND",
-              message: "No emission factor found for this category",
+              message: "No emission factor found",
             });
           }
 
@@ -131,7 +133,7 @@ export const ipccEmissionCalculationsRouter = createTRPCRouter({
             gwpValue,
             emissionValue,
             co2Equivalent,
-          }
+          },
         };
       } catch (error) {
         if (error instanceof TRPCError) {
@@ -166,7 +168,8 @@ export const ipccEmissionCalculationsRouter = createTRPCRouter({
         const calc = existingCalc[0];
 
         // Use new emission factor if provided, otherwise use existing
-        const emissionFactorId = input.emissionFactorId || calc.emissionFactorId;
+        const emissionFactorId =
+          input.emissionFactorId || calc.emissionFactorId;
 
         // Get activity data
         const activity = await db
@@ -355,9 +358,18 @@ export const ipccEmissionCalculationsRouter = createTRPCRouter({
           },
         })
         .from(emissionCalculations)
-        .leftJoin(ipccProjects, eq(emissionCalculations.projectId, ipccProjects.id))
-        .leftJoin(activityData, eq(emissionCalculations.activityDataId, activityData.id))
-        .leftJoin(emissionFactors, eq(emissionCalculations.emissionFactorId, emissionFactors.id))
+        .leftJoin(
+          ipccProjects,
+          eq(emissionCalculations.projectId, ipccProjects.id)
+        )
+        .leftJoin(
+          activityData,
+          eq(emissionCalculations.activityDataId, activityData.id)
+        )
+        .leftJoin(
+          emissionFactors,
+          eq(emissionCalculations.emissionFactorId, emissionFactors.id)
+        )
         .where(eq(emissionCalculations.id, input.id))
         .limit(1);
 
@@ -376,18 +388,22 @@ export const ipccEmissionCalculationsRouter = createTRPCRouter({
     .input(
       z.object({
         projectId: z.string().uuid(),
-        gasType: z.enum(["CO2", "CH4", "N2O", "HFCs", "PFCs", "SF6", "NF3"]).optional(),
+        gasType: z
+          .enum(["CO2", "CH4", "N2O", "HFCs", "PFCs", "SF6", "NF3"])
+          .optional(),
         tier: z.enum(["TIER_1", "TIER_2", "TIER_3"]).optional(),
       })
     )
     .query(async ({ input }) => {
       // Build where conditions
-      const whereConditions = [eq(emissionCalculations.projectId, input.projectId)];
-      
+      const whereConditions = [
+        eq(emissionCalculations.projectId, input.projectId),
+      ];
+
       if (input.gasType) {
         whereConditions.push(eq(emissionCalculations.gasType, input.gasType));
       }
-      
+
       if (input.tier) {
         whereConditions.push(eq(emissionCalculations.tier, input.tier));
       }
@@ -422,8 +438,14 @@ export const ipccEmissionCalculationsRouter = createTRPCRouter({
           },
         })
         .from(emissionCalculations)
-        .leftJoin(activityData, eq(emissionCalculations.activityDataId, activityData.id))
-        .leftJoin(emissionFactors, eq(emissionCalculations.emissionFactorId, emissionFactors.id))
+        .leftJoin(
+          activityData,
+          eq(emissionCalculations.activityDataId, activityData.id)
+        )
+        .leftJoin(
+          emissionFactors,
+          eq(emissionCalculations.emissionFactorId, emissionFactors.id)
+        )
         .where(and(...whereConditions));
 
       return { calculations };
@@ -460,7 +482,10 @@ export const ipccEmissionCalculationsRouter = createTRPCRouter({
           },
         })
         .from(emissionCalculations)
-        .leftJoin(emissionFactors, eq(emissionCalculations.emissionFactorId, emissionFactors.id))
+        .leftJoin(
+          emissionFactors,
+          eq(emissionCalculations.emissionFactorId, emissionFactors.id)
+        )
         .where(eq(emissionCalculations.activityDataId, input.activityDataId));
 
       return { calculations };
