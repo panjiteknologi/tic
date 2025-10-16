@@ -5,7 +5,8 @@ import { db } from "@/db";
 import { 
   activityData, 
   ipccProjects, 
-  emissionCategories 
+  emissionCategories,
+  projectCategories 
 } from "@/db/schema/ipcc-schema";
 import { TRPCError } from "@trpc/server";
 
@@ -35,60 +36,157 @@ export const ipccActivityDataRouter = createTRPCRouter({
     .input(createActivityDataSchema)
     .mutation(async ({ ctx, input }) => {
       try {
+        console.log("=== Activity Data Creation Debug ===");
+        console.log("Input payload:", input);
+        console.log("User context:", { 
+          userId: ctx.user?.id, 
+          userIdType: typeof ctx.user?.id,
+          isValidUUID: ctx.user?.id ? ctx.user.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i) : false,
+          user: ctx.user 
+        });
+
         // Check if project exists
+        console.log("Checking if project exists:", input.projectId);
         const project = await db
-          .select()
+          .select({ 
+            id: ipccProjects.id,
+            name: ipccProjects.name,
+            status: ipccProjects.status 
+          })
           .from(ipccProjects)
           .where(eq(ipccProjects.id, input.projectId))
           .limit(1);
 
+        console.log("Project query result:", { found: project.length > 0, data: project });
         if (project.length === 0) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "IPCC project not found",
+            message: `IPCC project not found with ID: ${input.projectId}`,
           });
         }
 
         // Check if category exists
+        console.log("Checking if category exists:", input.categoryId);
         const category = await db
-          .select()
+          .select({ 
+            id: emissionCategories.id,
+            code: emissionCategories.code,
+            name: emissionCategories.name,
+            sector: emissionCategories.sector 
+          })
           .from(emissionCategories)
           .where(eq(emissionCategories.id, input.categoryId))
           .limit(1);
 
+        console.log("Category query result:", { found: category.length > 0, data: category });
         if (category.length === 0) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Emission category not found",
+            message: `Emission category not found with ID: ${input.categoryId}`,
           });
         }
 
+        // Check if project-category relationship exists
+        console.log("Checking project-category relationship...");
+        const projectCategory = await db
+          .select()
+          .from(projectCategories)
+          .where(
+            and(
+              eq(projectCategories.projectId, input.projectId),
+              eq(projectCategories.categoryId, input.categoryId)
+            )
+          )
+          .limit(1);
+
+        console.log("Project-category relationship:", { found: projectCategory.length > 0, data: projectCategory });
+        if (projectCategory.length === 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Category is not assigned to this project. Please assign the category first.",
+          });
+        }
+
+        // Prepare insert values - handle null/undefined for optional fields
+        const insertValues = {
+          projectId: input.projectId,
+          categoryId: input.categoryId,
+          name: input.name,
+          description: input.description || null, // Handle undefined -> null
+          value: input.value.toString(), // Convert number to string for decimal
+          unit: input.unit,
+          source: input.source || null, // Handle undefined -> null
+          createdBy: null, // Set to null since user.id is not UUID format
+        };
+        console.log("Insert values:", insertValues);
+
         // Create activity data
+        console.log("Inserting activity data...");
         const [newActivityData] = await db
           .insert(activityData)
-          .values({
-            projectId: input.projectId,
-            categoryId: input.categoryId,
-            name: input.name,
-            description: input.description,
-            value: input.value.toString(),
-            unit: input.unit,
-            source: input.source,
-            createdBy: ctx.user.id,
-          })
+          .values(insertValues)
           .returning();
 
+        console.log("Activity data created successfully:", newActivityData);
         return {
           success: true,
           activityData: newActivityData,
         };
       } catch (error) {
+        console.error("=== Activity Data Creation Error ===");
+        console.error("Error type:", error.constructor.name);
+        console.error("Error message:", error.message);
+        console.error("Error stack:", error.stack);
+        console.error("Full error:", error);
+        
         if (error instanceof TRPCError) {
           throw error;
         }
+
+        // Handle database constraint errors
+        if (error.message?.includes("Failed query")) {
+          console.error("Database constraint error detected");
+          console.error("Raw SQL error:", error.message);
+          
+          // Check for specific database errors
+          if (error.message?.includes("foreign key constraint") || error.message?.includes("violates foreign key")) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Invalid project or category reference. Please ensure the project and category exist and are linked.",
+            });
+          }
+          
+          if (error.message?.includes("unique constraint") || error.message?.includes("duplicate key")) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "Activity data with this name already exists for this project and category.",
+            });
+          }
+
+          if (error.message?.includes("invalid input syntax") || error.message?.includes("type")) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `Data type error: ${error.message}`,
+            });
+          }
+
+          if (error.message?.includes("null value") || error.message?.includes("NOT NULL")) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `Required field missing: ${error.message}`,
+            });
+          }
+
+          // Generic database error with more details
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: `Database error: ${error.message}`,
+          });
+        }
+
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create activity data",
+          message: `Failed to create activity data: ${error.message}`,
         });
       }
     }),
@@ -242,7 +340,7 @@ export const ipccActivityDataRouter = createTRPCRouter({
             ...(input.categoryId && { categoryId: input.categoryId }),
             ...(input.name && { name: input.name }),
             ...(input.description !== undefined && { description: input.description }),
-            ...(input.value && { value: input.value.toString() }),
+            ...(input.value !== undefined && { value: input.value.toString() }),
             ...(input.unit && { unit: input.unit }),
             ...(input.source !== undefined && { source: input.source }),
             updatedAt: new Date(),
