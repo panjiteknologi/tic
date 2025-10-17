@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Tag, Database, FileText, Edit, Trash2, Calculator } from "lucide-react";
+import { Plus, Tag, Database, FileText, Edit, Trash2, Calculator, TrendingUp, Activity, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,13 +48,25 @@ interface ActivityDataFormData {
   source: string;
 }
 
+interface CalculationDialogData {
+  activityDataId: string;
+  activityName: string;
+  notes?: string;
+}
+
 export function IPCCProjectCategoryItem({
   projectId,
   categories,
   categoriesBySector,
 }: IPCCProjectCategoryItemProps) {
   const [addActivityDialogOpen, setAddActivityDialogOpen] = useState(false);
+  const [calculateDialogOpen, setCalculateDialogOpen] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
+  const [calculationData, setCalculationData] = useState<CalculationDialogData>({
+    activityDataId: "",
+    activityName: "",
+    notes: "",
+  });
   const [formData, setFormData] = useState<ActivityDataFormData>({
     categoryId: "",
     name: "",
@@ -66,6 +78,12 @@ export function IPCCProjectCategoryItem({
 
   // Fetch activity data for the project
   const { data: activityData, refetch: refetchActivityData } = trpc.ipccActivityData.getByProject.useQuery(
+    { projectId },
+    { enabled: !!projectId }
+  );
+
+  // Fetch calculations for all activity data in the project
+  const { data: calculationsData, refetch: refetchCalculations } = trpc.ipccEmissionCalculations.getByProject.useQuery(
     { projectId },
     { enabled: !!projectId }
   );
@@ -87,6 +105,20 @@ export function IPCCProjectCategoryItem({
     },
   });
 
+  // Calculate emission mutation
+  const calculateEmissionMutation = trpc.ipccEmissionCalculations.calculate.useMutation({
+    onSuccess: (data) => {
+      console.log("Emission calculated successfully:", data);
+      setCalculateDialogOpen(false);
+      resetCalculationForm();
+      // Refresh calculations data to show new results
+      refetchCalculations();
+    },
+    onError: (error) => {
+      console.error("Failed to calculate emission:", error);
+    },
+  });
+
   const getSectorLabel = (sector: string) => {
     const sectorLabels = {
       ENERGY: "Energy",
@@ -105,6 +137,24 @@ export function IPCCProjectCategoryItem({
     ) || [];
   };
 
+  // Get calculations for specific activity
+  const getCalculationsForActivity = (activityId: string) => {
+    return calculationsData?.calculations?.filter(
+      (calc) => calc.activityDataId === activityId
+    ) || [];
+  };
+
+  // Format emission value for display
+  const formatEmissionValue = (value: string, unit?: string) => {
+    const numValue = parseFloat(value);
+    if (numValue >= 1000000) {
+      return `${formatNumber(numValue / 1000000)} M${unit || 'kg'}`;
+    } else if (numValue >= 1000) {
+      return `${formatNumber(numValue / 1000)} k${unit || 'kg'}`;
+    }
+    return `${formatNumber(numValue)} ${unit || 'kg'}`;
+  };
+
   const resetForm = () => {
     setFormData({
       categoryId: "",
@@ -115,6 +165,14 @@ export function IPCCProjectCategoryItem({
       source: "",
     });
     setSelectedCategoryId("");
+  };
+
+  const resetCalculationForm = () => {
+    setCalculationData({
+      activityDataId: "",
+      activityName: "",
+      notes: "",
+    });
   };
 
   const handleAddActivity = (categoryId: string) => {
@@ -166,6 +224,36 @@ export function IPCCProjectCategoryItem({
     setAddActivityDialogOpen(isOpen);
     if (!isOpen) {
       resetForm();
+    }
+  };
+
+  const handleCalculateEmission = (activityId: string, activityName: string) => {
+    setCalculationData({
+      activityDataId: activityId,
+      activityName: activityName,
+      notes: "",
+    });
+    setCalculateDialogOpen(true);
+  };
+
+  const handleCalculationSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!calculationData.activityDataId) {
+      console.error("Activity data ID is required");
+      return;
+    }
+
+    calculateEmissionMutation.mutate({
+      activityDataId: calculationData.activityDataId,
+      notes: calculationData.notes || undefined,
+    });
+  };
+
+  const handleCalculationDialogClose = (isOpen: boolean) => {
+    setCalculateDialogOpen(isOpen);
+    if (!isOpen) {
+      resetCalculationForm();
     }
   };
 
@@ -227,65 +315,128 @@ export function IPCCProjectCategoryItem({
                                 {categoryActivities.map((activity) => (
                                   <div
                                     key={activity.id}
-                                    className="flex items-center justify-between p-2 bg-background rounded border"
+                                    className="p-3 bg-background rounded border space-y-3"
                                   >
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-2">
-                                        <FileText className="h-4 w-4 text-muted-foreground" />
-                                        <span className="font-medium text-sm">
-                                          {activity.name}
-                                        </span>
+                                    {/* Activity Header */}
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex-1">
+                                        <div className="flex items-center gap-2">
+                                          <FileText className="h-4 w-4 text-muted-foreground" />
+                                          <span className="font-medium text-sm">
+                                            {activity.name}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                                          <span>Value: {formatNumber(parseFloat(activity.value))} {activity.unit}</span>
+                                          {activity.description && (
+                                            <span>Description: {activity.description}</span>
+                                          )}
+                                          {activity.source && (
+                                            <span>Source: {activity.source}</span>
+                                          )}
+                                        </div>
                                       </div>
-                                      <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                                        <span>Value: {formatNumber(parseFloat(activity.value))} {activity.unit}</span>
-                                        {activity.description && (
-                                          <span>Description: {activity.description}</span>
-                                        )}
-                                        {activity.source && (
-                                          <span>Source: {activity.source}</span>
-                                        )}
-                                      </div>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                      <TooltipProvider>
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
-                                              <Edit className="h-3 w-3" />
-                                            </Button>
-                                          </TooltipTrigger>
-                                          <TooltipContent>
-                                            <p>Edit Activity Data</p>
-                                          </TooltipContent>
-                                        </Tooltip>
-                                      </TooltipProvider>
                                       
-                                      <TooltipProvider>
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-blue-600">
-                                              <Calculator className="h-3 w-3" />
-                                            </Button>
-                                          </TooltipTrigger>
-                                          <TooltipContent>
-                                            <p>Calculate Emissions</p>
-                                          </TooltipContent>
-                                        </Tooltip>
-                                      </TooltipProvider>
+                                      {/* Action Buttons */}
+                                      <div className="flex items-center gap-1 ml-4">
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
+                                                <Edit className="h-3 w-3" />
+                                              </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>Edit Activity Data</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                        
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <Button 
+                                                size="sm" 
+                                                variant="ghost" 
+                                                className={`h-7 w-7 p-0 ${
+                                                  getCalculationsForActivity(activity.id).length > 0 
+                                                    ? 'text-green-600' 
+                                                    : 'text-blue-600'
+                                                }`}
+                                                onClick={() => handleCalculateEmission(activity.id, activity.name)}
+                                              >
+                                                {getCalculationsForActivity(activity.id).length > 0 ? (
+                                                  <Activity className="h-3 w-3" />
+                                                ) : (
+                                                  <Calculator className="h-3 w-3" />
+                                                )}
+                                              </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>
+                                                {getCalculationsForActivity(activity.id).length > 0 
+                                                  ? 'Recalculate Emissions' 
+                                                  : 'Calculate Emissions'
+                                                }
+                                              </p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
 
-                                      <TooltipProvider>
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive">
-                                              <Trash2 className="h-3 w-3" />
-                                            </Button>
-                                          </TooltipTrigger>
-                                          <TooltipContent>
-                                            <p>Delete Activity Data</p>
-                                          </TooltipContent>
-                                        </Tooltip>
-                                      </TooltipProvider>
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive">
+                                                <Trash2 className="h-3 w-3" />
+                                              </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>Delete Activity Data</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                      </div>
                                     </div>
+
+                                    {/* Emission Calculations Results */}
+                                    {(() => {
+                                      const calculations = getCalculationsForActivity(activity.id);
+                                      return calculations.length > 0 && (
+                                        <div className="p-3 bg-green-50 border border-green-200 rounded text-xs">
+                                          <div className="flex items-center gap-1 mb-2">
+                                            <Zap className="h-3 w-3 text-green-600" />
+                                            <span className="font-medium text-green-800">Emission Results:</span>
+                                          </div>
+                                          <div className="space-y-2">
+                                            {calculations.map((calc) => (
+                                              <div key={calc.id} className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                  <Badge variant="outline" className="text-xs px-1 py-0 h-4">
+                                                    {calc.gasType}
+                                                  </Badge>
+                                                  <span className="text-green-700">
+                                                    {formatEmissionValue(calc.emissionValue, calc.emissionUnit)}
+                                                  </span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                  <span className="text-green-600 font-medium">
+                                                    {formatEmissionValue(calc.co2Equivalent)} CO2-eq
+                                                  </span>
+                                                  <Badge variant="secondary" className="text-xs px-1 py-0 h-4">
+                                                    {calc.tier}
+                                                  </Badge>
+                                                </div>
+                                              </div>
+                                            ))}
+                                          </div>
+                                          {calculations[0]?.notes && (
+                                            <div className="mt-2 text-green-600">
+                                              <span className="font-medium">Notes:</span> {calculations[0].notes}
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    })()}
                                   </div>
                                 ))}
                               </div>
@@ -431,6 +582,81 @@ export function IPCCProjectCategoryItem({
                 {createActivityMutation.isPending
                   ? "Adding..."
                   : "Add Activity Data"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Calculate Emission Dialog */}
+      <Dialog open={calculateDialogOpen} onOpenChange={handleCalculationDialogClose}>
+        <DialogContent className="sm:max-w-[400px]">
+          <form onSubmit={handleCalculationSubmit}>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-blue-600" />
+                Calculate Emissions
+              </DialogTitle>
+              <DialogDescription>
+                Calculate CO2 equivalent emissions for: <strong>{calculationData.activityName}</strong>
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="calculation-notes">Notes (Optional)</Label>
+                <Textarea
+                  id="calculation-notes"
+                  placeholder="Add calculation notes or comments"
+                  value={calculationData.notes}
+                  onChange={(e) =>
+                    setCalculationData({ ...calculationData, notes: e.target.value })
+                  }
+                  rows={3}
+                />
+              </div>
+
+              <div className="text-sm text-muted-foreground bg-blue-50 p-3 rounded-md border">
+                <p className="font-medium mb-1">Calculation Process:</p>
+                <ul className="text-xs space-y-1">
+                  <li>• Auto-select best emission factor</li>
+                  <li>• Apply GWP values for gas conversion</li>
+                  <li>• Formula: Activity × Factor × GWP = CO2-eq</li>
+                </ul>
+              </div>
+
+              {calculateEmissionMutation.error && (
+                <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+                  {calculateEmissionMutation.error.message}
+                </div>
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleCalculationDialogClose(false)}
+                disabled={calculateEmissionMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={calculateEmissionMutation.isPending || !calculationData.activityDataId}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {calculateEmissionMutation.isPending ? (
+                  <>
+                    <TrendingUp className="h-4 w-4 mr-2 animate-spin" />
+                    Calculating...
+                  </>
+                ) : (
+                  <>
+                    <Calculator className="h-4 w-4 mr-2" />
+                    Calculate Emissions
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </form>

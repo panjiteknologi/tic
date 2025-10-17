@@ -2,11 +2,11 @@ import { z } from "zod";
 import { eq, and, inArray, ilike } from "drizzle-orm";
 import { protectedProcedure, createTRPCRouter } from "../../init";
 import { db } from "@/db";
-import { 
-  activityData, 
-  ipccProjects, 
+import {
+  activityData,
+  ipccProjects,
   emissionCategories,
-  projectCategories 
+  projectCategories,
 } from "@/db/schema/ipcc-schema";
 import { TRPCError } from "@trpc/server";
 
@@ -38,26 +38,33 @@ export const ipccActivityDataRouter = createTRPCRouter({
       try {
         console.log("=== Activity Data Creation Debug ===");
         console.log("Input payload:", input);
-        console.log("User context:", { 
-          userId: ctx.user?.id, 
+        console.log("User context:", {
+          userId: ctx.user?.id,
           userIdType: typeof ctx.user?.id,
-          isValidUUID: ctx.user?.id ? ctx.user.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i) : false,
-          user: ctx.user 
+          isValidUUID: ctx.user?.id
+            ? ctx.user.id.match(
+                /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+              )
+            : false,
+          user: ctx.user,
         });
 
         // Check if project exists
         console.log("Checking if project exists:", input.projectId);
         const project = await db
-          .select({ 
+          .select({
             id: ipccProjects.id,
             name: ipccProjects.name,
-            status: ipccProjects.status 
+            status: ipccProjects.status,
           })
           .from(ipccProjects)
           .where(eq(ipccProjects.id, input.projectId))
           .limit(1);
 
-        console.log("Project query result:", { found: project.length > 0, data: project });
+        console.log("Project query result:", {
+          found: project.length > 0,
+          data: project,
+        });
         if (project.length === 0) {
           throw new TRPCError({
             code: "NOT_FOUND",
@@ -68,17 +75,20 @@ export const ipccActivityDataRouter = createTRPCRouter({
         // Check if category exists
         console.log("Checking if category exists:", input.categoryId);
         const category = await db
-          .select({ 
+          .select({
             id: emissionCategories.id,
             code: emissionCategories.code,
             name: emissionCategories.name,
-            sector: emissionCategories.sector 
+            sector: emissionCategories.sector,
           })
           .from(emissionCategories)
           .where(eq(emissionCategories.id, input.categoryId))
           .limit(1);
 
-        console.log("Category query result:", { found: category.length > 0, data: category });
+        console.log("Category query result:", {
+          found: category.length > 0,
+          data: category,
+        });
         if (category.length === 0) {
           throw new TRPCError({
             code: "NOT_FOUND",
@@ -99,11 +109,15 @@ export const ipccActivityDataRouter = createTRPCRouter({
           )
           .limit(1);
 
-        console.log("Project-category relationship:", { found: projectCategory.length > 0, data: projectCategory });
+        console.log("Project-category relationship:", {
+          found: projectCategory.length > 0,
+          data: projectCategory,
+        });
         if (projectCategory.length === 0) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Category is not assigned to this project. Please assign the category first.",
+            message:
+              "Category is not assigned to this project. Please assign the category first.",
           });
         }
 
@@ -134,60 +148,11 @@ export const ipccActivityDataRouter = createTRPCRouter({
         };
       } catch (error) {
         console.error("=== Activity Data Creation Error ===");
-        console.error("Error type:", error.constructor.name);
-        console.error("Error message:", error.message);
-        console.error("Error stack:", error.stack);
         console.error("Full error:", error);
-        
+
         if (error instanceof TRPCError) {
           throw error;
         }
-
-        // Handle database constraint errors
-        if (error.message?.includes("Failed query")) {
-          console.error("Database constraint error detected");
-          console.error("Raw SQL error:", error.message);
-          
-          // Check for specific database errors
-          if (error.message?.includes("foreign key constraint") || error.message?.includes("violates foreign key")) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: "Invalid project or category reference. Please ensure the project and category exist and are linked.",
-            });
-          }
-          
-          if (error.message?.includes("unique constraint") || error.message?.includes("duplicate key")) {
-            throw new TRPCError({
-              code: "CONFLICT",
-              message: "Activity data with this name already exists for this project and category.",
-            });
-          }
-
-          if (error.message?.includes("invalid input syntax") || error.message?.includes("type")) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: `Data type error: ${error.message}`,
-            });
-          }
-
-          if (error.message?.includes("null value") || error.message?.includes("NOT NULL")) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: `Required field missing: ${error.message}`,
-            });
-          }
-
-          // Generic database error with more details
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: `Database error: ${error.message}`,
-          });
-        }
-
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: `Failed to create activity data: ${error.message}`,
-        });
       }
     }),
 
@@ -226,7 +191,10 @@ export const ipccActivityDataRouter = createTRPCRouter({
         })
         .from(activityData)
         .leftJoin(ipccProjects, eq(activityData.projectId, ipccProjects.id))
-        .leftJoin(emissionCategories, eq(activityData.categoryId, emissionCategories.id))
+        .leftJoin(
+          emissionCategories,
+          eq(activityData.categoryId, emissionCategories.id)
+        )
         .where(eq(activityData.id, input.id))
         .limit(1);
 
@@ -292,7 +260,10 @@ export const ipccActivityDataRouter = createTRPCRouter({
           },
         })
         .from(activityData)
-        .leftJoin(emissionCategories, eq(activityData.categoryId, emissionCategories.id))
+        .leftJoin(
+          emissionCategories,
+          eq(activityData.categoryId, emissionCategories.id)
+        )
         .where(and(...whereConditions));
 
       return { activityData: activities };
@@ -339,7 +310,9 @@ export const ipccActivityDataRouter = createTRPCRouter({
           .set({
             ...(input.categoryId && { categoryId: input.categoryId }),
             ...(input.name && { name: input.name }),
-            ...(input.description !== undefined && { description: input.description }),
+            ...(input.description !== undefined && {
+              description: input.description,
+            }),
             ...(input.value !== undefined && { value: input.value.toString() }),
             ...(input.unit && { unit: input.unit }),
             ...(input.source !== undefined && { source: input.source }),
@@ -419,12 +392,14 @@ export const ipccActivityDataRouter = createTRPCRouter({
           .where(inArray(activityData.id, input.ids));
 
         if (existingActivities.length !== input.ids.length) {
-          const foundIds = existingActivities.map(a => a.id);
-          const missingIds = input.ids.filter(id => !foundIds.includes(id));
-          
+          const foundIds = existingActivities.map((a) => a.id);
+          const missingIds = input.ids.filter((id) => !foundIds.includes(id));
+
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: `Activity data not found for IDs: ${missingIds.join(", ")}`,
+            message: `Activity data not found for IDs: ${missingIds.join(
+              ", "
+            )}`,
           });
         }
 
@@ -455,7 +430,9 @@ export const ipccActivityDataRouter = createTRPCRouter({
         projectId: z.string().uuid().optional(),
         categoryCode: z.string().optional(),
         categoryName: z.string().optional(),
-        sector: z.enum(["ENERGY", "IPPU", "AFOLU", "WASTE", "OTHER"]).optional(),
+        sector: z
+          .enum(["ENERGY", "IPPU", "AFOLU", "WASTE", "OTHER"])
+          .optional(),
         searchTerm: z.string().optional(), // for activity name/description search
       })
     )
@@ -463,23 +440,27 @@ export const ipccActivityDataRouter = createTRPCRouter({
       try {
         // Build where conditions
         const whereConditions = [];
-        
+
         if (input.projectId) {
           whereConditions.push(eq(activityData.projectId, input.projectId));
         }
-        
+
         if (input.categoryCode) {
-          whereConditions.push(ilike(emissionCategories.code, `%${input.categoryCode}%`));
+          whereConditions.push(
+            ilike(emissionCategories.code, `%${input.categoryCode}%`)
+          );
         }
-        
+
         if (input.categoryName) {
-          whereConditions.push(ilike(emissionCategories.name, `%${input.categoryName}%`));
+          whereConditions.push(
+            ilike(emissionCategories.name, `%${input.categoryName}%`)
+          );
         }
-        
+
         if (input.sector) {
           whereConditions.push(eq(emissionCategories.sector, input.sector));
         }
-        
+
         if (input.searchTerm) {
           whereConditions.push(
             ilike(activityData.name, `%${input.searchTerm}%`)
@@ -517,10 +498,15 @@ export const ipccActivityDataRouter = createTRPCRouter({
           })
           .from(activityData)
           .leftJoin(ipccProjects, eq(activityData.projectId, ipccProjects.id))
-          .leftJoin(emissionCategories, eq(activityData.categoryId, emissionCategories.id))
-          .where(whereConditions.length > 0 ? and(...whereConditions) : undefined);
+          .leftJoin(
+            emissionCategories,
+            eq(activityData.categoryId, emissionCategories.id)
+          )
+          .where(
+            whereConditions.length > 0 ? and(...whereConditions) : undefined
+          );
 
-        return { 
+        return {
           activityData: activities,
           total: activities.length,
         };

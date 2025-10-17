@@ -14,19 +14,20 @@ import {
   Gauge,
   FolderOpenDot,
   Droplets,
-  List
+  List,
+  type LucideIcon
 } from "lucide-react";
 import clsx from "clsx";
 
 type NavItem = {
   title: string;
   url: string;
-  icon: string;
+  icon: LucideIcon;
   isActive?: boolean;
   children?: {
     title: string;
     url: string;
-    icon: string;
+    icon: LucideIcon;
   }[];
 };
 
@@ -36,14 +37,6 @@ interface NavMainProps {
   isMenuExpanded: (url: string) => boolean;
 }
 
-const iconMap = {
-  BadgeCheck,
-  Gauge,
-  FolderOpenDot,
-  Droplets,
-  List,
-};
-
 export default function NavMain({
   items,
   toggleMenu,
@@ -52,15 +45,11 @@ export default function NavMain({
   const router = useRouter();
   const pathname = usePathname();
 
-  const getIcon = (iconName: string) => {
-    return iconMap[iconName as keyof typeof iconMap] || Gauge;
-  };
-
   return (
     <SidebarMenu>
       {items.map((item) => {
         const isActive = pathname.startsWith(item.url);
-        const IconComponent = getIcon(item.icon);
+        const IconComponent = item.icon;
         
         return (
           <SidebarMenuItem
@@ -92,7 +81,7 @@ export default function NavMain({
             {item.children && isMenuExpanded(item.url) && (
               <SidebarMenu className="ml-4">
                 {item.children.map((child) => {
-                  const ChildIconComponent = getIcon(child.icon);
+                  const ChildIconComponent = child.icon;
                   return (
                     <SidebarMenuItem
                       key={child.url}

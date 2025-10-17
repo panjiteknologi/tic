@@ -1,3 +1,5 @@
+"use client";
+
 import DashboardLayout from "@/layout/dashboard-layout";
 import { AppSidebarTypes } from "@/types/sidebar-types";
 import { CarbonProjectIPCCMenu } from "@/constant/menu-sidebar";

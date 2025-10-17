@@ -1,3 +1,5 @@
+import { BadgeCheck, Gauge, FolderOpenDot, Droplets, List } from "lucide-react";
+
 export const AuditStatusMenu = {
   user: {
     name: "shadcn",
@@ -8,7 +10,7 @@ export const AuditStatusMenu = {
     {
       title: "Audit Status",
       url: "/apps/audit-status",
-      icon: "BadgeCheck",
+      icon: BadgeCheck,
       isActive: true,
     },
   ],
@@ -26,13 +28,13 @@ export const CarbonProjectISCCMenu = {
     {
       title: "Dashboard",
       url: "/apps/carbon-emission/iscc/dashboard",
-      icon: "Gauge",
+      icon: Gauge,
       isActive: false,
     },
     {
       title: "All Projects",
       url: "/apps/carbon-emission/iscc/projects",
-      icon: "FolderOpenDot",
+      icon: FolderOpenDot,
       isActive: false,
     },
   ],
@@ -50,13 +52,13 @@ export const CarbonProjectIPCCMenu = {
     {
       title: "Dashboard",
       url: "/apps/carbon-emission/ipcc/dashboard",
-      icon: "Gauge",
+      icon: Gauge,
       isActive: false,
     },
     {
       title: "All Projects",
       url: "/apps/carbon-emission/ipcc/projects",
-      icon: "FolderOpenDot",
+      icon: FolderOpenDot,
       isActive: false,
     },
   ],
@@ -75,14 +77,14 @@ export const getCarbonCalculationMenu = (projectId: string) => ({
       id: "carbon-calculation",
       title: "Carbon Calculation",
       url: `/apps/carbon-emission/iscc/projects/${projectId}`,
-      icon: "Droplets",
+      icon: Droplets,
       isActive: false,
       children: [
         {
           id: "list-calculation",
           title: "List Calculation",
           url: `/apps/carbon-emission/iscc/projects/${projectId}`,
-          icon: "List",
+          icon: List,
         },
       ],
     },
