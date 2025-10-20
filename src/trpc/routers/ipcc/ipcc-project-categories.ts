@@ -166,25 +166,41 @@ export const ipccProjectCategoriesRouter = createTRPCRouter({
           });
         }
 
-        // Remove existing assignments for this project
-        await db
-          .delete(projectCategories)
+        // Get existing category assignments
+        const existingAssignments = await db
+          .select({
+            categoryId: projectCategories.categoryId,
+          })
+          .from(projectCategories)
           .where(eq(projectCategories.projectId, input.projectId));
 
-        // Insert new assignments
-        const assignments = input.categoryIds.map((categoryId) => ({
-          projectId: input.projectId,
-          categoryId,
-        }));
+        const existingCategoryIds = existingAssignments.map(
+          (assignment) => assignment.categoryId
+        );
 
-        const newAssignments = await db
-          .insert(projectCategories)
-          .values(assignments)
-          .returning();
+        // Filter out categories that are already assigned
+        const newCategoryIds = input.categoryIds.filter(
+          (categoryId) => !existingCategoryIds.includes(categoryId)
+        );
+
+        // Only insert new assignments if there are new categories
+        let newAssignments: any[] = [];
+        if (newCategoryIds.length > 0) {
+          const assignments = newCategoryIds.map((categoryId) => ({
+            projectId: input.projectId,
+            categoryId,
+          }));
+
+          newAssignments = await db
+            .insert(projectCategories)
+            .values(assignments)
+            .returning();
+        }
 
         return {
           success: true,
           assignments: newAssignments,
+          message: `${newCategoryIds.length} new categories assigned, ${existingCategoryIds.length} categories already existed`,
         };
       } catch (error) {
         if (error instanceof TRPCError) {
