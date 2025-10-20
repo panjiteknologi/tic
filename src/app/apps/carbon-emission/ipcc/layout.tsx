@@ -11,7 +11,7 @@ export default function IPCCLayout({
 }) {
   return (
     <DashboardLayout
-      href="/apps/carbon-emission/ipcc"
+      href="/apps/carbon-emission/ipcc/projects"
       titleHeader="IPCC Carbon Emission"
       subTitleHeader="Intergovernmental Panel on Climate Change"
       menuSidebar={CarbonProjectIPCCMenu as AppSidebarTypes}
