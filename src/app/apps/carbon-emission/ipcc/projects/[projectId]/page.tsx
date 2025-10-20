@@ -181,7 +181,7 @@ export default function IPCCProjectDetailPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Total CO� Equivalent
+              Total CO₂ Equivalent
             </CardTitle>
             <Leaf className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -190,8 +190,8 @@ export default function IPCCProjectDetailPage() {
               {statsData?.totalStats?.totalCO2Equivalent
                 ? `${formatNumber(
                     parseFloat(statsData.totalStats.totalCO2Equivalent)
-                  )} tCO�e`
-                : "0 tCO�e"}
+                  )} tCO₂e`
+                : "0 tCO₂e"}
             </div>
             <p className="text-xs text-muted-foreground">Across all sectors</p>
           </CardContent>
