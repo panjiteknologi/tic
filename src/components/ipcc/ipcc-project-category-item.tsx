@@ -6,19 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/trpc/react";
 import { formatNumber } from "@/lib/utils";
+import { AddActivityDataDialog } from "@/components/ipcc/add-activity-data-dialog";
+import { CalculateEmissionDialog } from "@/components/ipcc/calculate-emission-dialog";
 
 interface Category {
   id: string;
@@ -39,20 +30,7 @@ interface IPCCProjectCategoryItemProps {
   categoriesBySector: CategoriesBySector;
 }
 
-interface ActivityDataFormData {
-  categoryId: string;
-  name: string;
-  description: string;
-  value: number;
-  unit: string;
-  source: string;
-}
 
-interface CalculationDialogData {
-  activityDataId: string;
-  activityName: string;
-  notes?: string;
-}
 
 export function IPCCProjectCategoryItem({
   projectId,
@@ -62,19 +40,7 @@ export function IPCCProjectCategoryItem({
   const [addActivityDialogOpen, setAddActivityDialogOpen] = useState(false);
   const [calculateDialogOpen, setCalculateDialogOpen] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
-  const [calculationData, setCalculationData] = useState<CalculationDialogData>({
-    activityDataId: "",
-    activityName: "",
-    notes: "",
-  });
-  const [formData, setFormData] = useState<ActivityDataFormData>({
-    categoryId: "",
-    name: "",
-    description: "",
-    value: 0,
-    unit: "",
-    source: "",
-  });
+  const [selectedActivity, setSelectedActivity] = useState<{id: string, name: string}>({id: "", name: ""});
 
   // Fetch activity data for the project
   const { data: activityData, refetch: refetchActivityData } = trpc.ipccActivityData.getByProject.useQuery(
@@ -88,36 +54,7 @@ export function IPCCProjectCategoryItem({
     { enabled: !!projectId }
   );
 
-  // Create activity data mutation
-  const createActivityMutation = trpc.ipccActivityData.create.useMutation({
-    onSuccess: (data) => {
-      console.log("Activity data created successfully:", data);
-      setAddActivityDialogOpen(false);
-      resetForm();
-      refetchActivityData(); // Refresh activity data after creation
-    },
-    onError: (error) => {
-      console.error("Failed to create activity data:", error);
-      console.error("Error details:", {
-        code: error.data?.code,
-        message: error.message,
-      });
-    },
-  });
 
-  // Calculate emission mutation
-  const calculateEmissionMutation = trpc.ipccEmissionCalculations.calculate.useMutation({
-    onSuccess: (data) => {
-      console.log("Emission calculated successfully:", data);
-      setCalculateDialogOpen(false);
-      resetCalculationForm();
-      // Refresh calculations data to show new results
-      refetchCalculations();
-    },
-    onError: (error) => {
-      console.error("Failed to calculate emission:", error);
-    },
-  });
 
   const getSectorLabel = (sector: string) => {
     const sectorLabels = {
@@ -155,106 +92,26 @@ export function IPCCProjectCategoryItem({
     return `${formatNumber(numValue)} ${unit || 'kg'}`;
   };
 
-  const resetForm = () => {
-    setFormData({
-      categoryId: "",
-      name: "",
-      description: "",
-      value: 0,
-      unit: "",
-      source: "",
-    });
-    setSelectedCategoryId("");
-  };
 
-  const resetCalculationForm = () => {
-    setCalculationData({
-      activityDataId: "",
-      activityName: "",
-      notes: "",
-    });
-  };
 
   const handleAddActivity = (categoryId: string) => {
     setSelectedCategoryId(categoryId);
-    setFormData({ ...formData, categoryId });
     setAddActivityDialogOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
 
-    // Validate required fields
-    const trimmedName = formData.name.trim();
-    const trimmedUnit = formData.unit.trim();
-
-    if (!trimmedName || !trimmedUnit || !selectedCategoryId || !projectId) {
-      console.error("Validation failed:", {
-        name: trimmedName,
-        unit: trimmedUnit,
-        categoryId: selectedCategoryId,
-        projectId: projectId,
-      });
-      return;
-    }
-
-    // Ensure value is a valid number >= 0
-    const numericValue = Number(formData.value);
-    if (isNaN(numericValue) || numericValue < 0) {
-      console.error("Invalid value:", formData.value);
-      return;
-    }
-
-    // Ensure all data types match the tRPC schema
-    const payload = {
-      projectId: projectId, // string (should be UUID)
-      categoryId: selectedCategoryId, // string (should be UUID)
-      name: trimmedName, // string (non-empty)
-      description: formData.description.trim() || undefined, // string | undefined
-      value: numericValue, // number (>= 0)
-      unit: trimmedUnit, // string (non-empty)
-      source: formData.source.trim() || undefined, // string | undefined
-    };
-
-    console.log("Submitting activity data payload:", payload);
-    createActivityMutation.mutate(payload);
-  };
-
-  const handleDialogClose = (isOpen: boolean) => {
-    setAddActivityDialogOpen(isOpen);
-    if (!isOpen) {
-      resetForm();
-    }
+  const handleActivityAdded = () => {
+    refetchActivityData();
   };
 
   const handleCalculateEmission = (activityId: string, activityName: string) => {
-    setCalculationData({
-      activityDataId: activityId,
-      activityName: activityName,
-      notes: "",
-    });
+    setSelectedActivity({id: activityId, name: activityName});
     setCalculateDialogOpen(true);
   };
 
-  const handleCalculationSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!calculationData.activityDataId) {
-      console.error("Activity data ID is required");
-      return;
-    }
 
-    calculateEmissionMutation.mutate({
-      activityDataId: calculationData.activityDataId,
-      notes: calculationData.notes || undefined,
-    });
-  };
-
-  const handleCalculationDialogClose = (isOpen: boolean) => {
-    setCalculateDialogOpen(isOpen);
-    if (!isOpen) {
-      resetCalculationForm();
-    }
+  const handleEmissionCalculated = () => {
+    refetchCalculations();
   };
 
   if (!categories || categories.length === 0) {
@@ -461,207 +318,22 @@ export function IPCCProjectCategoryItem({
       </Card>
 
       {/* Add Activity Data Dialog */}
-      <Dialog open={addActivityDialogOpen} onOpenChange={handleDialogClose}>
-        <DialogContent className="sm:max-w-[500px]">
-          <form onSubmit={handleSubmit}>
-            <DialogHeader>
-              <DialogTitle>Add Activity Data</DialogTitle>
-              <DialogDescription>
-                Add new activity data for the selected emission category.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">
-                  Activity Name <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="name"
-                  placeholder="Enter activity name"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  required
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Enter description (optional)"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  rows={3}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="value">
-                    Value <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="value"
-                    type="number"
-                    min="0"
-                    step="any"
-                    placeholder="0"
-                    value={
-                      formData.value === 0 ? "" : formData.value.toString()
-                    }
-                    onChange={(e) => {
-                      const inputValue = e.target.value;
-                      const numericValue =
-                        inputValue === "" ? 0 : parseFloat(inputValue);
-                      setFormData({
-                        ...formData,
-                        value: isNaN(numericValue) ? 0 : numericValue,
-                      });
-                    }}
-                    required
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="unit">
-                    Unit <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="unit"
-                    placeholder="e.g., kg, liters, kWh"
-                    value={formData.unit}
-                    onChange={(e) =>
-                      setFormData({ ...formData, unit: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="source">Source</Label>
-                <Input
-                  id="source"
-                  placeholder="Data source (optional)"
-                  value={formData.source}
-                  onChange={(e) =>
-                    setFormData({ ...formData, source: e.target.value })
-                  }
-                />
-              </div>
-
-              {createActivityMutation.error && (
-                <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
-                  {createActivityMutation.error.message}
-                </div>
-              )}
-            </div>
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleDialogClose(false)}
-                disabled={createActivityMutation.isPending}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={
-                  createActivityMutation.isPending ||
-                  !formData.name.trim() ||
-                  !formData.unit.trim()
-                }
-              >
-                {createActivityMutation.isPending
-                  ? "Adding..."
-                  : "Add Activity Data"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <AddActivityDataDialog
+        open={addActivityDialogOpen}
+        onOpenChange={setAddActivityDialogOpen}
+        projectId={projectId}
+        categoryId={selectedCategoryId}
+        onActivityAdded={handleActivityAdded}
+      />
 
       {/* Calculate Emission Dialog */}
-      <Dialog open={calculateDialogOpen} onOpenChange={handleCalculationDialogClose}>
-        <DialogContent className="sm:max-w-[400px]">
-          <form onSubmit={handleCalculationSubmit}>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-blue-600" />
-                Calculate Emissions
-              </DialogTitle>
-              <DialogDescription>
-                Calculate CO2 equivalent emissions for: <strong>{calculationData.activityName}</strong>
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="calculation-notes">Notes (Optional)</Label>
-                <Textarea
-                  id="calculation-notes"
-                  placeholder="Add calculation notes or comments"
-                  value={calculationData.notes}
-                  onChange={(e) =>
-                    setCalculationData({ ...calculationData, notes: e.target.value })
-                  }
-                  rows={3}
-                />
-              </div>
-
-              <div className="text-sm text-muted-foreground bg-blue-50 p-3 rounded-md border">
-                <p className="font-medium mb-1">Calculation Process:</p>
-                <ul className="text-xs space-y-1">
-                  <li>• Auto-select best emission factor</li>
-                  <li>• Apply GWP values for gas conversion</li>
-                  <li>• Formula: Activity × Factor × GWP = CO2-eq</li>
-                </ul>
-              </div>
-
-              {calculateEmissionMutation.error && (
-                <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
-                  {calculateEmissionMutation.error.message}
-                </div>
-              )}
-            </div>
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleCalculationDialogClose(false)}
-                disabled={calculateEmissionMutation.isPending}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={calculateEmissionMutation.isPending || !calculationData.activityDataId}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                {calculateEmissionMutation.isPending ? (
-                  <>
-                    <TrendingUp className="h-4 w-4 mr-2 animate-spin" />
-                    Calculating...
-                  </>
-                ) : (
-                  <>
-                    <Calculator className="h-4 w-4 mr-2" />
-                    Calculate Emissions
-                  </>
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <CalculateEmissionDialog
+        open={calculateDialogOpen}
+        onOpenChange={setCalculateDialogOpen}
+        activityDataId={selectedActivity.id}
+        activityName={selectedActivity.name}
+        onEmissionCalculated={handleEmissionCalculated}
+      />
     </>
   );
 }

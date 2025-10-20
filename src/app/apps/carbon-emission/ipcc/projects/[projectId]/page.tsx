@@ -20,8 +20,6 @@ import {
   FileText,
   Leaf,
   PieChart,
-  Plus,
-  Settings,
 } from "lucide-react";
 import { trpc } from "@/trpc/react";
 import { formatNumber } from "@/lib/utils";
@@ -84,11 +82,14 @@ export default function IPCCProjectDetailPage() {
     trpc.ipccDashboard.getOverview.useQuery({});
 
   // Fetch project categories
-  const { data: categoriesData, isLoading: categoriesLoading, refetch: refetchCategories } =
-    trpc.ipccProjectCategories.getCategoriesByProject.useQuery(
-      { projectId },
-      { enabled: !!projectId }
-    );
+  const {
+    data: categoriesData,
+    isLoading: categoriesLoading,
+    refetch: refetchCategories,
+  } = trpc.ipccProjectCategories.getCategoriesByProject.useQuery(
+    { projectId },
+    { enabled: !!projectId }
+  );
 
   if (projectLoading) {
     return (
@@ -121,11 +122,6 @@ export default function IPCCProjectDetailPage() {
   }
 
   const { project } = projectData;
-  const hasEmissions = statsData?.totalStats?.totalCO2Equivalent !== "0";
-  const hasSummaries =
-    summariesData?.summaries && summariesData.summaries.length > 0;
-  const hasActivities =
-    activityData?.activityData && activityData.activityData.length > 0;
 
   return (
     <div className="space-y-6">
@@ -161,18 +157,10 @@ export default function IPCCProjectDetailPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <AddProjectCategoryDialog 
-            projectId={projectId} 
-            onCategoryAdded={() => refetchCategories()} 
+          <AddProjectCategoryDialog
+            projectId={projectId}
+            onCategoryAdded={() => refetchCategories()}
           />
-          <Button variant="outline" size="sm">
-            <Settings className="mr-2 h-4 w-4" />
-            Settings
-          </Button>
-          <Button size="sm">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Data
-          </Button>
         </div>
       </div>
 
