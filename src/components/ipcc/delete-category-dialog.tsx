@@ -24,6 +24,8 @@ interface DeleteCategoryDialogProps {
   sector: string;
   hasActivities: boolean;
   activityCount?: number;
+  activityId?: string;
+  activityName?: string;
   onCategoryDeleted?: () => void;
 }
 
@@ -37,6 +39,8 @@ export function DeleteCategoryDialog({
   sector,
   hasActivities,
   activityCount = 0,
+  activityId,
+  activityName,
   onCategoryDeleted,
 }: DeleteCategoryDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -44,11 +48,21 @@ export function DeleteCategoryDialog({
   // Delete category mutation
   const deleteCategoryMutation = trpc.ipccProjectCategories.removeCategory.useMutation({
     onSuccess: () => {
-      setIsDeleting(false);
-      onOpenChange(false);
-      onCategoryDeleted?.();
+      console.log("Category deleted successfully");
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Failed to delete category:", error);
+      setIsDeleting(false);
+    },
+  });
+
+  // Delete activity mutation (for parallel deletion)
+  const deleteActivityMutation = trpc.ipccActivityData.delete.useMutation({
+    onSuccess: () => {
+      console.log("Activity deleted successfully");
+    },
+    onError: (error) => {
+      console.error("Failed to delete activity:", error);
       setIsDeleting(false);
     },
   });
@@ -57,10 +71,60 @@ export function DeleteCategoryDialog({
     if (!projectId || !categoryId) return;
     
     setIsDeleting(true);
-    deleteCategoryMutation.mutate({ 
-      projectId, 
-      categoryId 
-    });
+
+    try {
+      if (hasActivities && activityId) {
+        // Case 1: Delete both activity and category in parallel
+        console.log("Deleting activity and category in parallel...");
+        
+        await Promise.all([
+          new Promise((resolve, reject) => {
+            deleteActivityMutation.mutate(
+              { id: activityId },
+              {
+                onSuccess: resolve,
+                onError: reject
+              }
+            );
+          }),
+          new Promise((resolve, reject) => {
+            deleteCategoryMutation.mutate(
+              { projectId, categoryId },
+              {
+                onSuccess: resolve,
+                onError: reject
+              }
+            );
+          })
+        ]);
+        
+        console.log("Both activity and category deleted successfully");
+      } else {
+        // Case 2: Delete category only
+        console.log("Deleting category only...");
+        
+        await new Promise((resolve, reject) => {
+          deleteCategoryMutation.mutate(
+            { projectId, categoryId },
+            {
+              onSuccess: resolve,
+              onError: reject
+            }
+          );
+        });
+        
+        console.log("Category deleted successfully");
+      }
+
+      // Success - close dialog and trigger refresh
+      setIsDeleting(false);
+      onOpenChange(false);
+      onCategoryDeleted?.();
+      
+    } catch (error) {
+      console.error("Delete operation failed:", error);
+      setIsDeleting(false);
+    }
   };
 
   const getSectorLabel = (sector: string) => {
@@ -80,11 +144,17 @@ export function DeleteCategoryDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-destructive" />
-            Remove Category from Project
+            {hasActivities && activityId 
+              ? "Delete Activity & Remove Category" 
+              : "Remove Category from Project"}
           </DialogTitle>
           <DialogDescription>
-            This action cannot be undone. This will remove the category from this project
-            {hasActivities && " and delete all associated activity data and emission calculations"}.
+            This action cannot be undone. 
+            {hasActivities && activityId 
+              ? " This will delete the activity data and remove the category from this project, including all emission calculations."
+              : " This will remove the category from this project"
+            }
+            {hasActivities && !activityId && " and delete all associated activity data and emission calculations"}.
           </DialogDescription>
         </DialogHeader>
 
@@ -100,7 +170,19 @@ export function DeleteCategoryDialog({
                 </Badge>
                 <span className="font-medium">{categoryName}</span>
               </div>
-              {hasActivities && (
+              
+              {hasActivities && activityId && activityName && (
+                <div className="pt-2 border-t">
+                  <div className="text-sm">
+                    <span className="font-medium">Activity to delete:</span> {activityName}
+                  </div>
+                  <div className="text-sm text-destructive mt-1">
+                    <span className="font-medium">⚠️ Warning:</span> This will delete the activity data and all its emission calculations.
+                  </div>
+                </div>
+              )}
+              
+              {hasActivities && !activityId && (
                 <div className="text-sm text-destructive">
                   <span className="font-medium">⚠️ Warning:</span> This will also delete {activityCount} activity {activityCount === 1 ? 'entry' : 'entries'} and all emission calculations.
                 </div>
@@ -108,9 +190,9 @@ export function DeleteCategoryDialog({
             </div>
           </div>
 
-          {deleteCategoryMutation.error && (
+          {(deleteCategoryMutation.error || deleteActivityMutation.error) && (
             <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
-              {deleteCategoryMutation.error.message}
+              {deleteCategoryMutation.error?.message || deleteActivityMutation.error?.message}
             </div>
           )}
         </div>
@@ -130,11 +212,11 @@ export function DeleteCategoryDialog({
             className="gap-2"
           >
             {isDeleting ? (
-              "Removing..."
+              hasActivities && activityId ? "Deleting..." : "Removing..."
             ) : (
               <>
                 <Trash2 className="h-4 w-4" />
-                Remove Category
+                {hasActivities && activityId ? "Delete Activity & Category" : "Remove Category"}
               </>
             )}
           </Button>

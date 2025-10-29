@@ -35,7 +35,6 @@ import { trpc } from "@/trpc/react";
 import { formatNumber } from "@/lib/utils";
 import { AddActivityDataDialog } from "@/components/ipcc/add-activity-data-dialog";
 import { EditActivityDataDialog } from "@/components/ipcc/edit-activity-data-dialog";
-import { DeleteActivityDialog } from "@/components/ipcc/delete-activity-dialog";
 import { DeleteCategoryDialog } from "@/components/ipcc/delete-category-dialog";
 
 interface Category {
@@ -91,7 +90,6 @@ export function IPCCProjectCategoryTable({
 }: IPCCProjectCategoryTableProps) {
   const [addActivityDialogOpen, setAddActivityDialogOpen] = useState(false);
   const [editActivityDialogOpen, setEditActivityDialogOpen] = useState(false);
-  const [deleteActivityDialogOpen, setDeleteActivityDialogOpen] = useState(false);
   const [deleteCategoryDialogOpen, setDeleteCategoryDialogOpen] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [selectedEditActivity, setSelectedEditActivity] = useState<{
@@ -103,12 +101,6 @@ export function IPCCProjectCategoryTable({
     source: string;
     categoryId: string;
   }>({ id: "", name: "", value: "", unit: "", description: "", source: "", categoryId: "" });
-  const [selectedDeleteActivity, setSelectedDeleteActivity] = useState<{
-    id: string;
-    name: string;
-    categoryCode: string;
-    categoryName: string;
-  }>({ id: "", name: "", categoryCode: "", categoryName: "" });
   const [selectedDeleteCategory, setSelectedDeleteCategory] = useState<{
     id: string;
     code: string;
@@ -116,6 +108,8 @@ export function IPCCProjectCategoryTable({
     sector: string;
     hasActivities: boolean;
     activityCount: number;
+    activityId?: string;
+    activityName?: string;
   }>({ id: "", code: "", name: "", sector: "", hasActivities: false, activityCount: 0 });
 
   const { data: activityData, refetch: refetchActivityData } =
@@ -203,20 +197,6 @@ export function IPCCProjectCategoryTable({
     refetchCalculations(); // Also refetch calculations since they are auto-recalculated
   };
 
-  const handleDeleteActivity = (
-    activityId: string,
-    activityName: string,
-    categoryCode: string,
-    categoryName: string
-  ) => {
-    setSelectedDeleteActivity({ 
-      id: activityId, 
-      name: activityName, 
-      categoryCode, 
-      categoryName 
-    });
-    setDeleteActivityDialogOpen(true);
-  };
 
   const handleDeleteCategory = (
     categoryId: string,
@@ -224,7 +204,9 @@ export function IPCCProjectCategoryTable({
     categoryName: string,
     sector: string,
     hasActivities: boolean,
-    activityCount: number
+    activityCount: number,
+    activityId?: string,
+    activityName?: string
   ) => {
     setSelectedDeleteCategory({ 
       id: categoryId, 
@@ -232,15 +214,13 @@ export function IPCCProjectCategoryTable({
       name: categoryName, 
       sector,
       hasActivities,
-      activityCount
+      activityCount,
+      activityId,
+      activityName
     });
     setDeleteCategoryDialogOpen(true);
   };
 
-  const handleActivityDeleted = () => {
-    refetchActivityData();
-    refetchCalculations();
-  };
 
   const handleCategoryDeleted = () => {
     // Trigger parent component to refetch categories
@@ -466,18 +446,24 @@ export function IPCCProjectCategoryTable({
                     size="sm"
                     variant="ghost"
                     className="h-7 w-7 p-0 text-destructive"
-                    onClick={() => handleDeleteActivity(
-                      activityId!,
-                      activityName!,
+                    onClick={() => handleDeleteCategory(
+                      categoryId,
                       row.original.categoryCode,
-                      row.original.categoryName
+                      row.original.categoryName,
+                      Object.keys(categoriesBySector).find(sector => 
+                        categoriesBySector[sector].some(cat => cat.categoryId === categoryId)
+                      ) || "",
+                      true, // hasActivities = true
+                      1, // activityCount = 1 (since this row represents an activity)
+                      activityId, // pass activityId for parallel deletion
+                      activityName // pass activityName for display
                     )}
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Delete Activity Data</p>
+                  <p>Delete Activity & Category</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -578,16 +564,6 @@ export function IPCCProjectCategoryTable({
         onActivityUpdated={handleActivityUpdated}
       />
 
-      <DeleteActivityDialog
-        open={deleteActivityDialogOpen}
-        onOpenChange={setDeleteActivityDialogOpen}
-        activityId={selectedDeleteActivity.id}
-        activityName={selectedDeleteActivity.name}
-        categoryCode={selectedDeleteActivity.categoryCode}
-        categoryName={selectedDeleteActivity.categoryName}
-        onActivityDeleted={handleActivityDeleted}
-      />
-
       <DeleteCategoryDialog
         open={deleteCategoryDialogOpen}
         onOpenChange={setDeleteCategoryDialogOpen}
@@ -598,6 +574,8 @@ export function IPCCProjectCategoryTable({
         sector={selectedDeleteCategory.sector}
         hasActivities={selectedDeleteCategory.hasActivities}
         activityCount={selectedDeleteCategory.activityCount}
+        activityId={selectedDeleteCategory.activityId}
+        activityName={selectedDeleteCategory.activityName}
         onCategoryDeleted={handleCategoryDeleted}
       />
     </>
