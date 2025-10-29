@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { trpc } from "@/trpc/react";
 
-interface ActivityDataFormData {
+interface EditActivityDataFormData {
   categoryId: string;
   name: string;
   description: string;
@@ -31,12 +31,18 @@ interface ActivityDataFormData {
   source: string;
 }
 
-interface AddActivityDataDialogProps {
+interface EditActivityDataDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   projectId: string;
+  activityId: string;
+  activityName: string;
+  activityValue: string;
+  activityUnit: string;
+  activityDescription: string;
+  activitySource: string;
   categoryId: string;
-  onActivityAdded: () => void;
+  onActivityUpdated: () => void;
 }
 
 // Common base units extracted from emission factors
@@ -55,14 +61,20 @@ const BASE_UNITS = [
   "season", // for seasonal activities
 ];
 
-export function AddActivityDataDialog({
+export function EditActivityDataDialog({
   open,
   onOpenChange,
   projectId,
+  activityId,
+  activityName,
+  activityValue,
+  activityUnit,
+  activityDescription,
+  activitySource,
   categoryId,
-  onActivityAdded,
-}: AddActivityDataDialogProps) {
-  const [formData, setFormData] = useState<ActivityDataFormData>({
+  onActivityUpdated,
+}: EditActivityDataDialogProps) {
+  const [formData, setFormData] = useState<EditActivityDataFormData>({
     categoryId: categoryId,
     name: "",
     description: "",
@@ -71,19 +83,33 @@ export function AddActivityDataDialog({
     source: "",
   });
 
-  // Create activity data mutation
-  const createActivityMutation = trpc.ipccActivityData.create.useMutation({
+  // Update form data when dialog opens with new activity data
+  useEffect(() => {
+    if (open && activityId) {
+      setFormData({
+        categoryId: categoryId,
+        name: activityName,
+        description: activityDescription,
+        value: parseFloat(activityValue) || 0,
+        unit: activityUnit,
+        source: activitySource,
+      });
+    }
+  }, [open, activityId, activityName, activityValue, activityUnit, activityDescription, activitySource, categoryId]);
+
+  // Update activity data mutation
+  const updateActivityMutation = trpc.ipccActivityData.update.useMutation({
     onSuccess: (data) => {
-      console.log("Activity data created successfully:", data);
-      if (data.calculationResult) {
-        console.log("Emission calculated automatically:", data.calculationResult);
+      console.log("Activity data updated successfully:", data);
+      if (data.recalculationResult) {
+        console.log("Emission recalculated automatically:", data.recalculationResult);
       }
       onOpenChange(false);
       resetForm();
-      onActivityAdded();
+      onActivityUpdated();
     },
     onError: (error) => {
-      console.error("Failed to create activity data:", error);
+      console.error("Failed to update activity data:", error);
       console.error("Error details:", {
         code: error.data?.code,
         message: error.message,
@@ -109,12 +135,11 @@ export function AddActivityDataDialog({
     const trimmedName = formData.name.trim();
     const trimmedUnit = formData.unit.trim();
 
-    if (!trimmedName || !trimmedUnit || !categoryId || !projectId) {
+    if (!trimmedName || !trimmedUnit || !activityId) {
       console.error("Validation failed:", {
         name: trimmedName,
         unit: trimmedUnit,
-        categoryId: categoryId,
-        projectId: projectId,
+        activityId: activityId,
       });
       return;
     }
@@ -128,7 +153,7 @@ export function AddActivityDataDialog({
 
     // Ensure all data types match the tRPC schema
     const payload = {
-      projectId: projectId, // string (should be UUID)
+      id: activityId, // string (should be UUID)
       categoryId: categoryId, // string (should be UUID)
       name: trimmedName, // string (non-empty)
       description: formData.description.trim() || undefined, // string | undefined
@@ -137,8 +162,8 @@ export function AddActivityDataDialog({
       source: formData.source.trim() || undefined, // string | undefined
     };
 
-    console.log("Submitting activity data payload:", payload);
-    createActivityMutation.mutate(payload);
+    console.log("Updating activity data payload:", payload);
+    updateActivityMutation.mutate(payload);
   };
 
   const handleDialogClose = (isOpen: boolean) => {
@@ -153,19 +178,19 @@ export function AddActivityDataDialog({
       <DialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Add Activity Data</DialogTitle>
+            <DialogTitle>Edit Activity Data</DialogTitle>
             <DialogDescription>
-              Add new activity data for the selected emission category. Emissions will be calculated automatically.
+              Update activity data for the selected emission category. Emissions will be recalculated automatically.
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">
+              <Label htmlFor="edit-name">
                 Activity Name <span className="text-destructive">*</span>
               </Label>
               <Input
-                id="name"
+                id="edit-name"
                 placeholder="Enter activity name"
                 value={formData.name}
                 onChange={(e) =>
@@ -176,9 +201,9 @@ export function AddActivityDataDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="edit-description">Description</Label>
               <Textarea
-                id="description"
+                id="edit-description"
                 placeholder="Enter description (optional)"
                 value={formData.description}
                 onChange={(e) =>
@@ -190,11 +215,11 @@ export function AddActivityDataDialog({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="value">
+                <Label htmlFor="edit-value">
                   Value <span className="text-destructive">*</span>
                 </Label>
                 <Input
-                  id="value"
+                  id="edit-value"
                   type="number"
                   min="0"
                   step="any"
@@ -216,7 +241,7 @@ export function AddActivityDataDialog({
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="unit">
+                <Label htmlFor="edit-unit">
                   Unit <span className="text-destructive">*</span>
                 </Label>
                 <Select
@@ -240,9 +265,9 @@ export function AddActivityDataDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="source">Source</Label>
+              <Label htmlFor="edit-source">Source</Label>
               <Input
-                id="source"
+                id="edit-source"
                 placeholder="Data source (optional)"
                 value={formData.source}
                 onChange={(e) =>
@@ -251,9 +276,9 @@ export function AddActivityDataDialog({
               />
             </div>
 
-            {createActivityMutation.error && (
+            {updateActivityMutation.error && (
               <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
-                {createActivityMutation.error.message}
+                {updateActivityMutation.error.message}
               </div>
             )}
           </div>
@@ -263,21 +288,21 @@ export function AddActivityDataDialog({
               type="button"
               variant="outline"
               onClick={() => handleDialogClose(false)}
-              disabled={createActivityMutation.isPending}
+              disabled={updateActivityMutation.isPending}
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={
-                createActivityMutation.isPending ||
+                updateActivityMutation.isPending ||
                 !formData.name.trim() ||
                 !formData.unit.trim()
               }
             >
-              {createActivityMutation.isPending
-                ? "Adding & Calculating..."
-                : "Add Activity Data"}
+              {updateActivityMutation.isPending
+                ? "Updating & Recalculating..."
+                : "Update Activity Data"}
             </Button>
           </DialogFooter>
         </form>

@@ -7,6 +7,9 @@ import {
   ipccProjects,
   emissionCategories,
   projectCategories,
+  emissionCalculations,
+  emissionFactors,
+  gwpValues,
 } from "@/db/schema/ipcc-schema";
 import { TRPCError } from "@trpc/server";
 
@@ -142,9 +145,76 @@ export const ipccActivityDataRouter = createTRPCRouter({
           .returning();
 
         console.log("Activity data created successfully:", newActivityData);
+
+        // Automatically calculate emissions for the new activity data
+        let calculationResult = null;
+        try {
+          console.log("Auto-calculating emissions for new activity data...");
+          
+          // Auto-select emission factor (get the first available one)
+          const availableFactors = await db
+            .select()
+            .from(emissionFactors)
+            .orderBy(emissionFactors.tier);
+
+          if (availableFactors.length > 0) {
+            const factor = availableFactors[0];
+            
+            // Get GWP value for gas type
+            const gwp = await db
+              .select()
+              .from(gwpValues)
+              .where(eq(gwpValues.gasType, factor.gasType))
+              .limit(1);
+
+            const gwpValue = gwp.length > 0 ? parseFloat(gwp[0].value) : 1;
+
+            // Calculate emissions
+            const activityValue = parseFloat(newActivityData.value);
+            const factorValue = parseFloat(factor.value);
+            const emissionValue = activityValue * factorValue;
+            const co2Equivalent = emissionValue * gwpValue;
+
+            // Create calculation record
+            const [calculation] = await db
+              .insert(emissionCalculations)
+              .values({
+                projectId: newActivityData.projectId,
+                activityDataId: newActivityData.id,
+                emissionFactorId: factor.id,
+                tier: factor.tier,
+                gasType: factor.gasType,
+                emissionValue: emissionValue.toString(),
+                emissionUnit: "kg",
+                co2Equivalent: co2Equivalent.toString(),
+                notes: "Auto-calculated when activity data was created",
+              })
+              .returning();
+
+            calculationResult = {
+              calculation,
+              details: {
+                activityValue,
+                factorValue,
+                gwpValue,
+                emissionValue,
+                co2Equivalent,
+              },
+            };
+            
+            console.log("Emission calculation created successfully:", calculationResult);
+          } else {
+            console.log("No emission factors available for auto-calculation");
+          }
+        } catch (calcError) {
+          console.error("Failed to auto-calculate emissions:", calcError);
+          // Don't throw error, just log it since activity data was created successfully
+        }
+
         return {
           success: true,
           activityData: newActivityData,
+          calculationResult,
         };
       } catch (error) {
         console.error("=== Activity Data Creation Error ===");
@@ -321,9 +391,83 @@ export const ipccActivityDataRouter = createTRPCRouter({
           .where(eq(activityData.id, input.id))
           .returning();
 
+        console.log("Activity data updated successfully:", updatedActivity);
+
+        // Automatically recalculate emissions for the updated activity data
+        let recalculationResult = null;
+        try {
+          console.log("Auto-recalculating emissions for updated activity data...");
+          
+          // First, delete existing calculations for this activity
+          await db
+            .delete(emissionCalculations)
+            .where(eq(emissionCalculations.activityDataId, updatedActivity.id));
+          
+          // Then create new calculation with updated values
+          // Auto-select emission factor (get the first available one)
+          const availableFactors = await db
+            .select()
+            .from(emissionFactors)
+            .orderBy(emissionFactors.tier);
+
+          if (availableFactors.length > 0) {
+            const factor = availableFactors[0];
+            
+            // Get GWP value for gas type
+            const gwp = await db
+              .select()
+              .from(gwpValues)
+              .where(eq(gwpValues.gasType, factor.gasType))
+              .limit(1);
+
+            const gwpValue = gwp.length > 0 ? parseFloat(gwp[0].value) : 1;
+
+            // Calculate emissions with updated values
+            const activityValue = parseFloat(updatedActivity.value);
+            const factorValue = parseFloat(factor.value);
+            const emissionValue = activityValue * factorValue;
+            const co2Equivalent = emissionValue * gwpValue;
+
+            // Create new calculation record
+            const [calculation] = await db
+              .insert(emissionCalculations)
+              .values({
+                projectId: updatedActivity.projectId,
+                activityDataId: updatedActivity.id,
+                emissionFactorId: factor.id,
+                tier: factor.tier,
+                gasType: factor.gasType,
+                emissionValue: emissionValue.toString(),
+                emissionUnit: "kg",
+                co2Equivalent: co2Equivalent.toString(),
+                notes: "Auto-recalculated when activity data was updated",
+              })
+              .returning();
+
+            recalculationResult = {
+              calculation,
+              details: {
+                activityValue,
+                factorValue,
+                gwpValue,
+                emissionValue,
+                co2Equivalent,
+              },
+            };
+            
+            console.log("Emission recalculation completed successfully:", recalculationResult);
+          } else {
+            console.log("No emission factors available for auto-recalculation");
+          }
+        } catch (calcError) {
+          console.error("Failed to auto-recalculate emissions:", calcError);
+          // Don't throw error, just log it since activity data was updated successfully
+        }
+
         return {
           success: true,
           activityData: updatedActivity,
+          recalculationResult,
         };
       } catch (error) {
         if (error instanceof TRPCError) {

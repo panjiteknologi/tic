@@ -3,7 +3,6 @@
 import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Empty,
   EmptyHeader,
@@ -24,7 +23,7 @@ import {
 import { trpc } from "@/trpc/react";
 import { formatNumber } from "@/lib/utils";
 import { AddProjectCategoryDialog } from "@/components/ipcc/add-project-category-dialog";
-import { IPCCProjectCategoryItem } from "@/components/ipcc/ipcc-project-category-item";
+import { IPCCProjectCategoryTable } from "@/components/ipcc/ipcc-project-category-table";
 
 const StatusBadge = ({ status }: { status: string }) => {
   const getStatusColor = (status: string) => {
@@ -231,10 +230,11 @@ export default function IPCCProjectDetailPage() {
 
       {/* Project Categories Section */}
       {categoriesData?.categories && categoriesData.categories.length > 0 && (
-        <IPCCProjectCategoryItem
+        <IPCCProjectCategoryTable
           projectId={projectId}
           categories={categoriesData.categories}
           categoriesBySector={categoriesData.categoriesBySector}
+          onCategoryDeleted={() => refetchCategories()}
         />
       )}
     </div>
