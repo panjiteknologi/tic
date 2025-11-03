@@ -1,6 +1,7 @@
 import { env } from "@/env";
 import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { getSession } from "next-auth/react";
+import { authClient } from "@/lib/auth-client";
 
 // Create base axios instance
 const apiClient = axios.create({
@@ -38,7 +39,13 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       if (typeof window !== "undefined") {
-        window.location.href = "/login";
+        // Proper logout using better-auth
+        authClient.signOut().then(() => {
+          window.location.href = "/login";
+        }).catch(() => {
+          // Fallback to direct redirect if signOut fails
+          window.location.href = "/login";
+        });
       }
 
       return Promise.reject(error);

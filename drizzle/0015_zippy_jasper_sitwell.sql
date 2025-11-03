@@ -1,0 +1,1 @@
+ALTER TABLE "ipcc_emission_calculations" ALTER COLUMN "emission_factor_id" DROP NOT NULL;

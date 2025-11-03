@@ -9,6 +9,7 @@ import { makeQueryClient } from "./query-client";
 import type { AppRouter } from "./routers/_app";
 import superjson from "superjson";
 import { env } from "@/env";
+import { authClient } from "@/lib/auth-client";
 
 export const trpc = createTRPCReact<AppRouter>();
 
@@ -32,6 +33,24 @@ export function TRPCProvider(props: PropsWithChildren) {
         httpBatchLink({
           transformer: superjson,
           url: getUrl(),
+          fetch: async (url, options) => {
+            const response = await fetch(url, options);
+            
+            // Handle 401 unauthorized responses
+            if (response.status === 401) {
+              if (typeof window !== "undefined") {
+                try {
+                  await authClient.signOut();
+                } catch (error) {
+                  console.error("Error during logout:", error);
+                } finally {
+                  window.location.href = "/login";
+                }
+              }
+            }
+            
+            return response;
+          },
         }),
       ],
     })

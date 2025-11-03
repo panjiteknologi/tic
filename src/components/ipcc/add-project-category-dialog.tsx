@@ -35,11 +35,14 @@ export function AddProjectCategoryDialog({
       { enabled: !!projectId }
     );
 
+  const utils = trpc.useUtils();
+
   // Assign categories mutation
   const assignCategoriesMutation = trpc.ipccProjectCategories.bulkAssign.useMutation({
     onSuccess: () => {
       setOpen(false);
       setSelectedCategories([]);
+      utils.ipccProjectCategories.getAvailableCategories.invalidate({ projectId });
       onCategoryAdded?.();
     },
   });
@@ -108,15 +111,15 @@ export function AddProjectCategoryDialog({
                 </div>
               ))}
             </div>
-          ) : availableData?.availableCategories.length === 0 ? (
+          ) : availableData?.allCategories.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p>All available categories have been assigned to this project.</p>
+              <p>No categories found.</p>
             </div>
           ) : (
             <div className="max-h-[400px] overflow-y-auto pr-4">
               <div className="space-y-6">
-                {availableData?.categoriesBySector &&
-                  Object.entries(availableData.categoriesBySector).map(
+                {availableData?.allCategoriesBySector &&
+                  Object.entries(availableData.allCategoriesBySector).map(
                     ([sector, categories]) => (
                       <div key={sector} className="space-y-3">
                         <div>
@@ -129,12 +132,14 @@ export function AddProjectCategoryDialog({
                           {categories.map((category) => (
                             <div
                               key={category.id}
-                              className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
-                                selectedCategories.includes(category.id)
-                                  ? "bg-primary/10 border-primary"
-                                  : "hover:bg-muted/50"
+                              className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                                category.isAssigned
+                                  ? "bg-muted/30 border-muted cursor-not-allowed opacity-60"
+                                  : selectedCategories.includes(category.id)
+                                  ? "bg-primary/10 border-primary cursor-pointer"
+                                  : "hover:bg-muted/50 cursor-pointer"
                               }`}
-                              onClick={() => handleToggleCategory(category.id)}
+                              onClick={() => !category.isAssigned && handleToggleCategory(category.id)}
                             >
                               <div className="flex-1">
                                 <div className="flex items-center gap-2">
@@ -144,10 +149,17 @@ export function AddProjectCategoryDialog({
                                   <span className="font-medium text-sm">
                                     {category.name}
                                   </span>
+                                  {category.isAssigned && (
+                                    <Badge variant="outline" className="text-xs text-muted-foreground">
+                                      Already Assigned
+                                    </Badge>
+                                  )}
                                 </div>
                               </div>
                               <div className="flex-shrink-0">
-                                {selectedCategories.includes(category.id) ? (
+                                {category.isAssigned ? (
+                                  <Check className="h-4 w-4 text-muted-foreground" />
+                                ) : selectedCategories.includes(category.id) ? (
                                   <Check className="h-4 w-4 text-primary" />
                                 ) : (
                                   <div className="h-4 w-4 border rounded border-muted-foreground/30" />

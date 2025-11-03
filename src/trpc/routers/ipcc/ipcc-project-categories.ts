@@ -316,7 +316,7 @@ export const ipccProjectCategoriesRouter = createTRPCRouter({
     };
   }),
 
-  // Get available categories for a project (categories not yet assigned)
+  // Get all categories with assignment status for a project
   getAvailableCategories: protectedProcedure
     .input(
       z.object({
@@ -348,12 +348,28 @@ export const ipccProjectCategoriesRouter = createTRPCRouter({
         .from(emissionCategories)
         .orderBy(emissionCategories.code);
 
-      // Filter out assigned categories
-      const availableCategories = allCategories.filter(
-        (category) => !assignedCategoryIds.includes(category.id)
+      // Add isAssigned status to all categories
+      const categoriesWithStatus = allCategories.map(category => ({
+        ...category,
+        isAssigned: assignedCategoryIds.includes(category.id)
+      }));
+
+      // Filter only unassigned categories for availableCategories
+      const availableCategories = categoriesWithStatus.filter(
+        (category) => !category.isAssigned
       );
 
-      // Group by sector
+      // Group all categories by sector (including assigned ones)
+      const allCategoriesBySector = categoriesWithStatus.reduce((acc, category) => {
+        const sector = category.sector;
+        if (!acc[sector]) {
+          acc[sector] = [];
+        }
+        acc[sector].push(category);
+        return acc;
+      }, {} as Record<string, typeof categoriesWithStatus>);
+
+      // Group only available categories by sector
       const categoriesBySector = availableCategories.reduce((acc, category) => {
         const sector = category.sector;
         if (!acc[sector]) {
@@ -367,6 +383,8 @@ export const ipccProjectCategoriesRouter = createTRPCRouter({
         projectId: input.projectId,
         availableCategories,
         categoriesBySector,
+        allCategories: categoriesWithStatus,
+        allCategoriesBySector,
       };
     }),
 });

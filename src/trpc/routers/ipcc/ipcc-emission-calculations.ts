@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, and } from "drizzle-orm";
+import { eq, and, or, sql } from "drizzle-orm";
 import { protectedProcedure, createTRPCRouter } from "../../init";
 import { db } from "@/db";
 import {
@@ -11,6 +11,7 @@ import {
   gwpValues,
 } from "@/db/schema/ipcc-schema";
 import { TRPCError } from "@trpc/server";
+import { IPCCConstantsCalculator } from "@/constant/ipcc/ipcc-constants-calculator";
 
 const calculateEmissionSchema = z.object({
   activityDataId: z.string().uuid(),
@@ -25,7 +26,7 @@ const recalculateSchema = z.object({
 });
 
 export const ipccEmissionCalculationsRouter = createTRPCRouter({
-  // Calculate emission from activity data (auto-select emission factor)
+  // Calculate emission from activity data using constants calculator
   calculate: protectedProcedure
     .input(calculateEmissionSchema)
     .mutation(async ({ input }) => {
@@ -36,17 +37,11 @@ export const ipccEmissionCalculationsRouter = createTRPCRouter({
             id: activityData.id,
             projectId: activityData.projectId,
             categoryId: activityData.categoryId,
+            name: activityData.name,
             value: activityData.value,
             unit: activityData.unit,
-            category: {
-              sector: emissionCategories.sector,
-            },
           })
           .from(activityData)
-          .leftJoin(
-            emissionCategories,
-            eq(activityData.categoryId, emissionCategories.id)
-          )
           .where(eq(activityData.id, input.activityDataId))
           .limit(1);
 
@@ -59,86 +54,144 @@ export const ipccEmissionCalculationsRouter = createTRPCRouter({
 
         const activityRecord = activity[0];
 
-        // Auto-select emission factor if not provided
-        let emissionFactorId = input.emissionFactorId;
-        if (!emissionFactorId) {
-          const availableFactors = await db
-            .select()
-            .from(emissionFactors)
-            .orderBy(emissionFactors.tier); // Prefer higher tier
-
-          if (availableFactors.length === 0) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: "No emission factor found",
-            });
-          }
-
-          emissionFactorId = availableFactors[0].id;
-        }
-
-        // Get emission factor
-        const emissionFactor = await db
+        // Get category info
+        const category = await db
           .select()
-          .from(emissionFactors)
-          .where(eq(emissionFactors.id, emissionFactorId))
+          .from(emissionCategories)
+          .where(eq(emissionCategories.id, activityRecord.categoryId))
           .limit(1);
 
-        if (emissionFactor.length === 0) {
+        if (category.length === 0) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Emission factor not found",
+            message: "Category not found",
           });
         }
 
-        const factor = emissionFactor[0];
-
-        // Get GWP value for gas type
-        const gwp = await db
-          .select()
-          .from(gwpValues)
-          .where(eq(gwpValues.gasType, factor.gasType))
-          .limit(1);
-
-        const gwpValue = gwp.length > 0 ? parseFloat(gwp[0].value) : 1;
-
-        // Calculate emissions
+        const categoryCode = category[0].code;
         const activityValue = parseFloat(activityRecord.value);
-        const factorValue = parseFloat(factor.value);
-        const emissionValue = activityValue * factorValue;
-        const co2Equivalent = emissionValue * gwpValue;
 
-        // Create calculation record
-        const [newCalculation] = await db
-          .insert(emissionCalculations)
-          .values({
+        // Use constants calculator for accurate results
+        let calculationResult;
+        try {
+          console.log("🧮 Starting calculation with params:", {
+            activityValue,
+            unit: activityRecord.unit,
+            categoryCode,
+            tier: "TIER_1",
+            activityName: activityRecord.name
+          });
+
+          calculationResult = IPCCConstantsCalculator.calculate(
+            activityValue,
+            activityRecord.unit,
+            categoryCode,
+            "TIER_1", // Default to TIER_1 for accuracy
+            activityRecord.name
+          );
+
+          console.log("✅ Calculation successful:", calculationResult);
+        } catch (calculatorError) {
+          console.error("❌ Calculator error details:", {
+            error: calculatorError,
+            message: calculatorError instanceof Error ? calculatorError.message : 'Unknown error',
+            stack: calculatorError instanceof Error ? calculatorError.stack : undefined,
+            activityValue,
+            unit: activityRecord.unit,
+            categoryCode
+          });
+          
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Calculation failed: ${calculatorError instanceof Error ? calculatorError.message : 'Unknown error'}`,
+          });
+        }
+
+        if (!calculationResult) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: `No suitable emission factor found for category ${categoryCode}`,
+          });
+        }
+
+        // Validate calculation
+        const isValid = IPCCConstantsCalculator.validateCalculation(calculationResult, categoryCode);
+        if (!isValid) {
+          console.warn(`Calculation validation failed for category ${categoryCode}`, calculationResult);
+        }
+
+        // Create calculation record in database for tracking
+        let newCalculation;
+        try {
+          console.log("💾 Saving calculation to database:", {
             projectId: activityRecord.projectId,
             activityDataId: input.activityDataId,
-            emissionFactorId: emissionFactorId,
-            tier: factor.tier,
-            gasType: factor.gasType,
-            emissionValue: emissionValue.toString(),
-            emissionUnit: "kg",
-            co2Equivalent: co2Equivalent.toString(),
-            notes: input.notes,
-          })
-          .returning();
+            tier: calculationResult.tier,
+            gasType: calculationResult.gasType,
+            emissionValue: calculationResult.emission.toString(),
+            emissionUnit: calculationResult.emissionUnit,
+            co2Equivalent: calculationResult.co2Equivalent.toString(),
+            notes: calculationResult.notes
+          });
+
+          const insertData = {
+            projectId: activityRecord.projectId,
+            activityDataId: input.activityDataId,
+            emissionFactorId: null, // NULL for constants-based calculations
+            tier: calculationResult.tier,
+            gasType: calculationResult.gasType,
+            emissionValue: calculationResult.emission.toString(),
+            emissionUnit: calculationResult.emissionUnit,
+            co2Equivalent: calculationResult.co2Equivalent.toString(),
+            notes: calculationResult.notes + (input.notes ? ` | ${input.notes}` : ""),
+          };
+
+          console.log("💾 Insert data structure:", insertData);
+
+          [newCalculation] = await db
+            .insert(emissionCalculations)
+            .values(insertData)
+            .returning();
+
+          console.log("✅ Database save successful:", newCalculation);
+        } catch (dbError) {
+          console.error("❌ Database save error:", {
+            error: dbError,
+            message: dbError instanceof Error ? dbError.message : 'Unknown database error',
+            calculationResult
+          });
+          
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: `Failed to save calculation: ${dbError instanceof Error ? dbError.message : 'Unknown database error'}`,
+          });
+        }
 
         return {
           success: true,
           calculation: newCalculation,
           details: {
+            method: "CONSTANTS_CALCULATOR",
+            formula: calculationResult.notes,
             activityValue,
-            factorValue,
-            gwpValue,
-            emissionValue,
-            co2Equivalent,
+            factorValue: parseFloat(calculationResult.factor.value),
+            factorUnit: calculationResult.factor.unit,
+            gwpValue: parseFloat(calculationResult.gwp.value),
+            emissionValue: calculationResult.emission,
+            co2Equivalent: calculationResult.co2Equivalent,
+            categoryCode,
+            gasType: calculationResult.gasType,
+            tier: calculationResult.tier,
+            factorName: calculationResult.factor.name,
+            factorSource: calculationResult.factor.source,
+            isValidated: isValid,
           },
         };
       } catch (error) {
         if (error instanceof TRPCError) {
           throw error;
         }
+        console.error("Calculation error:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to calculate emission",
@@ -171,6 +224,14 @@ export const ipccEmissionCalculationsRouter = createTRPCRouter({
         const emissionFactorId =
           input.emissionFactorId || calc.emissionFactorId;
 
+        // Skip recalculation if no emission factor (constants-based calculation)
+        if (!emissionFactorId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Cannot recalculate constants-based calculations. Please use the calculate endpoint to regenerate.",
+          });
+        }
+
         // Get activity data
         const activity = await db
           .select()
@@ -184,6 +245,13 @@ export const ipccEmissionCalculationsRouter = createTRPCRouter({
           .from(emissionFactors)
           .where(eq(emissionFactors.id, emissionFactorId))
           .limit(1);
+
+        if (emissionFactor.length === 0) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Emission factor not found",
+          });
+        }
 
         // Get GWP value
         const gwp = await db
@@ -259,6 +327,12 @@ export const ipccEmissionCalculationsRouter = createTRPCRouter({
         // Recalculate each calculation
         for (const calc of calculations) {
           try {
+            // Skip constants-based calculations (null emissionFactorId)
+            if (!calc.emissionFactorId) {
+              errors.push(`Skipped calculation ${calc.id} - constants-based calculation cannot be recalculated`);
+              continue;
+            }
+
             // Get activity data
             const activity = await db
               .select()
@@ -266,12 +340,22 @@ export const ipccEmissionCalculationsRouter = createTRPCRouter({
               .where(eq(activityData.id, calc.activityDataId))
               .limit(1);
 
+            if (activity.length === 0) {
+              errors.push(`Activity data not found for calculation ${calc.id}`);
+              continue;
+            }
+
             // Get emission factor
             const emissionFactor = await db
               .select()
               .from(emissionFactors)
               .where(eq(emissionFactors.id, calc.emissionFactorId))
               .limit(1);
+
+            if (emissionFactor.length === 0) {
+              errors.push(`Emission factor not found for calculation ${calc.id}`);
+              continue;
+            }
 
             // Get GWP value
             const gwp = await db
@@ -300,7 +384,7 @@ export const ipccEmissionCalculationsRouter = createTRPCRouter({
 
             recalculatedCount++;
           } catch (error) {
-            errors.push(`Failed to recalculate calculation ${calc.id}`);
+            errors.push(`Failed to recalculate calculation ${calc.id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
           }
         }
 

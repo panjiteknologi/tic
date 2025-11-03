@@ -84,6 +84,15 @@ export const emissionFactors = pgTable("ipcc_emission_factors", {
   value: decimal("value", { precision: 20, scale: 6 }).notNull(),
   unit: varchar("unit", { length: 100 }).notNull(), // e.g., "kg_CO2/liter"
 
+  // Category linkage for intelligent selection
+  applicableCategories: varchar("applicable_categories", { length: 1000 }), // JSON array of category codes ["1.A.1", "1.A.2"]
+  fuelType: varchar("fuel_type", { length: 100 }), // e.g., "Coal", "Natural Gas", "Diesel"
+  activityType: varchar("activity_type", { length: 200 }), // e.g., "Power Generation", "Road Transport"
+  
+  // Heating value for energy sector (for unit conversion)
+  heatingValue: decimal("heating_value", { precision: 10, scale: 3 }), // GJ/ton, GJ/liter, etc.
+  heatingValueUnit: varchar("heating_value_unit", { length: 50 }), // e.g., "GJ/ton", "GJ/liter"
+
   // Source
   source: varchar("source", { length: 500 }), // e.g., "IPCC 2006 Guidelines"
 
@@ -135,7 +144,6 @@ export const emissionCalculations = pgTable("ipcc_emission_calculations", {
     .notNull()
     .references(() => activityData.id, { onDelete: "cascade" }),
   emissionFactorId: uuid("emission_factor_id")
-    .notNull()
     .references(() => emissionFactors.id),
 
   tier: tierEnum("tier").notNull(),
