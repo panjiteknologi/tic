@@ -112,7 +112,7 @@ export default function IPCCProjectDetailPage() {
           </EmptyMedia>
           <EmptyTitle>Project Not Found</EmptyTitle>
           <EmptyDescription>
-            The IPCC project you're looking for doesn't exist or has been
+            The IPCC project you&apos;re looking for doesn&apos;t exist or has been
             removed.
           </EmptyDescription>
         </EmptyHeader>

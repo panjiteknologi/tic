@@ -23,17 +23,21 @@ try {
     "Coal Consumption - Power Plant A"
   );
   
-  console.log("✅ RESULT:");
-  console.log(`   Emission: ${result1.emission.toLocaleString()} kg ${result1.gasType}`);
-  console.log(`   CO2-eq: ${result1.co2Equivalent.toLocaleString()} kg CO2-eq`);
-  console.log(`   Factor: ${result1.factor.name} = ${result1.factor.value} ${result1.factor.unit}`);
-  console.log(`   Tier: ${result1.tier}`);
-  console.log(`   Formula: ${result1.notes}`);
-  
-  // Validation
-  const expectedEmission = 2450000; // 1000 ton × 2.45 kg CO2/kg × 1000 kg/ton
-  const isCorrect = Math.abs(result1.emission - expectedEmission) < 1000; // Allow 1kg tolerance
-  console.log(`   ✅ Accuracy Check: ${isCorrect ? 'PASSED' : 'FAILED'} (Expected: ${expectedEmission.toLocaleString()}, Got: ${result1.emission.toLocaleString()})`);
+  if (!result1) {
+    console.log("❌ FAILED: Calculation returned null");
+  } else {
+    console.log("✅ RESULT:");
+    console.log(`   Emission: ${result1.emission.toLocaleString()} kg ${result1.gasType}`);
+    console.log(`   CO2-eq: ${result1.co2Equivalent.toLocaleString()} kg CO2-eq`);
+    console.log(`   Factor: ${result1.factor.name} = ${result1.factor.value} ${result1.factor.unit}`);
+    console.log(`   Tier: ${result1.tier}`);
+    console.log(`   Formula: ${result1.notes}`);
+    
+    // Validation
+    const expectedEmission = 2450000; // 1000 ton × 2.45 kg CO2/kg × 1000 kg/ton
+    const isCorrect = Math.abs(result1.emission - expectedEmission) < 1000; // Allow 1kg tolerance
+    console.log(`   ✅ Accuracy Check: ${isCorrect ? 'PASSED' : 'FAILED'} (Expected: ${expectedEmission.toLocaleString()}, Got: ${result1.emission.toLocaleString()})`);
+  }
   
 } catch (error) {
   console.log(`❌ FAILED: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -54,11 +58,15 @@ try {
     "Natural Gas Consumption"
   );
   
-  console.log("✅ RESULT:");
-  console.log(`   Emission: ${result2.emission.toLocaleString()} kg ${result2.gasType}`);
-  console.log(`   CO2-eq: ${result2.co2Equivalent.toLocaleString()} kg CO2-eq`);
-  console.log(`   Factor: ${result2.factor.name} = ${result2.factor.value} ${result2.factor.unit}`);
-  console.log(`   Tier: ${result2.tier}`);
+  if (!result2) {
+    console.log("❌ FAILED: Calculation returned null");
+  } else {
+    console.log("✅ RESULT:");
+    console.log(`   Emission: ${result2.emission.toLocaleString()} kg ${result2.gasType}`);
+    console.log(`   CO2-eq: ${result2.co2Equivalent.toLocaleString()} kg CO2-eq`);
+    console.log(`   Factor: ${result2.factor.name} = ${result2.factor.value} ${result2.factor.unit}`);
+    console.log(`   Tier: ${result2.tier}`);
+  }
   
 } catch (error) {
   console.log(`❌ FAILED: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -80,12 +88,16 @@ try {
     "Municipal Solid Waste"
   );
   
-  console.log("✅ RESULT:");
-  console.log(`   Emission: ${result3.emission.toLocaleString()} kg ${result3.gasType}`);
-  console.log(`   CO2-eq: ${result3.co2Equivalent.toLocaleString()} kg CO2-eq`);
-  console.log(`   Factor: ${result3.factor.name} = ${result3.factor.value} ${result3.factor.unit}`);
-  console.log(`   GWP: ${result3.gwp.value} (${result3.gwp.assessment_report})`);
-  console.log(`   Tier: ${result3.tier}`);
+  if (!result3) {
+    console.log("❌ FAILED: Calculation returned null");
+  } else {
+    console.log("✅ RESULT:");
+    console.log(`   Emission: ${result3.emission.toLocaleString()} kg ${result3.gasType}`);
+    console.log(`   CO2-eq: ${result3.co2Equivalent.toLocaleString()} kg CO2-eq`);
+    console.log(`   Factor: ${result3.factor.name} = ${result3.factor.value} ${result3.factor.unit}`);
+    console.log(`   GWP: ${result3.gwp.value} (${result3.gwp.assessment_report})`);
+    console.log(`   Tier: ${result3.tier}`);
+  }
   
 } catch (error) {
   console.log(`❌ FAILED: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -106,12 +118,16 @@ try {
     "Sub-bituminous Coal Power Plant"
   );
   
-  console.log("✅ RESULT:");
-  console.log(`   Emission: ${result4.emission.toLocaleString()} kg ${result4.gasType}`);
-  console.log(`   CO2-eq: ${result4.co2Equivalent.toLocaleString()} kg CO2-eq`);
-  console.log(`   Factor: ${result4.factor.name} = ${result4.factor.value} ${result4.factor.unit}`);
-  console.log(`   Tier: ${result4.tier}`);
-  console.log(`   Source: ${result4.factor.source}`);
+  if (!result4) {
+    console.log("❌ FAILED: Calculation returned null");
+  } else {
+    console.log("✅ RESULT:");
+    console.log(`   Emission: ${result4.emission.toLocaleString()} kg ${result4.gasType}`);
+    console.log(`   CO2-eq: ${result4.co2Equivalent.toLocaleString()} kg CO2-eq`);
+    console.log(`   Factor: ${result4.factor.name} = ${result4.factor.value} ${result4.factor.unit}`);
+    console.log(`   Tier: ${result4.tier}`);
+    console.log(`   Source: ${result4.factor.source}`);
+  }
   
 } catch (error) {
   console.log(`❌ FAILED: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -133,12 +149,16 @@ try {
     "Fertilizer Application"
   );
   
-  console.log("✅ RESULT:");
-  console.log(`   Emission: ${result5.emission.toLocaleString()} kg ${result5.gasType}`);
-  console.log(`   CO2-eq: ${result5.co2Equivalent.toLocaleString()} kg CO2-eq`);
-  console.log(`   Factor: ${result5.factor.name} = ${result5.factor.value} ${result5.factor.unit}`);
-  console.log(`   GWP: ${result5.gwp.value} (N2O has high warming potential)`);
-  console.log(`   Tier: ${result5.tier}`);
+  if (!result5) {
+    console.log("❌ FAILED: Calculation returned null");
+  } else {
+    console.log("✅ RESULT:");
+    console.log(`   Emission: ${result5.emission.toLocaleString()} kg ${result5.gasType}`);
+    console.log(`   CO2-eq: ${result5.co2Equivalent.toLocaleString()} kg CO2-eq`);
+    console.log(`   Factor: ${result5.factor.name} = ${result5.factor.value} ${result5.factor.unit}`);
+    console.log(`   GWP: ${result5.gwp.value} (N2O has high warming potential)`);
+    console.log(`   Tier: ${result5.tier}`);
+  }
   
 } catch (error) {
   console.log(`❌ FAILED: ${error instanceof Error ? error.message : 'Unknown error'}`);

@@ -34,7 +34,7 @@ export const ipccDashboardRouter = createTRPCRouter({
     )
     .query(async ({ input }) => {
       try {
-        let projectWhereConditions = [];
+        const projectWhereConditions = [];
 
         if (input.yearFrom) {
           projectWhereConditions.push(gte(ipccProjects.year, input.yearFrom));
@@ -160,7 +160,7 @@ export const ipccDashboardRouter = createTRPCRouter({
     )
     .query(async ({ input }) => {
       try {
-        let whereConditions = [];
+        const whereConditions = [];
 
         if (input.yearFrom) {
           whereConditions.push(gte(ipccProjects.year, input.yearFrom));
@@ -250,7 +250,7 @@ export const ipccDashboardRouter = createTRPCRouter({
     )
     .query(async ({ input }) => {
       try {
-        let whereConditions = [];
+        const whereConditions = [];
 
         if (input.year) {
           whereConditions.push(eq(ipccProjects.year, input.year));
@@ -335,7 +335,7 @@ export const ipccDashboardRouter = createTRPCRouter({
     )
     .query(async ({ input }) => {
       try {
-        let whereConditions = [];
+        const whereConditions = [];
 
         if (input.year) {
           whereConditions.push(eq(ipccProjects.year, input.year));
@@ -375,7 +375,7 @@ export const ipccDashboardRouter = createTRPCRouter({
 
         if (input.type === "categories") {
           // Top emitting categories
-          let categoriesWhereConditions = [...whereConditions];
+          const categoriesWhereConditions = [...whereConditions];
           if (input.sector) {
             categoriesWhereConditions.push(
               eq(emissionCategories.sector, input.sector)
@@ -599,7 +599,7 @@ export const ipccDashboardRouter = createTRPCRouter({
     )
     .query(async ({ input }) => {
       try {
-        let whereConditions = [];
+        const whereConditions = [];
 
         if (input.projectId) {
           whereConditions.push(eq(ipccProjects.id, input.projectId));

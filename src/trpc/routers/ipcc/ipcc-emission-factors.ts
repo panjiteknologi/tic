@@ -104,7 +104,7 @@ export const ipccEmissionFactorsRouter = createTRPCRouter({
       })
     )
     .query(async ({ input }) => {
-      let whereConditions = [];
+      const whereConditions = [];
 
       if (input.gasType) {
         whereConditions.push(eq(emissionFactors.gasType, input.gasType));
@@ -172,7 +172,7 @@ export const ipccEmissionFactorsRouter = createTRPCRouter({
       })
     )
     .query(async ({ input }) => {
-      let whereConditions = [eq(emissionFactors.tier, input.tier)];
+      const whereConditions = [eq(emissionFactors.tier, input.tier)];
 
       if (input.gasType) {
         whereConditions.push(eq(emissionFactors.gasType, input.gasType));

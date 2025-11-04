@@ -202,7 +202,7 @@ export class IPCCConstantsCalculator {
           activityName?.toLowerCase().includes('natural')
         ) {
           // First, try to find Natural Gas factors with the requested tier
-          let gasFactors = candidates.filter((f) =>
+          const gasFactors = candidates.filter((f) =>
             f.name.includes('Natural Gas Combustion')
           );
 
@@ -250,7 +250,7 @@ export class IPCCConstantsCalculator {
           activityName?.toLowerCase().includes('natural')
         ) {
           // First, try to find Natural Gas factors with the requested tier
-          let gasFactors = candidates.filter((f) =>
+          const gasFactors = candidates.filter((f) =>
             f.name.includes('Natural Gas Combustion')
           );
 

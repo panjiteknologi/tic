@@ -303,7 +303,7 @@ export function IPCCProjectCategoryItem({
                           {/* Empty State */}
                           {categoryActivities.length === 0 && (
                             <div className="p-4 text-center text-muted-foreground text-sm">
-                              No activity data yet. Click "Add Activity Data" to get started.
+                              No activity data yet. Click &quot;Add Activity Data&quot; to get started.
                             </div>
                           )}
                         </div>
