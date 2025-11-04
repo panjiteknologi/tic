@@ -73,7 +73,7 @@ export class IPCCConstantsCalculator {
 
   /**
    * Convert activity value from one unit to another
-   * Handles: ton ↔ kg, ton ↔ m3, ton ↔ liter, and direct matches
+   * Handles: ton ↔ kg, ton ↔ m3, ton ↔ liter, liter ↔ m3, kWh ↔ m3, and direct matches
    */
   static convertUnit(
     value: number,
@@ -147,6 +147,52 @@ export class IPCCConstantsCalculator {
     if (from === 'liter' || from === 'l') {
       if (to === 'ton') {
         return value / 1200;
+      }
+      // liter to m3: 1 m3 = 1000 liters
+      if (to === 'm3') {
+        return value / 1000;
+      }
+    }
+
+    // m3 to liter conversions
+    if (from === 'm3') {
+      if (to === 'liter' || to === 'l') {
+        return value * 1000;
+      }
+    }
+
+    // kWh conversions (energy to volume/volume to energy)
+    // For natural gas: 1 m3 ≈ 10.5 kWh (approximate, varies by region and gas composition)
+    // Common conversion factors:
+    // - Natural gas: 1 m3 ≈ 10.5 kWh (10-11 kWh/m3 depending on gas composition)
+    // - LPG: 1 m3 ≈ 25 kWh
+    // We'll use 10.5 kWh/m3 as default for natural gas, and detect fuel type if available
+    if (from === 'kwh') {
+      if (to === 'm3') {
+        // Detect if it's natural gas or other fuel type
+        if (
+          fuelType?.toLowerCase().includes('gas') ||
+          fuelType?.toLowerCase().includes('natural')
+        ) {
+          // Natural gas: 1 m3 ≈ 10.5 kWh
+          return value / 10.5;
+        }
+        // Default for natural gas if no fuel type specified
+        return value / 10.5;
+      }
+    }
+
+    if (from === 'm3') {
+      if (to === 'kwh') {
+        if (
+          fuelType?.toLowerCase().includes('gas') ||
+          fuelType?.toLowerCase().includes('natural')
+        ) {
+          // Natural gas: 1 m3 ≈ 10.5 kWh
+          return value * 10.5;
+        }
+        // Default for natural gas if no fuel type specified
+        return value * 10.5;
       }
     }
 
