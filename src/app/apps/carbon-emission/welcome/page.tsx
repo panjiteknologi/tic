@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React from "react";
-import { motion } from "framer-motion";
+import React from 'react';
+import { motion } from 'framer-motion';
 import {
   BadgeCheck,
   BarChart3,
@@ -13,69 +13,77 @@ import {
   Shield,
   ShieldCheck,
   Zap,
-} from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Footer } from "@/components/ui/footer";
-import { useRouter } from "next/navigation";
+  Sparkles
+} from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Footer } from '@/components/ui/footer';
+import { useRouter } from 'next/navigation';
 
 const features = [
   {
-    key: "iscc",
+    key: 'iscc',
     icon: <Leaf className="w-8 h-8 text-green-500" />,
-    title: "GHG ISCC Calculation",
-    desc: "Green house gas",
-    href: "/apps/carbon-emission/iscc/dashboard",
+    title: 'GHG ISCC Calculation',
+    desc: 'Green house gas',
+    href: '/apps/carbon-emission/iscc/dashboard'
   },
   {
-    key: "carbon",
+    key: 'iscc-ai',
+    icon: <Sparkles className="w-8 h-8 text-purple-500" />,
+    title: 'GHG ISCC Calculation (AI)',
+    desc: 'Green house gas dengan perhitungan berbasis AI',
+    href: '/apps/carbon-emission/iscc-ai/dashboard'
+  },
+  {
+    key: 'carbon',
     icon: <Zap className="w-8 h-8 text-blue-500" />,
-    title: "Gas Karbon",
-    desc: "Perhitungan emisi gas karbon",
-    href: "/apps/carbon-emission/carbon/dashboard",
+    title: 'Gas Karbon',
+    desc: 'Perhitungan emisi gas karbon',
+    href: '/apps/carbon-emission/carbon/dashboard'
   },
   {
-    key: "ipcc",
+    key: 'ipcc',
     icon: <Globe2 className="w-8 h-8 text-sky-600" />,
-    title: "IPCC",
-    desc: "Pedoman inventaris gas rumah kaca global dari IPCC.",
-    href: "/apps/carbon-emission/ipcc/dashboard",
+    title: 'IPCC',
+    desc: 'Pedoman inventaris gas rumah kaca global dari IPCC.',
+    href: '/apps/carbon-emission/ipcc/dashboard'
   },
   {
-    key: "defra",
+    key: 'defra',
     icon: <Landmark className="w-8 h-8 text-emerald-600" />,
-    title: "DEFRA",
-    desc: "Faktor emisi resmi Department for Environment, Food & Rural Affairs UK.",
+    title: 'DEFRA',
+    desc: 'Faktor emisi resmi Department for Environment, Food & Rural Affairs UK.'
   },
   {
-    key: "ghg-protocol",
+    key: 'ghg-protocol',
     icon: <BarChart3 className="w-8 h-8 text-indigo-600" />,
-    title: "GHG Protocol",
-    desc: "Standar akuntansi gas rumah kaca yang diakui internasional.",
+    title: 'GHG Protocol',
+    desc: 'Standar akuntansi gas rumah kaca yang diakui internasional.'
   },
   {
-    key: "iso-14064-1-2018",
+    key: 'iso-14064-1-2018',
     icon: <BadgeCheck className="w-8 h-8 text-violet-600" />,
-    title: "ISO 14064 1-2018",
-    desc: "Kerangka verifikasi emisi gas rumah kaca untuk organisasi.",
+    title: 'ISO 14064 1-2018',
+    desc: 'Kerangka verifikasi emisi gas rumah kaca untuk organisasi.'
   },
   {
-    key: "pas-2050",
+    key: 'pas-2050',
     icon: <FileText className="w-8 h-8 text-orange-500" />,
-    title: "PAS 2050",
-    desc: "Metodologi penilaian jejak karbon produk dan layanan.",
+    title: 'PAS 2050',
+    desc: 'Metodologi penilaian jejak karbon produk dan layanan.'
   },
   {
-    key: "usepa",
+    key: 'usepa',
     icon: <Shield className="w-8 h-8 text-cyan-600" />,
-    title: "USEPA",
-    desc: "Data faktor emisi dari United States Environmental Protection Agency.",
+    title: 'USEPA',
+    desc: 'Data faktor emisi dari United States Environmental Protection Agency.'
   },
   {
-    key: "ecolnven",
+    key: 'ecolnven',
     icon: <Database className="w-8 h-8 text-teal-600" />,
-    title: "Ecolnven",
-    desc: "Database inventaris siklus hidup Ecolnven untuk analisis emisi.",
-  },
+    title: 'Ecolnven',
+    desc: 'Database inventaris siklus hidup Ecolnven untuk analisis emisi.'
+  }
 ];
 
 const Welcome = () => {
@@ -84,10 +92,10 @@ const Welcome = () => {
   return (
     <motion.section
       className="min-h-screen flex flex-col text-gray-900 mb-16"
-      style={{ minHeight: "100vh" }}
+      style={{ minHeight: '100vh' }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: "easeInOut" }}
+      transition={{ duration: 0.6, ease: 'easeInOut' }}
     >
       <div className="bg-gradient-to-b from-blue-700 via-sky-700 to-white">
         <main className="flex-1 w-full max-w-6xl mx-auto px-4 md:px- mt-35">
@@ -108,13 +116,13 @@ const Welcome = () => {
                   <motion.div
                     key={item.key}
                     whileHover={{ scale: 1.03 }}
-                    transition={{ type: "spring", stiffness: 180 }}
+                    transition={{ type: 'spring', stiffness: 180 }}
                   >
                     <Card
                       className={`rounded-3xl px-2 shadow-md transition-all bg-white border border-gray-200 ${
                         clickable
-                          ? "cursor-pointer hover:shadow-2xl"
-                          : "cursor-default"
+                          ? 'cursor-pointer hover:shadow-2xl'
+                          : 'cursor-default'
                       }`}
                       onClick={() => {
                         if (item.href) {
