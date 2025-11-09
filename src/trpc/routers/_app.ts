@@ -22,6 +22,11 @@ import { ipccEmissionFactorsRouter } from "./ipcc/ipcc-emission-factors";
 import { ipccGwpValuesRouter } from "./ipcc/ipcc-gwp-values";
 import { ipccProjectCategoriesRouter } from "./ipcc/ipcc-project-categories";
 import { ipccDashboardRouter } from "./ipcc/ipcc-dashboard";
+import { isccProjectsRouter } from "./iscc/iscc-projects";
+import { isccCalculationsRouter } from "./iscc/iscc-calculations";
+import { isccCultivationRouter } from "./iscc/iscc-cultivation";
+import { isccProcessingRouter } from "./iscc/iscc-processing";
+import { isccTransportRouter } from "./iscc/iscc-transport";
 
 export const appRouter = createTRPCRouter({
   hello: baseProcedure
@@ -57,6 +62,11 @@ export const appRouter = createTRPCRouter({
   ipccGwpValues: ipccGwpValuesRouter,
   ipccProjectCategories: ipccProjectCategoriesRouter,
   ipccDashboard: ipccDashboardRouter,
+  isccProjects: isccProjectsRouter,
+  isccCalculations: isccCalculationsRouter,
+  isccCultivation: isccCultivationRouter,
+  isccProcessing: isccProcessingRouter,
+  isccTransport: isccTransportRouter,
 });
 
 // export type definition of API

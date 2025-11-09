@@ -1,25 +1,56 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import DashboardLayout from "@/layout/dashboard-layout";
-import { AppSidebarTypes } from "@/types/sidebar-types";
-import { trpc } from "@/trpc/react";
-import { ProjectsView } from "@/views/apps/carbon-emission/projects/projects-view";
-import { DialogInfo } from "@/components/ui/dialog-info";
-import ConfirmDialog from "@/components/ui/confirm-dialog";
-import { CarbonProjectISCCAIMenu } from "@/constant/menu-sidebar";
+import { useState } from 'react';
+import DashboardLayout from '@/layout/dashboard-layout';
+import { AppSidebarTypes } from '@/types/sidebar-types';
+import { trpc } from '@/trpc/react';
+import { ISCCProjectsView } from '@/views/apps/carbon-emission/iscc/projects/iscc-projects-view';
+import { DialogInfo } from '@/components/ui/dialog-info';
+import ConfirmDialog from '@/components/ui/confirm-dialog';
+import { CarbonProjectISCCAIMenu } from '@/constant/menu-sidebar';
 
 export default function ProjectsPage() {
   const utils = trpc.useUtils();
 
-  const [search, setSearch] = useState("");
-  const [name, setName] = useState("");
-  const [idProject, setIdProject] = useState("");
+  const [search, setSearch] = useState('');
+  const [formData, setFormData] = useState<{
+    name: string;
+    description: string;
+    productType:
+      | 'biodiesel'
+      | 'bioethanol'
+      | 'biomass'
+      | 'biomethane'
+      | 'bio_jet_fuel'
+      | 'other';
+    feedstockType:
+      | 'palm_oil'
+      | 'corn'
+      | 'sugarcane'
+      | 'used_cooking_oil'
+      | 'wheat'
+      | 'rapeseed'
+      | 'soybean'
+      | 'waste'
+      | 'other';
+    productionVolume: string;
+    lhv: string;
+    lhvUnit: 'MJ/kg' | 'MJ/liter';
+  }>({
+    name: '',
+    description: '',
+    productType: 'biodiesel',
+    feedstockType: 'palm_oil',
+    productionVolume: '',
+    lhv: '',
+    lhvUnit: 'MJ/kg'
+  });
+  const [idProject, setIdProject] = useState('');
 
-  const [infoDialogTitle, setInfoDialogTitle] = useState("");
-  const [infoDialogDesc, setInfoDialogDesc] = useState("");
-  const [infoVariant, setInfoVariant] = useState<"success" | "error" | "info">(
-    "info"
+  const [infoDialogTitle, setInfoDialogTitle] = useState('');
+  const [infoDialogDesc, setInfoDialogDesc] = useState('');
+  const [infoVariant, setInfoVariant] = useState<'success' | 'error' | 'info'>(
+    'info'
   );
 
   const [openDialog, setOpenDialog] = useState(false);
@@ -29,100 +60,139 @@ export default function ProjectsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const { data: userProfile } = trpc.user.getUserProfile.useQuery();
-  const tenantId = userProfile?.tenantId ?? "";
+  const tenantId = userProfile?.tenantId ?? '';
 
-  const { data, isLoading } = trpc.carbonProject.getByTenantId.useQuery({
-    tenantId,
+  const { data, isLoading } = trpc.isccProjects.getByTenantId.useQuery({
+    tenantId
   });
-  const projects = data?.carbonProjects ?? [];
+  const projects = data?.projects ?? [];
 
-  const filteredProjects = projects.filter((project) =>
-    project.name.toLowerCase().includes(search.toLowerCase())
+  const filteredProjects = projects.filter(
+    (project) =>
+      project.name.toLowerCase().includes(search.toLowerCase()) ||
+      (project.description &&
+        project.description.toLowerCase().includes(search.toLowerCase())) ||
+      project.productType.toLowerCase().includes(search.toLowerCase()) ||
+      project.feedstockType.toLowerCase().includes(search.toLowerCase())
   );
 
-  const createMutation = trpc.carbonProject.add.useMutation({
+  const createMutation = trpc.isccProjects.create.useMutation({
     onSuccess: (data) => {
-      utils.carbonProject.getByTenantId.invalidate({ tenantId });
-      setName("");
+      utils.isccProjects.getByTenantId.invalidate({ tenantId });
+      setFormData({
+        name: '',
+        description: '',
+        productType: 'biodiesel',
+        feedstockType: 'palm_oil',
+        productionVolume: '',
+        lhv: '',
+        lhvUnit: 'MJ/kg'
+      });
       setOpenDialog(false);
       setEditMode(false);
-      setInfoVariant("success");
-      setInfoDialogTitle("Project berhasil dibuat");
-      setInfoDialogDesc(
-        `Project "${data.carbonProject.name}" berhasil ditambahkan.`
-      );
+      setInfoVariant('success');
+      setInfoDialogTitle('Project berhasil dibuat');
+      setInfoDialogDesc(`Project "${data.project.name}" berhasil ditambahkan.`);
       setInfoDialogOpen(true);
     },
     onError: (error: { message: string }) => {
-      setInfoVariant("error");
-      setInfoDialogTitle("Gagal membuat project");
+      setInfoVariant('error');
+      setInfoDialogTitle('Gagal membuat project');
       setInfoDialogDesc(error.message);
       setInfoDialogOpen(true);
-    },
+    }
   });
 
   const handleSaveProject = () => {
-    const trimmedName = name.trim();
-    if (!trimmedName) return;
+    const trimmedData = {
+      name: formData.name.trim(),
+      description: formData.description?.trim() || '',
+      productType: formData.productType,
+      feedstockType: formData.feedstockType,
+      productionVolume: formData.productionVolume || '',
+      lhv: formData.lhv || '',
+      lhvUnit: formData.lhvUnit
+    };
+
+    if (!trimmedData.name) return;
 
     if (editMode && idProject) {
       updateMutation.mutate({
         id: idProject,
-        name: trimmedName,
+        name: trimmedData.name,
+        description: trimmedData.description || null,
+        productType: trimmedData.productType,
+        feedstockType: trimmedData.feedstockType,
+        productionVolume: trimmedData.productionVolume || null,
+        lhv: trimmedData.lhv || null,
+        lhvUnit: trimmedData.lhvUnit
       });
     } else {
-      createMutation.mutate({ tenantId, name: trimmedName });
+      createMutation.mutate({
+        tenantId,
+        name: trimmedData.name,
+        description: trimmedData.description || null,
+        productType: trimmedData.productType,
+        feedstockType: trimmedData.feedstockType,
+        productionVolume: trimmedData.productionVolume || null,
+        lhv: trimmedData.lhv || null,
+        lhvUnit: trimmedData.lhvUnit
+      });
     }
   };
 
-  const updateMutation = trpc.carbonProject.update.useMutation({
+  const updateMutation = trpc.isccProjects.update.useMutation({
     onSuccess: (data) => {
-      utils.carbonProject.getByTenantId.invalidate({ tenantId });
-      setName("");
+      utils.isccProjects.getByTenantId.invalidate({ tenantId });
+      setFormData({
+        name: '',
+        description: '',
+        productType: 'biodiesel',
+        feedstockType: 'palm_oil',
+        productionVolume: '',
+        lhv: '',
+        lhvUnit: 'MJ/kg'
+      });
       setOpenDialog(false);
       setEditMode(false);
-      setInfoVariant("success");
-      setInfoDialogTitle("Project berhasil diperbarui");
-      setInfoDialogDesc(
-        `Project "${data.carbonProject.name}" berhasil diperbarui.`
-      );
+      setInfoVariant('success');
+      setInfoDialogTitle('Project berhasil diperbarui');
+      setInfoDialogDesc(`Project "${data.project.name}" berhasil diperbarui.`);
       setInfoDialogOpen(true);
     },
     onError: (error: { message: string }) => {
-      setInfoVariant("error");
-      setInfoDialogTitle("Gagal mengedit project");
+      setInfoVariant('error');
+      setInfoDialogTitle('Gagal mengedit project');
       setInfoDialogDesc(error.message);
       setInfoDialogOpen(true);
-    },
+    }
   });
 
-  const deleteMutation = trpc.carbonProject.delete.useMutation({
+  const deleteMutation = trpc.isccProjects.delete.useMutation({
     onSuccess: () => {
-      utils.carbonProject.getByTenantId.invalidate({ tenantId });
-      const project = data?.carbonProjects.find(
-        (item) => item.id === idProject
-      );
+      utils.isccProjects.getByTenantId.invalidate({ tenantId });
+      const project = projects.find((item) => item.id === idProject);
       setIsDelete(false);
-      setInfoVariant("success");
-      setInfoDialogTitle("Project berhasil dihapus");
+      setInfoVariant('success');
+      setInfoDialogTitle('Project berhasil dihapus');
       setInfoDialogDesc(`Project "${project?.name}" berhasil dihapus.`);
       setInfoDialogOpen(true);
       setDeleteDialogOpen(false);
     },
     onError: (error: { message: string }) => {
       setIsDelete(false);
-      setInfoVariant("error");
-      setInfoDialogTitle("Gagal menghapus project");
+      setInfoVariant('error');
+      setInfoDialogTitle('Gagal menghapus project');
       setInfoDialogDesc(error.message);
       setInfoDialogOpen(true);
       setDeleteDialogOpen(false);
-    },
+    }
   });
 
   const confirmDelete = () => {
     setIsDelete(true);
     deleteMutation.mutate({
-      id: idProject,
+      id: idProject
     });
   };
 
@@ -133,11 +203,11 @@ export default function ProjectsPage() {
       subTitleHeader="All Projects Carbon Emission"
       menuSidebar={CarbonProjectISCCAIMenu as AppSidebarTypes}
     >
-      <ProjectsView
+      <ISCCProjectsView
         search={search}
         setSearch={setSearch}
-        name={name}
-        setName={setName}
+        formData={formData}
+        setFormData={setFormData}
         openDialog={openDialog}
         setOpenDialog={setOpenDialog}
         handleAddProject={handleSaveProject}

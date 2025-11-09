@@ -1,80 +1,79 @@
-"use client";
+'use client';
 
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Fragment, useState } from "react";
-import { ArrowLeft } from "lucide-react";
-import DashboardLayout from "@/layout/dashboard-layout";
-import { getCarbonCalculationAIMenu } from "@/constant/menu-sidebar";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/shadcn-io/spinner";
-import { useCarbonCalculationData } from "@/hooks";
-import CarbonCalaculation from "./carbon-calculation/page";
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
+import DashboardLayout from '@/layout/dashboard-layout';
+import { getCarbonCalculationAIMenu } from '@/constant/menu-sidebar';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/shadcn-io/spinner';
+import { trpc } from '@/trpc/react';
+import { DialogInfo } from '@/components/ui/dialog-info';
+import { ISCCProjectInfoTab } from './tabs/project-info-tab';
+import { ISCCCultivationTab } from './tabs/cultivation-tab';
+import { ISCCProcessingTab } from './tabs/processing-tab';
+import { ISCCTransportTab } from './tabs/transport-tab';
+import { ISCCCalculationsTab } from './tabs/calculations-tab';
 
-export default function CalculationListPage() {
+export default function ISCCProjectDetailPage() {
   const router = useRouter();
   const { projectId } = useParams();
   const searchParams = useSearchParams();
-  const carbonProjectId = String(projectId);
+  const isccProjectId = String(projectId);
 
-  // Get active step from URL or default to step1
-  const activeStep = (searchParams.get("step") as string) || "step1";
+  // Get active tab from URL or default to project-info
+  const activeTab = (searchParams.get('tab') as string) || 'project-info';
 
-  const handleStepChange = (step: string) => {
+  const handleTabChange = (tab: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set("step", step);
+    params.set('tab', tab);
     router.push(`?${params.toString()}`);
   };
 
-  const {
-    isLoading,
-    verifications,
-    calculations,
-    process,
-    additional,
-    otherCase,
-    audit,
-  } = useCarbonCalculationData();
+  // Fetch project data with relations
+  const { data: projectData, isLoading } = trpc.isccProjects.getById.useQuery({
+    id: isccProjectId
+  });
+
+  const [infoDialogTitle, setInfoDialogTitle] = useState('');
+  const [infoDialogDesc, setInfoDialogDesc] = useState('');
+  const [infoVariant, setInfoVariant] = useState<'success' | 'error' | 'info'>(
+    'info'
+  );
+  const [infoDialogOpen, setInfoDialogOpen] = useState(false);
+
+  const utils = trpc.useUtils();
 
   const tabs = [
     {
-      value: "step1",
-      label: "Step 1 | GHG Verification",
-      data: verifications?.stepSatuGhgVerifications ?? [],
+      value: 'project-info',
+      label: 'Project Info'
     },
     {
-      value: "step2",
-      label: "Step 2 | GHG Calculation",
-      data: calculations?.stepDuaGhgCalculations ?? [],
+      value: 'cultivation',
+      label: 'Cultivation (EEC)'
     },
     {
-      value: "step3",
-      label: "Step 3 | GHG Process",
-      data: process?.stepTigaGhgCalculationProcesses ?? [],
+      value: 'processing',
+      label: 'Processing (EP)'
     },
     {
-      value: "step4",
-      label: "Step 4 | Add",
-      data: additional?.stepTigaAdditionals ?? [],
+      value: 'transport',
+      label: 'Transport (ETD)'
     },
     {
-      value: "step5",
-      label: "Step 5 | Other Case",
-      data: otherCase?.stepTigaOtherCases ?? [],
-    },
-    {
-      value: "step6",
-      label: "Step 6 | GHG Audit",
-      data: audit?.stepEmpatGhgAudits ?? [],
-    },
+      value: 'calculations',
+      label: 'Calculations'
+    }
   ];
 
   return (
     <DashboardLayout
       href={`/apps/carbon-emission/iscc-ai/projects`}
       titleHeader="All Projects (AI)"
-      subTitleHeader="All Carbon Calculation"
-      menuSidebar={getCarbonCalculationAIMenu(carbonProjectId)}
+      subTitleHeader="ISCC Project Detail"
+      menuSidebar={getCarbonCalculationAIMenu(isccProjectId)}
     >
       <div>
         <Button
@@ -87,42 +86,153 @@ export default function CalculationListPage() {
         </Button>
       </div>
 
-      <Tabs
-        value={activeStep}
-        onValueChange={handleStepChange}
-        defaultValue="step1"
-        className="w-full p-2"
-      >
-        <div className="overflow-x-auto no-scrollbar">
-          <TabsList className="flex w-max min-w-full space-x-2 border-b border-muted p-1">
-            {tabs.map(({ value, label }) => (
-              <TabsTrigger
-                key={value}
-                value={value}
-                className="px-5 py-3 text-base font-semibold whitespace-nowrap rounded-md
-                  data-[state=active]:bg-white data-[state=active]:text-primary
-                  hover:bg-muted transition-all"
-              >
-                {label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+      {isLoading ? (
+        <div className="flex justify-center items-center p-8 mx-auto">
+          <Spinner />
         </div>
-
-        {isLoading ? (
-          <div className="flex justify-center items-center p-8 mx-auto">
-            <Spinner />
+      ) : !projectData?.project ? (
+        <div className="text-center p-8">
+          <p className="text-muted-foreground">Project not found</p>
+        </div>
+      ) : (
+        <Tabs
+          value={activeTab}
+          onValueChange={handleTabChange}
+          defaultValue="project-info"
+          className="w-full p-2"
+        >
+          <div className="overflow-x-auto no-scrollbar">
+            <TabsList className="flex w-max min-w-full space-x-2 border-b border-muted p-1">
+              {tabs.map(({ value, label }) => (
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  className="px-5 py-3 text-base font-semibold whitespace-nowrap rounded-md
+                    data-[state=active]:bg-white data-[state=active]:text-primary
+                    hover:bg-muted transition-all"
+                >
+                  {label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
           </div>
-        ) : (
-          <Fragment>
-            {tabs.map(({ value }) => (
-              <TabsContent key={value} value={value}>
-                <CarbonCalaculation />
-              </TabsContent>
-            ))}
-          </Fragment>
-        )}
-      </Tabs>
+
+          <TabsContent value="project-info">
+            <ISCCProjectInfoTab
+              project={projectData.project}
+              onSuccess={(message: string) => {
+                setInfoVariant('success');
+                setInfoDialogTitle('Berhasil');
+                setInfoDialogDesc(message);
+                setInfoDialogOpen(true);
+                utils.isccProjects.getById.invalidate({ id: isccProjectId });
+              }}
+              onError={(message: string) => {
+                setInfoVariant('error');
+                setInfoDialogTitle('Error');
+                setInfoDialogDesc(message);
+                setInfoDialogOpen(true);
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="cultivation">
+            <ISCCCultivationTab
+              projectId={isccProjectId}
+              cultivation={projectData.cultivation}
+              onSuccess={(message: string) => {
+                setInfoVariant('success');
+                setInfoDialogTitle('Berhasil');
+                setInfoDialogDesc(message);
+                setInfoDialogOpen(true);
+                utils.isccProjects.getById.invalidate({ id: isccProjectId });
+              }}
+              onError={(message: string) => {
+                setInfoVariant('error');
+                setInfoDialogTitle('Error');
+                setInfoDialogDesc(message);
+                setInfoDialogOpen(true);
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="processing">
+            <ISCCProcessingTab
+              projectId={isccProjectId}
+              processing={projectData.processing}
+              onSuccess={(message: string) => {
+                setInfoVariant('success');
+                setInfoDialogTitle('Berhasil');
+                setInfoDialogDesc(message);
+                setInfoDialogOpen(true);
+                utils.isccProjects.getById.invalidate({ id: isccProjectId });
+              }}
+              onError={(message: string) => {
+                setInfoVariant('error');
+                setInfoDialogTitle('Error');
+                setInfoDialogDesc(message);
+                setInfoDialogOpen(true);
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="transport">
+            <ISCCTransportTab
+              projectId={isccProjectId}
+              transport={projectData.transport}
+              onSuccess={(message: string) => {
+                setInfoVariant('success');
+                setInfoDialogTitle('Berhasil');
+                setInfoDialogDesc(message);
+                setInfoDialogOpen(true);
+                utils.isccProjects.getById.invalidate({ id: isccProjectId });
+              }}
+              onError={(message: string) => {
+                setInfoVariant('error');
+                setInfoDialogTitle('Error');
+                setInfoDialogDesc(message);
+                setInfoDialogOpen(true);
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="calculations">
+            <ISCCCalculationsTab
+              projectId={isccProjectId}
+              project={projectData.project}
+              calculations={projectData.calculations || []}
+              cultivation={projectData.cultivation}
+              processing={projectData.processing}
+              transport={projectData.transport}
+              onSuccess={(message: string) => {
+                setInfoVariant('success');
+                setInfoDialogTitle('Berhasil');
+                setInfoDialogDesc(message);
+                setInfoDialogOpen(true);
+                utils.isccProjects.getById.invalidate({ id: isccProjectId });
+                utils.isccCalculations.getByProjectId.invalidate({
+                  projectId: isccProjectId
+                });
+              }}
+              onError={(message: string) => {
+                setInfoVariant('error');
+                setInfoDialogTitle('Error');
+                setInfoDialogDesc(message);
+                setInfoDialogOpen(true);
+              }}
+            />
+          </TabsContent>
+        </Tabs>
+      )}
+
+      <DialogInfo
+        open={infoDialogOpen}
+        onOpenChange={setInfoDialogOpen}
+        title={infoDialogTitle}
+        description={infoDialogDesc}
+        variant={infoVariant}
+        onClose={() => setInfoDialogOpen(false)}
+      />
     </DashboardLayout>
   );
 }
