@@ -15,6 +15,8 @@ import { trpc } from "@/trpc/react";
 import { Spinner } from "@/components/ui/shadcn-io/spinner";
 import type { IsccTransport } from "@/db/schema/iscc-schema";
 
+type TransportMode = "truck" | "ship" | "rail" | "pipeline" | null;
+
 interface ISCCTransportTabProps {
   projectId: string;
   transport: IsccTransport | null;
@@ -28,7 +30,14 @@ export function ISCCTransportTab({
   onSuccess,
   onError,
 }: ISCCTransportTabProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    feedstockDistance: string;
+    feedstockMode: string;
+    feedstockWeight: string;
+    productDistance: string;
+    productMode: string;
+    productWeight: string;
+  }>({
     feedstockDistance: transport?.feedstockDistance || "",
     feedstockMode: transport?.feedstockMode || "",
     feedstockWeight: transport?.feedstockWeight || "",
@@ -73,19 +82,28 @@ export function ISCCTransportTab({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const feedstockMode: TransportMode = 
+      formData.feedstockMode && ["truck", "ship", "rail", "pipeline"].includes(formData.feedstockMode)
+        ? (formData.feedstockMode as TransportMode)
+        : null;
+    const productMode: TransportMode = 
+      formData.productMode && ["truck", "ship", "rail", "pipeline"].includes(formData.productMode)
+        ? (formData.productMode as TransportMode)
+        : null;
+
     if (transport) {
       updateMutation.mutate({
         id: transport.id,
         ...formData,
-        feedstockMode: formData.feedstockMode || null,
-        productMode: formData.productMode || null,
+        feedstockMode,
+        productMode,
       });
     } else {
       createMutation.mutate({
         projectId,
         ...formData,
-        feedstockMode: formData.feedstockMode || null,
-        productMode: formData.productMode || null,
+        feedstockMode,
+        productMode,
       });
     }
   };
