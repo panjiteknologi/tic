@@ -114,6 +114,30 @@ export const CarbonProjectDEFRAMenu = {
   projects: [],
 };
 
+export const CarbonProjectISO14064Menu = {
+  user: {
+    name: "shadcn",
+    email: "m@example.com",
+    avatar: "",
+  },
+  navMain: [
+    {
+      title: "Dashboard",
+      url: "/apps/carbon-emission/iso-14064/dashboard",
+      icon: Gauge,
+      isActive: false,
+    },
+    {
+      title: "All Projects",
+      url: "/apps/carbon-emission/iso-14064/projects",
+      icon: FolderOpenDot,
+      isActive: false,
+    },
+  ],
+  navSecondary: [],
+  projects: [],
+};
+
 export const getCarbonCalculationMenu = (projectId: string) => ({
   user: {
     name: "shadcn",

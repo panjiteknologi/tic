@@ -65,7 +65,8 @@ const features = [
     key: 'iso-14064-1-2018',
     icon: <BadgeCheck className="w-8 h-8 text-violet-600" />,
     title: 'ISO 14064 1-2018',
-    desc: 'Kerangka verifikasi emisi gas rumah kaca untuk organisasi.'
+    desc: 'Kerangka verifikasi emisi gas rumah kaca untuk organisasi.',
+    href: '/apps/carbon-emission/iso-14064/dashboard'
   },
   {
     key: 'pas-2050',
