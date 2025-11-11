@@ -27,6 +27,10 @@ import { isccCalculationsRouter } from "./iscc/iscc-calculations";
 import { isccCultivationRouter } from "./iscc/iscc-cultivation";
 import { isccProcessingRouter } from "./iscc/iscc-processing";
 import { isccTransportRouter } from "./iscc/iscc-transport";
+import { defraProjectsRouter } from "./defra/defra-projects";
+import { defraCarbonCalculationsRouter } from "./defra/defra-carbon-calculations";
+import { defraProjectSummariesRouter } from "./defra/defra-project-summaries";
+import { defraEmissionFactorsRouter } from "./defra/defra-emission-factors";
 
 export const appRouter = createTRPCRouter({
   hello: baseProcedure
@@ -67,6 +71,10 @@ export const appRouter = createTRPCRouter({
   isccCultivation: isccCultivationRouter,
   isccProcessing: isccProcessingRouter,
   isccTransport: isccTransportRouter,
+  defraProjects: defraProjectsRouter,
+  defraCarbonCalculations: defraCarbonCalculationsRouter,
+  defraProjectSummaries: defraProjectSummariesRouter,
+  defraEmissionFactors: defraEmissionFactorsRouter,
 });
 
 // export type definition of API

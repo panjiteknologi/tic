@@ -90,6 +90,30 @@ export const CarbonProjectIPCCMenu = {
   projects: [],
 };
 
+export const CarbonProjectDEFRAMenu = {
+  user: {
+    name: "shadcn",
+    email: "m@example.com",
+    avatar: "",
+  },
+  navMain: [
+    {
+      title: "Dashboard",
+      url: "/apps/carbon-emission/defra/dashboard",
+      icon: Gauge,
+      isActive: false,
+    },
+    {
+      title: "All Projects",
+      url: "/apps/carbon-emission/defra/projects",
+      icon: FolderOpenDot,
+      isActive: false,
+    },
+  ],
+  navSecondary: [],
+  projects: [],
+};
+
 export const getCarbonCalculationMenu = (projectId: string) => ({
   user: {
     name: "shadcn",

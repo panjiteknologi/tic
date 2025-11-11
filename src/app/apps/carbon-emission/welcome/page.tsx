@@ -52,7 +52,8 @@ const features = [
     key: 'defra',
     icon: <Landmark className="w-8 h-8 text-emerald-600" />,
     title: 'DEFRA',
-    desc: 'Faktor emisi resmi Department for Environment, Food & Rural Affairs UK.'
+    desc: 'Faktor emisi resmi Department for Environment, Food & Rural Affairs UK.',
+    href: '/apps/carbon-emission/defra/dashboard'
   },
   {
     key: 'ghg-protocol',
