@@ -59,7 +59,8 @@ const features = [
     key: 'ghg-protocol',
     icon: <BarChart3 className="w-8 h-8 text-indigo-600" />,
     title: 'GHG Protocol',
-    desc: 'Standar akuntansi gas rumah kaca yang diakui internasional.'
+    desc: 'Standar akuntansi gas rumah kaca yang diakui internasional.',
+    href: '/apps/carbon-emission/ghg-protocol/dashboard'
   },
   {
     key: 'iso-14064-1-2018',

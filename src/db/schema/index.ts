@@ -25,3 +25,30 @@ export {
   type Iso14064ProjectSummary,
   type NewIso14064ProjectSummary
 } from './iso-14064-schema';
+export {
+  // Re-export with renamed enums to avoid conflicts
+  projectStatusEnum as ghgProtocolProjectStatusEnum,
+  scopeEnum as ghgProtocolScopeEnum,
+  gasTypeEnum as ghgProtocolGasTypeEnum,
+  calculationStatusEnum as ghgProtocolCalculationStatusEnum,
+  scope1CategoryEnum,
+  scope2CategoryEnum,
+  scope3CategoryEnum,
+  boundaryTypeEnum as ghgProtocolBoundaryTypeEnum,
+  ghgProtocolProjects,
+  ghgProtocolEmissionFactors,
+  ghgProtocolCalculations,
+  ghgProtocolProjectSummaries,
+  ghgProtocolProjectsRelations,
+  ghgProtocolEmissionFactorsRelations,
+  ghgProtocolCalculationsRelations,
+  ghgProtocolProjectSummariesRelations,
+  type GhgProtocolProject,
+  type NewGhgProtocolProject,
+  type GhgProtocolEmissionFactor,
+  type NewGhgProtocolEmissionFactor,
+  type GhgProtocolCalculation,
+  type NewGhgProtocolCalculation,
+  type GhgProtocolProjectSummary,
+  type NewGhgProtocolProjectSummary
+} from './ghg-protocol-schema';

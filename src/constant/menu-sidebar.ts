@@ -138,6 +138,30 @@ export const CarbonProjectISO14064Menu = {
   projects: [],
 };
 
+export const CarbonProjectGHGProtocolMenu = {
+  user: {
+    name: "shadcn",
+    email: "m@example.com",
+    avatar: "",
+  },
+  navMain: [
+    {
+      title: "Dashboard",
+      url: "/apps/carbon-emission/ghg-protocol/dashboard",
+      icon: Gauge,
+      isActive: false,
+    },
+    {
+      title: "All Projects",
+      url: "/apps/carbon-emission/ghg-protocol/projects",
+      icon: FolderOpenDot,
+      isActive: false,
+    },
+  ],
+  navSecondary: [],
+  projects: [],
+};
+
 export const getCarbonCalculationMenu = (projectId: string) => ({
   user: {
     name: "shadcn",

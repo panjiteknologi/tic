@@ -34,6 +34,9 @@ import { defraEmissionFactorsRouter } from "./defra/defra-emission-factors";
 import { iso14064ProjectsRouter } from "./iso-14064/iso-14064-projects";
 import { iso14064CalculationsRouter } from "./iso-14064/iso-14064-calculations";
 import { iso14064ProjectSummariesRouter } from "./iso-14064/iso-14064-project-summaries";
+import { ghgProtocolProjectsRouter } from "./ghg-protocol/ghg-protocol-projects";
+import { ghgProtocolCalculationsRouter } from "./ghg-protocol/ghg-protocol-calculations";
+import { ghgProtocolProjectSummariesRouter } from "./ghg-protocol/ghg-protocol-project-summaries";
 
 export const appRouter = createTRPCRouter({
   hello: baseProcedure
@@ -81,6 +84,9 @@ export const appRouter = createTRPCRouter({
   iso14064Projects: iso14064ProjectsRouter,
   iso14064Calculations: iso14064CalculationsRouter,
   iso14064ProjectSummaries: iso14064ProjectSummariesRouter,
+  ghgProtocolProjects: ghgProtocolProjectsRouter,
+  ghgProtocolCalculations: ghgProtocolCalculationsRouter,
+  ghgProtocolProjectSummaries: ghgProtocolProjectSummariesRouter,
 });
 
 // export type definition of API
